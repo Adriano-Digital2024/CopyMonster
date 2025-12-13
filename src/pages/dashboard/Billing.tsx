@@ -26,20 +26,17 @@ export default function Billing() {
   const plans = [
     {
       id: 'starter',
-      // IMPORTANTE: Substitua pelo seu Price ID do Stripe (modo LIVE) para o plano Starter
-      priceId: 'price_xxxxxxxxxxxxxx_starter',
+      priceId: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
       popular: false
     },
     {
       id: 'pro',
-      // IMPORTANTE: Substitua pelo seu Price ID do Stripe (modo LIVE) para o plano Pro
-      priceId: 'price_xxxxxxxxxxxxxx_pro',
+      priceId: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
       popular: true
     },
     {
       id: 'legend',
-      // IMPORTANTE: Substitua pelo seu Price ID do Stripe (modo LIVE) para o plano Legend
-      priceId: 'price_xxxxxxxxxxxxxx_legend',
+      priceId: 'price_1SDHAJRiKNxooUH0nUcBIFaG',
       popular: false
     }
   ];
