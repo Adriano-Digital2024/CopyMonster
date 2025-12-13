@@ -76,39 +76,111 @@ export type Database = {
       }
       agents: {
         Row: {
+          category: string | null
           color: string
+          core_function: string | null
           created_at: string
           description: string
+          expected_inputs: string | null
+          few_shot_examples: Json | null
+          frequency_penalty: number | null
           icon: string
           id: string
           is_active: boolean
+          is_featured: boolean | null
+          is_public: boolean | null
+          knowledge_base_ids: Json | null
+          language: string | null
+          max_characters: number | null
+          max_tokens: number | null
+          max_words: number | null
+          min_words: number | null
+          model_id: string | null
           name: string
+          output_structure: string | null
+          persona_backstory: string | null
+          persona_name: string | null
+          presence_penalty: number | null
+          quality_rules: string | null
+          role_definition: string | null
           slug: string
+          sort_order: number | null
           system_prompt: string
+          temperature: number | null
+          tone: string | null
+          top_p: number | null
           updated_at: string
         }
         Insert: {
+          category?: string | null
           color: string
+          core_function?: string | null
           created_at?: string
           description: string
+          expected_inputs?: string | null
+          few_shot_examples?: Json | null
+          frequency_penalty?: number | null
           icon: string
           id?: string
           is_active?: boolean
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          knowledge_base_ids?: Json | null
+          language?: string | null
+          max_characters?: number | null
+          max_tokens?: number | null
+          max_words?: number | null
+          min_words?: number | null
+          model_id?: string | null
           name: string
+          output_structure?: string | null
+          persona_backstory?: string | null
+          persona_name?: string | null
+          presence_penalty?: number | null
+          quality_rules?: string | null
+          role_definition?: string | null
           slug: string
+          sort_order?: number | null
           system_prompt: string
+          temperature?: number | null
+          tone?: string | null
+          top_p?: number | null
           updated_at?: string
         }
         Update: {
+          category?: string | null
           color?: string
+          core_function?: string | null
           created_at?: string
           description?: string
+          expected_inputs?: string | null
+          few_shot_examples?: Json | null
+          frequency_penalty?: number | null
           icon?: string
           id?: string
           is_active?: boolean
+          is_featured?: boolean | null
+          is_public?: boolean | null
+          knowledge_base_ids?: Json | null
+          language?: string | null
+          max_characters?: number | null
+          max_tokens?: number | null
+          max_words?: number | null
+          min_words?: number | null
+          model_id?: string | null
           name?: string
+          output_structure?: string | null
+          persona_backstory?: string | null
+          persona_name?: string | null
+          presence_penalty?: number | null
+          quality_rules?: string | null
+          role_definition?: string | null
           slug?: string
+          sort_order?: number | null
           system_prompt?: string
+          temperature?: number | null
+          tone?: string | null
+          top_p?: number | null
           updated_at?: string
         }
         Relationships: []
