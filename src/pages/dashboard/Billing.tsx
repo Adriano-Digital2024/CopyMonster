@@ -14,7 +14,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/integrations/supabase/client';
 
 // Stripe publishable key is public and safe to include in client code
-const stripePromise = loadStripe('pk_live_51SEW0hRiKNxooUH0xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1x');
+const stripePromise = loadStripe('pk_live_51S6NJXRiKNxooUH0rzAdEzlbsSAQSSwgo5cc7jISDtLnRpkOIIr3GOrrbTQ7S1dWVGOYzLAB7BooYCtzh6B0YzCD00mom0T3E5');
 
 export default function Billing() {
   const { user } = useAuth();
