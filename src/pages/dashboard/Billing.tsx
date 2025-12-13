@@ -13,8 +13,8 @@ import { cn } from '@/lib/utils';
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/integrations/supabase/client';
 
-const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+// Stripe publishable key is public and safe to include in client code
+const stripePromise = loadStripe('pk_live_51SEW0hRiKNxooUH0xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1xX1x');
 
 export default function Billing() {
   const { user } = useAuth();
@@ -180,7 +180,7 @@ export default function Billing() {
                 <Button
                   className="w-full"
                   variant={plan.id === user?.subscription_status ? 'outline' : 'default'}
-                  disabled={isProcessing || plan.id === user?.subscription_status || !stripePromise}
+                  disabled={isProcessing || plan.id === user?.subscription_status}
                   onClick={() => handleCheckout(plan.id)}
                 >
                   {isProcessing ? t('dashboard.billing.processing') : 
