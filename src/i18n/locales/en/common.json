@@ -1,0 +1,60 @@
+{
+  "date": {
+    "locale": "en-US"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "notFound": "Not Found",
+    "goBack": "Go Back",
+    "back": "Back",
+    "level": "Level",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "dashboard": "Dashboard",
+    "startTrial": "Start Free Trial"
+  },
+  "hero": {
+    "badge": "Powered by AI & Copywriting Experts",
+    "title": "Your AI Copywriter",
+    "titleHighlight": "That Understands Your Business",
+    "titleEnd": "Deeply",
+    "subtitle": "CopyMonster is the first AI platform that combines your business DNA with specialized agents to create high-converting copy in minutes.",
+    "cta": {
+      "primary": "Start Your 7-Day Free Trial",
+      "secondary": "See How It Works"
+    },
+    "trust": "Trusted by over 1,000 entrepreneurs",
+    "rating": "4.9/5.0 from 200+ reviews",
+    "stats": {
+      "agents": "Specialized Agents",
+      "dna": "Brand DNA"
+    }
+  },
+  "chat": {
+    "insufficientCreditsTitle": "Insufficient Credits",
+    "insufficientCreditsDesc": "You need credits to use this agent. Please upgrade your plan.",
+    "creditUsedTitle": "Credit Used",
+    "creditUsedDesc": "{{credits}} credits remaining",
+    "errorTitle": "Error",
+    "errorDesc": "Failed to get response from AI. Please try again.",
+    "errorMessage": "Error: {{error}}",
+    "exportSuccessTitle": "Exported",
+    "exportSuccessDesc": "Conversation exported successfully",
+    "clearSuccessTitle": "Cleared",
+    "clearSuccessDesc": "Conversation history cleared",
+    "startConversation": "Start a conversation with {{agentName}}",
+    "startConversationDesc": "Type your message below to begin",
+    "inputPlaceholder": "Type your message...",
+    "creditsAvailable": "{{credits}} credits available"
+  }
+}

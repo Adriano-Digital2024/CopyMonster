@@ -1,0 +1,162 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Overview",
+      "agents": "Agents",
+      "positioning": "Positioning",
+      "campaigns": "Campaigns",
+      "copyResults": "Copy Results",
+      "headlines": "Headlines",
+      "insights": "Insights",
+      "library": "Library",
+      "billing": "Billing",
+      "performance": "Performance",
+      "settings": "Settings",
+      "logout": "Logout"
+    },
+    "welcome": "Welcome back",
+    "subtitle": "Ready to create some amazing copy? Let's get started!",
+    "credits": "Credits",
+    "creditsAvailable": "credits available",
+    "plan": "Current Plan",
+    "upgrade": "Upgrade plan",
+    "level": "Your Level",
+    "quickAccess": "Quick Access",
+    "launch": "Launch Agent",
+    "recentActivity": "Recent Activity",
+    "recentActivityDescription": "Here is what you have been working on.",
+    "noActivity": "No recent activity yet. Start by launching an agent!",
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage your account and preferences.",
+      "tabs": {
+        "profile": "Profile",
+        "preferences": "Preferences",
+        "security": "Security",
+        "api": "API",
+        "danger": "Danger Zone"
+      },
+      "profile": {
+        "title": "Profile Information",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell us a bit about yourself and your business.",
+        "save": "Save Profile"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "language": "Language",
+        "languageDesc": "Choose your preferred language.",
+        "theme": "Theme",
+        "themeDesc": "Choose your preferred theme.",
+        "light": "Light",
+        "dark": "Dark",
+        "emailNotifications": "Email Notifications",
+        "emailNotificationsDesc": "Receive updates and news.",
+        "browserNotifications": "Browser Notifications",
+        "browserNotificationsDesc": "Receive real-time alerts.",
+        "save": "Save Preferences"
+      },
+      "security": {
+        "title": "Security",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "changePassword": "Change Password",
+        "twoFactor": "Two-Factor Authentication (2FA)",
+        "twoFactorDesc": "Add an extra layer of security to your account.",
+        "setup2FA": "Setup 2FA"
+      },
+      "api": {
+        "title": "API Access",
+        "subtitle": "Manage your API keys for integrations.",
+        "comingSoon": "API Access is Coming Soon!",
+        "comingSoonDesc": "Integrate CopyMonster with your favorite tools."
+      },
+      "danger": {
+        "title": "Danger Zone",
+        "subtitle": "These actions are irreversible.",
+        "deleteAccount": "Delete Account",
+        "deleteAccountDesc": "Permanently delete your account and all associated data.",
+        "deleteAccountButton": "Delete My Account"
+      },
+      "toast": {
+        "profileSuccess": "Profile Saved!",
+        "profileSuccessDesc": "Your profile information has been updated.",
+        "preferencesSuccess": "Preferences Saved!",
+        "preferencesSuccessDesc": "Your preferences have been updated."
+      }
+    },
+    "billing": {
+      "title": "Billing & Plans",
+      "subtitle": "Manage your subscription and payment methods.",
+      "currentPlan": "Current Plan",
+      "creditsRemaining": "credits remaining",
+      "renewsOn": "Renews on",
+      "mostPopular": "Most Popular",
+      "processing": "Processing...",
+      "currentPlanButton": "Current Plan",
+      "discountCode": "Discount Code",
+      "discountSubtitle": "Have a discount code? Apply it here.",
+      "codeLabel": "Code",
+      "codePlaceholder": "e.g., LAUNCH50",
+      "applyButton": "Apply",
+      "transactionHistory": "Transaction History",
+      "noTransactions": "No transactions yet.",
+      "toast": {
+        "discountApplied": "Discount Applied!",
+        "discountAppliedDesc": "The discount {{code}} has been applied."
+      }
+    },
+    "agents": {
+      "title": "AI Agents",
+      "subtitle": "Select an agent to start creating.",
+      "launchAgent": "Launch Agent"
+    }
+  },
+  "agents": {
+    "title": "Meet Your AI Copywriting Team",
+    "subtitle": "8 Specialized Agents",
+    "description": "Each agent is a world-class expert in their field, trained with millions of high-converting copy examples. They are ready to create strategic content for your business.",
+    "list": {
+      "positioner": {
+        "name": "Monster Positioner",
+        "description": "Complete diagnosis of Brand DNA and strategic brand positioning."
+      },
+      "vsl": {
+        "name": "VSL Monster",
+        "description": "Creation of high-converting VSL (Video Sales Letter) scripts."
+      },
+      "sales": {
+        "name": "Sales Page Monster",
+        "description": "Development of sales pages optimized for conversion."
+      },
+      "launch": {
+        "name": "Launch Monster",
+        "description": "Planning and execution of strategic product launches."
+      },
+      "email": {
+        "name": "Email Monster",
+        "description": "Creation of high-performance email marketing sequences."
+      },
+      "ads": {
+        "name": "Ads Monster",
+        "description": "Optimization of ads for Meta Ads, Google Ads, and other platforms."
+      },
+      "headline": {
+        "name": "Headline Monster",
+        "description": "Generation of magnetic headlines that capture attention instantly."
+      },
+      "short": {
+        "name": "Short Monster",
+        "description": "Scripts for 1-minute videos that delight, go viral, and convert."
+      }
+    },
+    "badge": {
+      "popular": "Popular",
+      "new": "New"
+    }
+  }
+}

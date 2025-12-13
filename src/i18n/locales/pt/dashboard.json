@@ -1,0 +1,162 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Visão Geral",
+      "agents": "Agentes",
+      "positioning": "Posicionamento",
+      "campaigns": "Campanhas",
+      "copyResults": "Resultados",
+      "headlines": "Headlines",
+      "insights": "Insights",
+      "library": "Biblioteca",
+      "billing": "Cobrança",
+      "performance": "Desempenho",
+      "settings": "Configurações",
+      "logout": "Sair"
+    },
+    "welcome": "Bem-vindo de volta",
+    "subtitle": "Pronto para criar textos incríveis? Vamos começar!",
+    "credits": "Créditos",
+    "creditsAvailable": "créditos disponíveis",
+    "plan": "Plano Atual",
+    "upgrade": "Melhorar plano",
+    "level": "Seu Nível",
+    "quickAccess": "Acesso Rápido",
+    "launch": "Iniciar Agente",
+    "recentActivity": "Atividade Recente",
+    "recentActivityDescription": "Aqui está o que você tem trabalhado.",
+    "noActivity": "Nenhuma atividade recente ainda. Comece lançando um agente!",
+    "settings": {
+      "title": "Configurações",
+      "subtitle": "Gerencie sua conta e preferências.",
+      "tabs": {
+        "profile": "Perfil",
+        "preferences": "Preferências",
+        "security": "Segurança",
+        "api": "API",
+        "danger": "Zona de Perigo"
+      },
+      "profile": {
+        "title": "Informações do Perfil",
+        "name": "Nome",
+        "email": "Email",
+        "phone": "Telefone",
+        "bio": "Biografia",
+        "bioPlaceholder": "Conte-nos um pouco sobre você e seu negócio.",
+        "save": "Salvar Perfil"
+      },
+      "preferences": {
+        "title": "Preferências",
+        "language": "Idioma",
+        "languageDesc": "Escolha seu idioma preferido.",
+        "theme": "Tema",
+        "themeDesc": "Escolha seu tema preferido.",
+        "light": "Claro",
+        "dark": "Escuro",
+        "emailNotifications": "Notificações por Email",
+        "emailNotificationsDesc": "Receba atualizações e novidades.",
+        "browserNotifications": "Notificações do Navegador",
+        "browserNotificationsDesc": "Receba alertas em tempo real.",
+        "save": "Salvar Preferências"
+      },
+      "security": {
+        "title": "Segurança",
+        "currentPassword": "Senha Atual",
+        "newPassword": "Nova Senha",
+        "confirmPassword": "Confirmar Nova Senha",
+        "changePassword": "Alterar Senha",
+        "twoFactor": "Autenticação de Dois Fatores (2FA)",
+        "twoFactorDesc": "Adicione uma camada extra de segurança à sua conta.",
+        "setup2FA": "Configurar 2FA"
+      },
+      "api": {
+        "title": "Acesso à API",
+        "subtitle": "Gerencie suas chaves de API para integrações.",
+        "comingSoon": "Acesso à API em Breve!",
+        "comingSoonDesc": "Integre o CopyMonster com suas ferramentas favoritas."
+      },
+      "danger": {
+        "title": "Zona de Perigo",
+        "subtitle": "Essas ações são irreversíveis.",
+        "deleteAccount": "Excluir Conta",
+        "deleteAccountDesc": "Excluir permanentemente sua conta e todos os dados associados.",
+        "deleteAccountButton": "Excluir Minha Conta"
+      },
+      "toast": {
+        "profileSuccess": "Perfil Salvo!",
+        "profileSuccessDesc": "Suas informações de perfil foram atualizadas.",
+        "preferencesSuccess": "Preferências Salvas!",
+        "preferencesSuccessDesc": "Suas preferências foram atualizadas."
+      }
+    },
+    "billing": {
+      "title": "Cobrança e Planos",
+      "subtitle": "Gerencie sua assinatura e métodos de pagamento.",
+      "currentPlan": "Plano Atual",
+      "creditsRemaining": "créditos restantes",
+      "renewsOn": "Renova em",
+      "mostPopular": "Mais Popular",
+      "processing": "Processando...",
+      "currentPlanButton": "Plano Atual",
+      "discountCode": "Código de Desconto",
+      "discountSubtitle": "Tem um código de desconto? Aplique aqui.",
+      "codeLabel": "Código",
+      "codePlaceholder": "ex.: LAUNCH50",
+      "applyButton": "Aplicar",
+      "transactionHistory": "Histórico de Transações",
+      "noTransactions": "Nenhuma transação ainda.",
+      "toast": {
+        "discountApplied": "Desconto Aplicado!",
+        "discountAppliedDesc": "O desconto {{code}} foi aplicado."
+      }
+    },
+    "agents": {
+      "title": "Agentes de IA",
+      "subtitle": "Selecione um agente para começar a criar.",
+      "launchAgent": "Iniciar Agente"
+    }
+  },
+  "agents": {
+    "title": "Conheça Sua Equipe de Copywriting de IA",
+    "subtitle": "8 Agentes Especializados",
+    "description": "Cada agente é um especialista de classe mundial em seu campo, treinado com milhões de exemplos de copy de alta conversão. Eles estão prontos para criar conteúdo estratégico para o seu negócio.",
+    "list": {
+      "positioner": {
+        "name": "Monster Positioner",
+        "description": "Diagnóstico completo do DNA da Marca e posicionamento estratégico de marca."
+      },
+      "vsl": {
+        "name": "VSL Monster",
+        "description": "Criação de scripts de VSL (Video Sales Letter) de alta conversão."
+      },
+      "sales": {
+        "name": "Sales Page Monster",
+        "description": "Desenvolvimento de páginas de vendas otimizadas para conversão."
+      },
+      "launch": {
+        "name": "Launch Monster",
+        "description": "Planejamento e execução de lançamentos estratégicos de produtos."
+      },
+      "email": {
+        "name": "Email Monster",
+        "description": "Criação de sequências de email marketing de alto desempenho."
+      },
+      "ads": {
+        "name": "Ads Monster",
+        "description": "Otimização de anúncios para Meta Ads, Google Ads e outras plataformas."
+      },
+      "headline": {
+        "name": "Headline Monster",
+        "description": "Geração de headlines magnéticas que capturam a atenção instantaneamente."
+      },
+      "short": {
+        "name": "Short Monster",
+        "description": "Scripts para vídeos de 1 minuto que encantam, viralizam e convertem."
+      }
+    },
+    "badge": {
+      "popular": "Popular",
+      "new": "Novo"
+    }
+  }
+}

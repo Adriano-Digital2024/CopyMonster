@@ -1,0 +1,60 @@
+{
+  "date": {
+    "locale": "pt-BR"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "create": "Criar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "notFound": "Não Encontrado",
+    "goBack": "Voltar",
+    "back": "Voltar",
+    "level": "Nível",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso"
+  },
+  "nav": {
+    "features": "Funcionalidades",
+    "pricing": "Preços",
+    "testimonials": "Depoimentos",
+    "dashboard": "Painel",
+    "startTrial": "Iniciar Teste Grátis"
+  },
+  "hero": {
+    "badge": "Powered by IA & Especialistas em Copywriting",
+    "title": "Seu Copywriter de IA",
+    "titleHighlight": "Que Entende Seu Negócio",
+    "titleEnd": "Profundamente",
+    "subtitle": "CopyMonster é a primeira plataforma de IA que combina o DNA do seu negócio com agentes especializados para criar copies de alta conversão em minutos.",
+    "cta": {
+      "primary": "Começar Teste Grátis de 7 Dias",
+      "secondary": "Veja Como Funciona"
+    },
+    "trust": "Confiado por mais de 1.000 empreendedores",
+    "rating": "4.9/5.0 de mais de 200 avaliações",
+    "stats": {
+      "agents": "Agentes Especializados",
+      "dna": "DNA da Marca"
+    }
+  },
+  "chat": {
+    "insufficientCreditsTitle": "Créditos Insuficientes",
+    "insufficientCreditsDesc": "Você precisa de créditos para usar este agente. Por favor, atualize seu plano.",
+    "creditUsedTitle": "Crédito Usado",
+    "creditUsedDesc": "{{credits}} créditos restantes",
+    "errorTitle": "Erro",
+    "errorDesc": "Falha ao obter resposta da IA. Por favor, tente novamente.",
+    "errorMessage": "Erro: {{error}}",
+    "exportSuccessTitle": "Exportado",
+    "exportSuccessDesc": "Conversa exportada com sucesso",
+    "clearSuccessTitle": "Limpo",
+    "clearSuccessDesc": "Histórico de conversa limpo",
+    "startConversation": "Iniciar uma conversa com {{agentName}}",
+    "startConversationDesc": "Digite sua mensagem abaixo para começar",
+    "inputPlaceholder": "Digite sua mensagem...",
+    "creditsAvailable": "{{credits}} créditos disponíveis"
+  }
+}

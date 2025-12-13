@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Premium Dark Mode Design System - CopyMonster */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 51 98% 33%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 51 98% 43%;
+
+    --secondary: 240 5% 26%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 16%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 51 98% 33%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 15%;
+    --input: 240 10% 15%;
+    --ring: 51 98% 33%;
+
+    --radius: 0.75rem;
+
+    /* Agent Colors */
+    --agent-positioner: 51 98% 33%;
+    --agent-vsl: 0 84% 60%;
+    --agent-sales: 142 71% 45%;
+    --agent-launch: 199 89% 48%;
+    --agent-email: 24 95% 53%;
+    --agent-ads: 271 80% 60%;
+    --agent-headline: 43 96% 56%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(51 98% 33% / 0.2), hsl(199 89% 48% / 0.2));
+    --gradient-card: linear-gradient(135deg, hsl(240 10% 10%), hsl(240 10% 7%));
+    --gradient-primary: linear-gradient(135deg, hsl(51 98% 33%), hsl(51 98% 28%));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsl(51 98% 33% / 0.3);
+    --shadow-card: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .light {
+    /* Premium Light Mode Design System - CopyMonster */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 51 98% 33%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 51 98% 43%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 51 98% 33%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 51 98% 33%;
+
+    /* Gradients for Light Mode */
+    --gradient-hero: linear-gradient(135deg, hsl(51 98% 33% / 0.1), hsl(199 89% 48% / 0.1));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 100%));
+    --gradient-primary: linear-gradient(135deg, hsl(51 98% 33%), hsl(51 98% 28%));
+    
+    /* Shadows for Light Mode */
+    --shadow-glow: 0 0 40px hsl(51 98% 33% / 0.2);
+    --shadow-card: 0 10px 30px -10px hsl(240 10% 3.9% / 0.1);
+  }
+
+  .dark {
+    /* Already dark by default */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .glow-effect {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  /* Phone Input Styling */
+  .phone-input {
+    display: flex;
+    width: 100%;
+  }
+
+  .phone-input .PhoneInputInput {
+    flex: 1;
+    height: 2.5rem;
+    width: 100%;
+    border-radius: calc(var(--radius) - 2px);
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--background));
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+    transition: var(--transition-smooth);
+  }
+
+  .phone-input .PhoneInputInput:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 1px hsl(var(--ring));
+  }
+
+  .phone-input .PhoneInputCountry {
+    margin-right: 0.5rem;
+  }
+
+  .phone-input .PhoneInputCountrySelect {
+    height: 2.5rem;
+    border-radius: calc(var(--radius) - 2px);
+    border: 1px solid hsl(var(--input));
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    padding: 0 0.5rem;
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Resumen",
+      "agents": "Agentes",
+      "positioning": "Posicionamiento",
+      "campaigns": "Campañas",
+      "copyResults": "Resultados",
+      "headlines": "Titulares",
+      "insights": "Perspectivas",
+      "library": "Biblioteca",
+      "billing": "Facturación",
+      "performance": "Rendimiento",
+      "settings": "Configuración",
+      "logout": "Cerrar sesión"
+    },
+    "welcome": "Bienvenido de nuevo",
+    "subtitle": "¿Listo para crear textos increíbles? ¡Empecemos!",
+    "credits": "Créditos",
+    "creditsAvailable": "créditos disponibles",
+    "plan": "Plan Actual",
+    "upgrade": "Actualizar plan",
+    "level": "Tu Nivel",
+    "quickAccess": "Acceso Rápido",
+    "launch": "Iniciar Agente",
+    "recentActivity": "Actividad Reciente",
+    "recentActivityDescription": "Esto es en lo que has estado trabajando.",
+    "noActivity": "Aún no hay actividad reciente. ¡Comienza lanzando un agente!",
+    "settings": {
+      "title": "Configuración",
+      "subtitle": "Administra tu cuenta y preferencias.",
+      "tabs": {
+        "profile": "Perfil",
+        "preferences": "Preferencias",
+        "security": "Seguridad",
+        "api": "API",
+        "danger": "Zona de Peligro"
+      },
+      "profile": {
+        "title": "Información del Perfil",
+        "name": "Nombre",
+        "email": "Correo Electrónico",
+        "phone": "Teléfono",
+        "bio": "Biografía",
+        "bioPlaceholder": "Cuéntanos un poco sobre ti y tu negocio.",
+        "save": "Guardar Perfil"
+      },
+      "preferences": {
+        "title": "Preferencias",
+        "language": "Idioma",
+        "languageDesc": "Elige tu idioma preferido.",
+        "theme": "Tema",
+        "themeDesc": "Elige tu tema preferido.",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "emailNotifications": "Notificaciones por Correo",
+        "emailNotificationsDesc": "Recibe actualizaciones y noticias.",
+        "browserNotifications": "Notificaciones del Navegador",
+        "browserNotificationsDesc": "Recibe alertas en tiempo real.",
+        "save": "Guardar Preferencias"
+      },
+      "security": {
+        "title": "Seguridad",
+        "currentPassword": "Contraseña Actual",
+        "newPassword": "Nueva Contraseña",
+        "confirmPassword": "Confirmar Nueva Contraseña",
+        "changePassword": "Cambiar Contraseña",
+        "twoFactor": "Autenticación de Dos Factores (2FA)",
+        "twoFactorDesc": "Agrega una capa extra de seguridad a tu cuenta.",
+        "setup2FA": "Configurar 2FA"
+      },
+      "api": {
+        "title": "Acceso a la API",
+        "subtitle": "Administra tus claves de API para integraciones.",
+        "comingSoon": "¡Acceso a API Próximamente!",
+        "comingSoonDesc": "Integra CopyMonster con tus herramientas favoritas."
+      },
+      "danger": {
+        "title": "Zona de Peligro",
+        "subtitle": "Estas acciones son irreversibles.",
+        "deleteAccount": "Eliminar Cuenta",
+        "deleteAccountDesc": "Eliminar permanentemente tu cuenta y todos los datos asociados.",
+        "deleteAccountButton": "Eliminar Mi Cuenta"
+      },
+      "toast": {
+        "profileSuccess": "¡Perfil Guardado!",
+        "profileSuccessDesc": "Tu información de perfil ha sido actualizada.",
+        "preferencesSuccess": "¡Preferencias Guardadas!",
+        "preferencesSuccessDesc": "Tus preferencias han sido actualizadas."
+      }
+    },
+    "billing": {
+      "title": "Facturación y Planes",
+      "subtitle": "Administra tu suscripción y métodos de pago.",
+      "currentPlan": "Plan Actual",
+      "creditsRemaining": "créditos restantes",
+      "renewsOn": "Se renueva el",
+      "mostPopular": "Más Popular",
+      "processing": "Procesando...",
+      "currentPlanButton": "Plan Actual",
+      "discountCode": "Código de Descuento",
+      "discountSubtitle": "¿Tienes un código de descuento? Aplícalo aquí.",
+      "codeLabel": "Código",
+      "codePlaceholder": "ej.: LAUNCH50",
+      "applyButton": "Aplicar",
+      "transactionHistory": "Historial de Transacciones",
+      "noTransactions": "Aún no hay transacciones.",
+      "toast": {
+        "discountApplied": "¡Descuento Aplicado!",
+        "discountAppliedDesc": "El descuento {{code}} ha sido aplicado."
+      }
+    },
+    "agents": {
+      "title": "Agentes de IA",
+      "subtitle": "Selecciona un agente para comenzar a crear.",
+      "launchAgent": "Iniciar Agente"
+    }
+  },
+  "agents": {
+    "title": "Conoce a Tu Equipo de Copywriting de IA",
+    "subtitle": "8 Agentes Especializados",
+    "description": "Cada agente es un experto de clase mundial en su campo, entrenado con millones de ejemplos de copy de alta conversión. Están listos para crear contenido estratégico para tu negocio.",
+    "list": {
+      "positioner": {
+        "name": "Monster Positioner",
+        "description": "Diagnóstico completo del ADN de Marca y posicionamiento estratégico de marca."
+      },
+      "vsl": {
+        "name": "VSL Monster",
+        "description": "Creación de scripts de VSL (Video Sales Letter) de alta conversión."
+      },
+      "sales": {
+        "name": "Sales Page Monster",
+        "description": "Desarrollo de páginas de ventas optimizadas para conversión."
+      },
+      "launch": {
+        "name": "Launch Monster",
+        "description": "Planificación y ejecución de lanzamientos estratégicos de productos."
+      },
+      "email": {
+        "name": "Email Monster",
+        "description": "Creación de secuencias de email marketing de alto rendimiento."
+      },
+      "ads": {
+        "name": "Ads Monster",
+        "description": "Optimización de anuncios para Meta Ads, Google Ads y otras plataformas."
+      },
+      "headline": {
+        "name": "Headline Monster",
+        "description": "Generación de titulares magnéticos que capturan la atención instantáneamente."
+      },
+      "short": {
+        "name": "Short Monster",
+        "description": "Scripts para videos de 1 minuto que deleitan, viralizan y convierten."
+      }
+    },
+    "badge": {
+      "popular": "Popular",
+      "new": "Nuevo"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+project_id = "bcatupltfvgwelhzeznk"
+
+[functions.chat-stream]
+verify_jwt = true
+
+[functions.create-checkout-session]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
