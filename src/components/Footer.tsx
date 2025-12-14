@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import logoDark from '@/assets/logo-dark.png';
@@ -7,10 +8,33 @@ export const Footer = () => {
   const { t } = useTranslation();
 
   const footerLinks = {
-    product: ['Features', 'Pricing', 'Documentation', 'Changelog', 'Roadmap'],
-    company: ['About', 'Blog', 'Careers', 'Contact', 'Press Kit'],
-    resources: ['Community', 'Help Center', 'API Reference', 'Examples', 'Templates'],
-    legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'GDPR', 'Security'],
+    product: [
+      { label: 'Features', href: '/#features' },
+      { label: 'Pricing', href: '/#pricing' },
+      { label: 'Documentation', href: '#' },
+      { label: 'Changelog', href: '#' },
+      { label: 'Roadmap', href: '#' },
+    ],
+    company: [
+      { label: 'About', href: '#' },
+      { label: 'Blog', href: '#' },
+      { label: 'Careers', href: '#' },
+      { label: 'Contact', href: '#' },
+      { label: 'Press Kit', href: '#' },
+    ],
+    resources: [
+      { label: 'Community', href: '#' },
+      { label: 'Help Center', href: '#' },
+      { label: 'API Reference', href: '#' },
+      { label: 'Examples', href: '#' },
+      { label: 'Templates', href: '#' },
+    ],
+    legal: [
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms of Service', href: '/terms-of-service' },
+      { label: 'Cookie Policy', href: '/cookie-policy' },
+      { label: 'GDPR', href: '/gdpr' },
+    ],
   };
 
   return (
@@ -30,12 +54,12 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">{t('footer.product')}</h3>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
-                <li key={link}>
+                <li key={link.label}>
                   <a
-                    href="#"
+                    href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
@@ -47,12 +71,12 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
-                <li key={link}>
+                <li key={link.label}>
                   <a
-                    href="#"
+                    href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
@@ -64,12 +88,12 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">{t('footer.resources')}</h3>
             <ul className="space-y-2">
               {footerLinks.resources.map((link) => (
-                <li key={link}>
+                <li key={link.label}>
                   <a
-                    href="#"
+                    href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
@@ -81,13 +105,13 @@ export const Footer = () => {
             <h3 className="font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link}
-                  </a>
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
