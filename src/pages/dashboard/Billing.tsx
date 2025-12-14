@@ -61,6 +61,8 @@ export default function Billing() {
         throw new Error('Plano não encontrado');
       }
 
+      console.log('Initiating checkout for plan:', plan.id, 'priceId:', plan.priceId);
+
       const { data, error: functionError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           priceId: plan.priceId,
@@ -70,11 +72,28 @@ export default function Billing() {
         }
       });
 
+      console.log('Edge function response:', { data, functionError });
+
       if (functionError) {
-        throw functionError;
+        console.error('Function error:', functionError);
+        throw new Error(functionError.message || 'Erro ao criar sessão de checkout');
       }
 
-      const { sessionId } = data;
+      if (!data) {
+        throw new Error('Resposta vazia do servidor');
+      }
+
+      if (data.error) {
+        console.error('Server returned error:', data.error);
+        throw new Error(data.error);
+      }
+
+      if (!data.sessionId) {
+        console.error('No sessionId in response:', data);
+        throw new Error('Sessão de checkout não foi criada');
+      }
+
+      console.log('Redirecting to Stripe checkout with sessionId:', data.sessionId);
       
       const stripe = await stripePromise;
       if (!stripe) {
@@ -82,17 +101,19 @@ export default function Billing() {
       }
       
       const { error } = await (stripe as any).redirectToCheckout({
-        sessionId,
+        sessionId: data.sessionId,
       });
 
       if (error) {
+        console.error('Stripe redirect error:', error);
         throw error;
       }
     } catch (error) {
       console.error('Erro no checkout:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao processar seu pagamento';
       toast({
         title: 'Erro no checkout',
-        description: 'Ocorreu um erro ao processar seu pagamento. Tente novamente.',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
