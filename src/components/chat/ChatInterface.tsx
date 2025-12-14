@@ -19,11 +19,12 @@ interface Message {
 interface ChatInterfaceProps {
   agentName: string;
   agentColor: string;
-  systemPrompt: string;
+  systemPrompt?: string;
+  agentSlug?: string;
   onCreditsUpdate?: (newCredits: number) => void;
 }
 
-export function ChatInterface({ agentName, agentColor, systemPrompt, onCreditsUpdate }: ChatInterfaceProps) {
+export function ChatInterface({ agentName, agentColor, systemPrompt, agentSlug, onCreditsUpdate }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +77,7 @@ export function ChatInterface({ agentName, agentColor, systemPrompt, onCreditsUp
         body: {
           messages: currentMessages.map(({ role, content }) => ({ role, content })),
           system_prompt: systemPrompt,
+          agent_slug: agentSlug,
         },
       });
 

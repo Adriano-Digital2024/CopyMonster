@@ -122,8 +122,8 @@
     "description": "Cada agente es un experto de clase mundial en su campo, entrenado con millones de ejemplos de copy de alta conversión. Están listos para crear contenido estratégico para tu negocio.",
     "list": {
       "positioner": {
-        "name": "Monster Positioner",
-        "description": "Diagnóstico completo del ADN de Marca y posicionamiento estratégico de marca."
+        "name": "Brand Positioning Monster (DNA)",
+        "description": "Agente de bienvenida. Crea posicionamiento estratégico completo para expertos e infoproductores a través de preguntas guiadas."
       },
       "vsl": {
         "name": "VSL Monster",

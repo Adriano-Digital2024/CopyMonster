@@ -57,9 +57,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const menuItems = [
+    { icon: Target, label: t('dashboard.menu.positioning'), path: '/dashboard/positioning', highlight: true },
     { icon: LayoutDashboard, label: t('dashboard.menu.overview'), path: '/dashboard' },
     { icon: Users, label: t('dashboard.menu.agents'), path: '/dashboard/agents' },
-    { icon: Target, label: t('dashboard.menu.positioning'), path: '/dashboard/positioning' },
     { icon: Rocket, label: t('dashboard.menu.campaigns'), path: '/dashboard/campaigns' },
     { icon: FileText, label: t('dashboard.menu.copyResults'), path: '/dashboard/copy-results' },
     { icon: Newspaper, label: t('dashboard.menu.headlines'), path: '/dashboard/headlines' },
@@ -86,15 +86,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
       
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {menuItems.map((item) => (
+        {menuItems.map((item, index) => (
           <Button
             key={item.path}
-            variant="ghost"
-            className="w-full justify-start"
+            variant={item.highlight ? "default" : "ghost"}
+            className={`w-full justify-start ${item.highlight ? 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30' : ''}`}
             onClick={() => navigate(item.path)}
           >
             <item.icon className="mr-2 h-4 w-4" />
             {item.label}
+            {item.highlight && index === 0 && (
+              <span className="ml-auto text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
+                Start
+              </span>
+            )}
           </Button>
         ))}
       </nav>
