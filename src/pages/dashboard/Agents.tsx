@@ -18,6 +18,29 @@ const iconMap: Record<string, LucideIcon> = {
   Clapperboard
 };
 
+// Map agent slugs to translation keys
+const slugToTranslationKey: Record<string, string> = {
+  'brand-positioning-monster': 'positioner',
+  'vsl-monster': 'vsl',
+  'sales-page-monster': 'sales',
+  'launch-monster': 'launch',
+  'email-monster': 'email',
+  'ads-monster': 'ads',
+  'headline-monster': 'headline',
+  'short-monster': 'short',
+  // Campaign agents
+  'internal-launch-monster': 'internalLaunch',
+  'flash-launch-monster': 'flashLaunch',
+  'evergreen-funnel-monster': 'evergreenFunnel',
+  'webinar-campaign-monster': 'webinarCampaign',
+  'cart-recovery-monster': 'cartRecovery',
+  'lead-nurture-monster': 'leadNurture',
+  'upsell-cross-monster': 'upsellCross',
+  'list-revival-monster': 'listRevival',
+  'full-vsl-script-monster': 'fullVslScript',
+  'whatsapp-sales-monster': 'whatsappSales',
+};
+
 export default function Agents() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -46,6 +69,20 @@ export default function Agents() {
     return null;
   };
 
+  // Get translated name and description for an agent
+  const getAgentTranslation = (agent: any) => {
+    const key = slugToTranslationKey[agent.slug];
+    if (key) {
+      const translatedName = t(`agents.list.${key}.name`, { defaultValue: '' });
+      const translatedDesc = t(`agents.list.${key}.description`, { defaultValue: '' });
+      return {
+        name: translatedName || agent.name,
+        description: translatedDesc || agent.description,
+      };
+    }
+    return { name: agent.name, description: agent.description };
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -59,6 +96,7 @@ export default function Agents() {
   const renderAgentCard = (agent: any) => {
     const Icon = getAgentIcon(agent.icon);
     const badge = getAgentBadge(agent);
+    const { name, description } = getAgentTranslation(agent);
 
     return (
       <Card 
@@ -84,10 +122,10 @@ export default function Agents() {
 
           <div className="space-y-2">
             <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-              {agent.name}
+              {name}
             </h3>
             <p className="text-sm text-muted-foreground line-clamp-3">
-              {agent.description}
+              {description}
             </p>
           </div>
 
@@ -130,7 +168,7 @@ export default function Agents() {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-semibold">{t('agents.categories.campaign', 'Agentes de Campanha Completa')}</h2>
-              <Badge variant="secondary" className="text-xs">Novo</Badge>
+              <Badge variant="secondary" className="text-xs">{t('agents.badge.new', 'Novo')}</Badge>
             </div>
             <p className="text-muted-foreground">
               {t('agents.categories.campaignDescription', 'Campanhas prontas para uso imediato com todos os assets inclusos')}
@@ -143,7 +181,7 @@ export default function Agents() {
 
         {activeAgents.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Nenhum agente disponível no momento.</p>
+            <p className="text-muted-foreground">{t('agents.page.noAgents', 'Nenhum agente disponível no momento.')}</p>
           </div>
         )}
       </div>

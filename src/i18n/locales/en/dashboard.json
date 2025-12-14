@@ -152,11 +152,62 @@
       "short": {
         "name": "Short Monster",
         "description": "Scripts for 1-minute videos that delight, go viral, and convert."
+      },
+      "internalLaunch": {
+        "name": "Internal Launch Monster",
+        "description": "Complete 7-day internal launch campaign with all emails and scripts."
+      },
+      "flashLaunch": {
+        "name": "Flash Launch Monster",
+        "description": "3-day flash launch with maximum urgency and high conversion."
+      },
+      "evergreenFunnel": {
+        "name": "Evergreen Funnel Monster",
+        "description": "Automated evergreen funnel that sells 24/7 without intervention."
+      },
+      "webinarCampaign": {
+        "name": "Webinar Campaign Monster",
+        "description": "Complete webinar campaign with invites, reminders, and sales pitch."
+      },
+      "cartRecovery": {
+        "name": "Cart Recovery Monster",
+        "description": "Abandoned cart recovery sequence with high conversion rate."
+      },
+      "leadNurture": {
+        "name": "Lead Nurture Monster",
+        "description": "Cold lead nurturing sequence until they're ready to buy."
+      },
+      "upsellCross": {
+        "name": "Upsell Cross Monster",
+        "description": "Upsell and cross-sell campaigns to maximize customer value."
+      },
+      "listRevival": {
+        "name": "List Revival Monster",
+        "description": "Cold list reactivation with powerful re-engagement sequence."
+      },
+      "fullVslScript": {
+        "name": "Full VSL Script Monster",
+        "description": "Complete high-converting VSL script with professional structure."
+      },
+      "whatsappSales": {
+        "name": "WhatsApp Sales Monster",
+        "description": "Sales sequences optimized for WhatsApp with ready-to-use templates."
       }
     },
     "badge": {
       "popular": "Popular",
       "new": "New"
+    },
+    "categories": {
+      "copywriting": "Copywriting Agents",
+      "campaign": "Complete Campaign Agents",
+      "campaignDescription": "Ready-to-use campaigns with all assets included"
+    },
+    "page": {
+      "title": "AI Agents",
+      "subtitle": "Select an agent to start creating.",
+      "launchAgent": "Launch Agent",
+      "noAgents": "No agents available at the moment."
     }
   }
 }
