@@ -57,12 +57,24 @@
     "inputPlaceholder": "Escribe tu mensaje...",
     "creditsAvailable": "{{credits}} créditos disponibles",
     "startingGuide": "Iniciando el mapeo guiado...",
-    "preparingQuestions": "Preparando tus preguntas estratégicas"
+    "preparingQuestions": "Preparando tus preguntas estratégicas",
+    "saveMapping": "Guardar mapeo"
   },
   "positioning": {
     "welcomeAgent": "Agente de Entrada",
     "guided": "Flujo Guiado",
     "subtitle": "Mapeo completo en 12 bloques estratégicos",
+    "blocksCompleted": "bloques",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "confirmSave": "Guardar Mapeo",
+    "saveDialogTitle": "Guardar Mapeo de Posicionamiento",
+    "saveDialogDesc": "Completaste {{blocks}} de 12 bloques. ¿Deseas guardar este mapeo?",
+    "mappingTitle": "Título del Mapeo",
+    "mappingTitlePlaceholder": "Ej: Posicionamiento de Mi Producto",
+    "saveSuccessTitle": "¡Mapeo Guardado!",
+    "saveSuccessDesc": "{{blocks}} bloques fueron guardados con éxito.",
+    "saveErrorTitle": "Error al Guardar",
     "welcome": {
       "title": "Tu Viaje de Posicionamiento Estratégico Comienza Aquí",
       "description": "Te guiaré a través de 12 bloques esenciales para crear tu posicionamiento de marca completo. Una pregunta a la vez, construiremos tu base estratégica."

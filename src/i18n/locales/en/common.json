@@ -57,12 +57,24 @@
     "inputPlaceholder": "Type your message...",
     "creditsAvailable": "{{credits}} credits available",
     "startingGuide": "Starting guided mapping...",
-    "preparingQuestions": "Preparing your strategic questions"
+    "preparingQuestions": "Preparing your strategic questions",
+    "saveMapping": "Save mapping"
   },
   "positioning": {
     "welcomeAgent": "Welcome Agent",
     "guided": "Guided Flow",
     "subtitle": "Complete mapping in 12 strategic blocks",
+    "blocksCompleted": "blocks",
+    "save": "Save",
+    "saving": "Saving...",
+    "confirmSave": "Save Mapping",
+    "saveDialogTitle": "Save Positioning Mapping",
+    "saveDialogDesc": "You completed {{blocks}} of 12 blocks. Do you want to save this mapping?",
+    "mappingTitle": "Mapping Title",
+    "mappingTitlePlaceholder": "E.g.: My Product Positioning",
+    "saveSuccessTitle": "Mapping Saved!",
+    "saveSuccessDesc": "{{blocks}} blocks were saved successfully.",
+    "saveErrorTitle": "Error Saving",
     "welcome": {
       "title": "Your Strategic Positioning Journey Starts Here",
       "description": "I'll guide you through 12 essential blocks to create your complete brand positioning. One question at a time, we'll build your strategic foundation."
