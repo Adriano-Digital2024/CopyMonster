@@ -31,6 +31,11 @@ import AdminAgentConfig from "./pages/admin/AgentConfig";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminKnowledgeBase from "./pages/admin/KnowledgeBase";
 import AdminModels from "./pages/admin/Models";
+import AdminSubscriptions from "./pages/admin/Subscriptions";
+import AdminMappings from "./pages/admin/PositioningMappings";
+import AdminCampaigns from "./pages/admin/AdminCampaigns";
+import AdminCopyResults from "./pages/admin/AdminCopyResults";
+import AdminHeadlines from "./pages/admin/AdminHeadlines";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
 
@@ -64,7 +69,12 @@ const App = () => (
               <Route path="/dashboard/library" element={<Library />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
               <Route path="/admin/analytics" element={<AdminAnalytics />} />
+              <Route path="/admin/mappings" element={<AdminMappings />} />
+              <Route path="/admin/campaigns" element={<AdminCampaigns />} />
+              <Route path="/admin/copy-results" element={<AdminCopyResults />} />
+              <Route path="/admin/headlines" element={<AdminHeadlines />} />
               <Route path="/admin/discounts" element={<AdminDiscounts />} />
               <Route path="/admin/agents" element={<AdminAgents />} />
               <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
