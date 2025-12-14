@@ -17,64 +17,71 @@ import { useTheme } from '@/components/ThemeProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { z } from 'zod';
-
 const signupSchema = z.object({
-  firstName: z.string()
-    .trim()
-    .min(2, { message: "Nome deve ter no mínimo 2 caracteres" })
-    .max(50, { message: "Nome muito longo" }),
-  email: z.string()
-    .trim()
-    .email({ message: "Email inválido" })
-    .max(255),
-  password: z.string()
-    .min(8, { message: "Senha deve ter no mínimo 8 caracteres" })
-    .max(100),
-  phone: z.string()
-    .trim()
-    .min(8, { message: "Telefone inválido" })
-    .optional()
+  firstName: z.string().trim().min(2, {
+    message: "Nome deve ter no mínimo 2 caracteres"
+  }).max(50, {
+    message: "Nome muito longo"
+  }),
+  email: z.string().trim().email({
+    message: "Email inválido"
+  }).max(255),
+  password: z.string().min(8, {
+    message: "Senha deve ter no mínimo 8 caracteres"
+  }).max(100),
+  phone: z.string().trim().min(8, {
+    message: "Telefone inválido"
+  }).optional()
 });
-
 const loginSchema = z.object({
-  email: z.string().trim().email({ message: "Email inválido" }),
-  password: z.string().min(1, { message: "Senha é obrigatória" })
+  email: z.string().trim().email({
+    message: "Email inválido"
+  }),
+  password: z.string().min(1, {
+    message: "Senha é obrigatória"
+  })
 });
-
 const Auth = () => {
-  const { t } = useTranslation();
-  const { theme } = useTheme();
+  const {
+    t
+  } = useTranslation();
+  const {
+    theme
+  } = useTheme();
   const navigate = useNavigate();
-  const { login, signup, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const {
+    login,
+    signup,
+    isAuthenticated,
+    isLoading: isAuthLoading
+  } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
   // Signup form
   const [signupFirstName, setSignupFirstName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
-
   useEffect(() => {
     // Se o carregamento terminou e o usuário está autenticado, redireciona.
     if (!isAuthLoading && isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard', {
+        replace: true
+      });
     }
   }, [isAuthenticated, isAuthLoading, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
     try {
       const validatedData = loginSchema.parse({
         email: loginEmail,
         password: loginPassword
       });
-      
       await login(validatedData.email, validatedData.password);
       toast.success(t('auth.loginSuccess'));
     } catch (error) {
@@ -88,11 +95,9 @@ const Auth = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
     try {
       const validatedData = signupSchema.parse({
         firstName: signupFirstName,
@@ -100,7 +105,6 @@ const Auth = () => {
         password: signupPassword,
         phone: signupPhone
       });
-      
       await signup({
         firstName: validatedData.firstName,
         email: validatedData.email,
@@ -123,20 +127,16 @@ const Auth = () => {
 
   // Se estiver carregando, mostra o spinner.
   if (isAuthLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    return <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+      </div>;
   }
-  
+
   // Se o carregamento terminou e o usuário está autenticado, não renderiza o formulário (o useEffect já redirecionou).
   if (isAuthenticated) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+  return <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="absolute top-4 right-4 flex gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
@@ -145,11 +145,7 @@ const Auth = () => {
       <Card className="w-full max-w-md card-shadow">
         <CardHeader className="space-y-4">
           <div className="flex justify-center mb-4">
-            <img 
-              src={theme === 'dark' ? logoDark : logoLight} 
-              alt="CopyMonster" 
-              className="h-12"
-            />
+            <img src={theme === 'dark' ? logoDark : logoLight} alt="CopyMonster" className="h-14" />
           </div>
           <CardTitle className="text-2xl text-center">{t('auth.welcome')}</CardTitle>
           <CardDescription className="text-center">
@@ -168,33 +164,15 @@ const Auth = () => {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">{t('auth.email')}</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="login-password">{t('auth.password')}</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="login-password" type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
                 </div>
                 
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto"
-                  onClick={() => navigate('/reset-password')}
-                >
+                <Button type="button" variant="link" className="p-0 h-auto" onClick={() => navigate('/reset-password')}>
                   {t('auth.forgotPassword')}
                 </Button>
                 
@@ -209,51 +187,22 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-firstname">{t('auth.firstName')}</Label>
-                  <Input
-                    id="signup-firstname"
-                    type="text"
-                    placeholder="John"
-                    value={signupFirstName}
-                    onChange={(e) => setSignupFirstName(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-firstname" type="text" placeholder="John" value={signupFirstName} onChange={e => setSignupFirstName(e.target.value)} required />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">{t('auth.email')}</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">{t('auth.password')}</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    required
-                    minLength={8}
-                  />
+                  <Input id="signup-password" type="password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required minLength={8} />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="signup-phone">{t('auth.phone')}</Label>
-                  <PhoneInput
-                    id="signup-phone"
-                    international
-                    defaultCountry="US"
-                    value={signupPhone}
-                    onChange={(value) => setSignupPhone(value || '')}
-                    className="phone-input"
-                    required
-                  />
+                  <PhoneInput id="signup-phone" international defaultCountry="US" value={signupPhone} onChange={value => setSignupPhone(value || '')} className="phone-input" required />
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -265,8 +214,6 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
