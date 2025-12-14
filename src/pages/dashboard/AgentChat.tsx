@@ -103,6 +103,7 @@ export default function AgentChat() {
           <ChatInterface
             agentName={agent.name}
             agentColor={agent.color}
+            agentSlug={agent.slug}
             systemPrompt={agent.system_prompt}
           />
         </Card>

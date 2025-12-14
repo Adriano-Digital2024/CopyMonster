@@ -430,8 +430,12 @@ export function ChatInterface({
               </>
             ) : (
               <>
-                <p className="text-lg font-medium mb-2">{t('chat.startConversation', { agentName })}</p>
-                <p className="text-sm">{t('chat.startConversationDesc')}</p>
+                <p className="text-lg font-medium mb-2">
+                  {t(`chat.welcome.${agentSlug?.replace(/-/g, '_')}.title`, { defaultValue: t('chat.startConversation', { agentName }) })}
+                </p>
+                <p className="text-sm max-w-md">
+                  {t(`chat.welcome.${agentSlug?.replace(/-/g, '_')}.description`, { defaultValue: t('chat.startConversationDesc') })}
+                </p>
               </>
             )}
           </div>
