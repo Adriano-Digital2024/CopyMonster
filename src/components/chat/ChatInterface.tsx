@@ -91,20 +91,23 @@ export function ChatInterface({
     setMessages([assistantMessage]);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('chat-stream', {
-        body: {
-          messages: [{ role: 'user', content: '__auto_start__' }],
-          system_prompt: systemPrompt,
-          agent_slug: agentSlug,
-          auto_start: true,
-        },
-      });
+      const response = await fetch(
+        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/chat-stream`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: '__auto_start__' }],
+            system_prompt: systemPrompt,
+            agent_slug: agentSlug,
+            auto_start: true,
+          }),
+        }
+      );
 
-      if (invokeError) {
-        throw new Error(invokeError.message || 'Failed to get response from AI');
-      }
-
-      const response = new Response(data);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get response from AI');
@@ -117,36 +120,41 @@ export function ChatInterface({
 
       const decoder = new TextDecoder();
       let fullContent = '';
+      let textBuffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        textBuffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.substring(6);
-            if (jsonStr.trim() === '[DONE]') {
-              break;
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullContent += content;
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: fullContent }
+                    : msg
+                )
+              );
             }
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices[0]?.delta?.content;
-              if (content) {
-                fullContent += content;
-                setMessages(prev =>
-                  prev.map(msg =>
-                    msg.id === assistantMessageId
-                      ? { ...msg, content: fullContent }
-                      : msg
-                  )
-                );
-              }
-            } catch (e) {
-              // Ignore parsing errors for incomplete JSON chunks
-            }
+          } catch (e) {
+            // Ignore parsing errors for incomplete JSON chunks
           }
         }
       }
@@ -216,21 +224,26 @@ export function ChatInterface({
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('chat-stream', {
-        body: {
-          messages: currentMessages
-            .filter(({ role, content }) => role !== 'assistant' || content.trim() !== '')
-            .map(({ role, content }) => ({ role, content })),
-          system_prompt: systemPrompt,
-          agent_slug: agentSlug,
-        },
-      });
+      const messagesPayload = currentMessages
+        .filter(({ role, content }) => role !== 'assistant' || content.trim() !== '')
+        .map(({ role, content }) => ({ role, content }));
 
-      if (invokeError) {
-        throw new Error(invokeError.message || 'Failed to get response from AI');
-      }
+      const response = await fetch(
+        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/chat-stream`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: messagesPayload,
+            system_prompt: systemPrompt,
+            agent_slug: agentSlug,
+          }),
+        }
+      );
 
-      const response = new Response(data);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get response from AI');
@@ -243,36 +256,41 @@ export function ChatInterface({
 
       const decoder = new TextDecoder();
       let fullContent = '';
+      let textBuffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        textBuffer += decoder.decode(value, { stream: true });
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.substring(6);
-            if (jsonStr.trim() === '[DONE]') {
-              break;
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullContent += content;
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: fullContent }
+                    : msg
+                )
+              );
             }
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices[0]?.delta?.content;
-              if (content) {
-                fullContent += content;
-                setMessages(prev =>
-                  prev.map(msg =>
-                    msg.id === assistantMessageId
-                      ? { ...msg, content: fullContent }
-                      : msg
-                  )
-                );
-              }
-            } catch (e) {
-              // Ignore parsing errors for incomplete JSON chunks
-            }
+          } catch (e) {
+            // Ignore parsing errors for incomplete JSON chunks
           }
         }
       }
