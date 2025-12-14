@@ -152,11 +152,62 @@
       "short": {
         "name": "Short Monster",
         "description": "Scripts para videos de 1 minuto que deleitan, viralizan y convierten."
+      },
+      "internalLaunch": {
+        "name": "Internal Launch Monster",
+        "description": "Campaña completa de lanzamiento interno de 7 días con todos los emails y scripts."
+      },
+      "flashLaunch": {
+        "name": "Flash Launch Monster",
+        "description": "Lanzamiento relámpago de 3 días con máxima urgencia y alta conversión."
+      },
+      "evergreenFunnel": {
+        "name": "Evergreen Funnel Monster",
+        "description": "Embudo automatizado perpetuo que vende 24/7 sin intervención."
+      },
+      "webinarCampaign": {
+        "name": "Webinar Campaign Monster",
+        "description": "Campaña completa de webinar con invitaciones, recordatorios y pitch de ventas."
+      },
+      "cartRecovery": {
+        "name": "Cart Recovery Monster",
+        "description": "Secuencia de recuperación de carrito abandonado con alta tasa de conversión."
+      },
+      "leadNurture": {
+        "name": "Lead Nurture Monster",
+        "description": "Secuencia de nutrición de leads fríos hasta que estén listos para comprar."
+      },
+      "upsellCross": {
+        "name": "Upsell Cross Monster",
+        "description": "Campañas de upsell y cross-sell para maximizar valor del cliente."
+      },
+      "listRevival": {
+        "name": "List Revival Monster",
+        "description": "Reactivación de lista fría con secuencia de reenganche poderosa."
+      },
+      "fullVslScript": {
+        "name": "Full VSL Script Monster",
+        "description": "Script completo de VSL de alta conversión con estructura profesional."
+      },
+      "whatsappSales": {
+        "name": "WhatsApp Sales Monster",
+        "description": "Secuencias de ventas optimizadas para WhatsApp con plantillas listas."
       }
     },
     "badge": {
       "popular": "Popular",
       "new": "Nuevo"
+    },
+    "categories": {
+      "copywriting": "Agentes de Copywriting",
+      "campaign": "Agentes de Campaña Completa",
+      "campaignDescription": "Campañas listas para uso inmediato con todos los assets incluidos"
+    },
+    "page": {
+      "title": "Agentes de IA",
+      "subtitle": "Selecciona un agente para comenzar a crear.",
+      "launchAgent": "Iniciar Agente",
+      "noAgents": "Ningún agente disponible en este momento."
     }
   }
 }
