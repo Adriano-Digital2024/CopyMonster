@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,45 +31,110 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Search, UserPlus, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { Search, UserPlus, Edit, Trash2, MoreHorizontal, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { mockUsers } from '@/services/mockData';
+
+interface UserProfile {
+  id: string;
+  first_name: string;
+  email: string;
+  subscription_status: string;
+  credits: number;
+  created_at: string;
+}
 
 const Users = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [newCredits, setNewCredits] = useState('');
+  const [saving, setSaving] = useState(false);
   const [newUserData, setNewUserData] = useState({
     email: '',
     firstName: '',
     password: ''
   });
 
-  const filteredUsers = mockUsers.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, email, subscription_status, credits, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao carregar usuários",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = user.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPlan = filterPlan === 'all' || user.plan === filterPlan;
+    const matchesPlan = filterPlan === 'all' || user.subscription_status === filterPlan;
     return matchesSearch && matchesPlan;
   });
 
-  const handleEditCredits = (user: any) => {
+  const handleEditCredits = (user: UserProfile) => {
     setSelectedUser(user);
     setNewCredits(user.credits.toString());
     setEditDialogOpen(true);
   };
 
-  const handleDeleteUser = (user: any) => {
+  const handleSaveCredits = async () => {
+    if (!selectedUser) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ credits: parseInt(newCredits) })
+        .eq('id', selectedUser.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Créditos atualizados",
+        description: `${selectedUser.first_name} agora tem ${newCredits} créditos`
+      });
+
+      setEditDialogOpen(false);
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar créditos",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteUser = (user: UserProfile) => {
     setSelectedUser(user);
     setDeleteDialogOpen(true);
   };
@@ -84,6 +149,7 @@ const Users = () => {
       return;
     }
 
+    setSaving(true);
     try {
       const { data, error } = await supabase.auth.admin.createUser({
         email: newUserData.email,
@@ -101,12 +167,15 @@ const Users = () => {
 
       setAddUserDialogOpen(false);
       setNewUserData({ email: '', firstName: '', password: '' });
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: "Erro ao criar usuário",
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -117,6 +186,20 @@ const Users = () => {
       default: return 'outline';
     }
   };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -131,7 +214,7 @@ const Users = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle>{t('admin.users.allUsers')}</CardTitle>
-                <CardDescription>{t('admin.users.manageUsers')}</CardDescription>
+                <CardDescription>{filteredUsers.length} {t('admin.users.manageUsers')}</CardDescription>
               </div>
               <Button onClick={() => setAddUserDialogOpen(true)}>
                 <UserPlus className="mr-2 h-4 w-4" />
@@ -176,41 +259,49 @@ const Users = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getPlanBadgeVariant(user.plan)}>
-                          {user.plan.toUpperCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{user.credits}</TableCell>
-                      <TableCell>{user.joined}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditCredits(user)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              {t('admin.users.editCredits')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteUser(user)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {t('admin.users.delete')}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                  {filteredUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        Nenhum usuário encontrado
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.first_name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={getPlanBadgeVariant(user.subscription_status)}>
+                            {user.subscription_status.toUpperCase()}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{user.credits}</TableCell>
+                        <TableCell>{formatDate(user.created_at)}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditCredits(user)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                {t('admin.users.editCredits')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteUser(user)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t('admin.users.delete')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -224,7 +315,7 @@ const Users = () => {
           <DialogHeader>
             <DialogTitle>{t('admin.users.editCreditsTitle')}</DialogTitle>
             <DialogDescription>
-              {t('admin.users.editCreditsDescription', { name: selectedUser?.name })}
+              {t('admin.users.editCreditsDescription', { name: selectedUser?.first_name })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -243,7 +334,8 @@ const Users = () => {
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={() => setEditDialogOpen(false)}>
+            <Button onClick={handleSaveCredits} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('common.save')}
             </Button>
           </DialogFooter>
@@ -256,7 +348,7 @@ const Users = () => {
           <DialogHeader>
             <DialogTitle>{t('admin.users.deleteTitle')}</DialogTitle>
             <DialogDescription>
-              {t('admin.users.deleteDescription', { name: selectedUser?.name })}
+              {t('admin.users.deleteDescription', { name: selectedUser?.first_name })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -314,7 +406,8 @@ const Users = () => {
             <Button variant="outline" onClick={() => setAddUserDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleAddUser}>
+            <Button onClick={handleAddUser} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Criar Usuário
             </Button>
           </DialogFooter>
