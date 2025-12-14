@@ -31,13 +31,13 @@ export interface XPAction {
 export const AGENTS: Agent[] = [
   {
     id: '1',
-    slug: 'monster-positioner',
+    slug: 'brand-positioning-monster',
     tKey: 'positioner',
-    name: 'Monster Positioner',
-    description: 'Diagnóstico completo de Brand DNA e posicionamento estratégico de marca',
+    name: 'Brand Positioning Monster (DNA)',
+    description: 'Agente de entrada e boas-vindas. Cria o posicionamento estratégico completo para experts e infoprodutores através de perguntas guiadas.',
     icon: Target,
     color: '#6B46C1',
-    systemPrompt: 'Você é o Monster Positioner, especialista em posicionamento de marca e Brand DNA. Ajude o usuário a definir seu público-alvo, proposta de valor e diferenciais competitivos.',
+    systemPrompt: 'Você é o Brand Positioning Monster (DNA), o agente de boas-vindas e entrada do CopyMonster.',
     category: 'positioning'
   },
   {

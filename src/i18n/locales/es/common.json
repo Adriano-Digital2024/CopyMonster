@@ -56,5 +56,12 @@
     "startConversationDesc": "Escribe tu mensaje abajo para comenzar",
     "inputPlaceholder": "Escribe tu mensaje...",
     "creditsAvailable": "{{credits}} créditos disponibles"
+  },
+  "positioning": {
+    "welcomeAgent": "Agente de Entrada",
+    "welcome": {
+      "title": "Tu Viaje de Posicionamiento Estratégico Comienza Aquí",
+      "description": "Te guiaré a través de 12 bloques esenciales para crear tu posicionamiento de marca completo. Una pregunta a la vez, construiremos tu base estratégica."
+    }
   }
 }

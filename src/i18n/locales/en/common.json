@@ -56,5 +56,12 @@
     "startConversationDesc": "Type your message below to begin",
     "inputPlaceholder": "Type your message...",
     "creditsAvailable": "{{credits}} credits available"
+  },
+  "positioning": {
+    "welcomeAgent": "Welcome Agent",
+    "welcome": {
+      "title": "Your Strategic Positioning Journey Starts Here",
+      "description": "I'll guide you through 12 essential blocks to create your complete brand positioning. One question at a time, we'll build your strategic foundation."
+    }
   }
 }
