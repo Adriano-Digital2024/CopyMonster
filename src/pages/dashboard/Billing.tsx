@@ -52,7 +52,7 @@ export default function Billing() {
   };
 
   const handleCheckout = async (planId: string) => {
-    if (!user || !stripePromise) return;
+    if (!user) return;
     setIsProcessing(true);
     
     try {
@@ -88,26 +88,13 @@ export default function Billing() {
         throw new Error(data.error);
       }
 
-      if (!data.sessionId) {
-        console.error('No sessionId in response:', data);
-        throw new Error('Sessão de checkout não foi criada');
+      if (!data.url) {
+        console.error('No checkout URL in response:', data);
+        throw new Error('URL de checkout não foi criada');
       }
 
-      console.log('Redirecting to Stripe checkout with sessionId:', data.sessionId);
-      
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error('Stripe failed to load');
-      }
-      
-      const { error } = await (stripe as any).redirectToCheckout({
-        sessionId: data.sessionId,
-      });
-
-      if (error) {
-        console.error('Stripe redirect error:', error);
-        throw error;
-      }
+      console.log('Redirecting browser to Stripe checkout URL:', data.url);
+      window.location.href = data.url as string;
     } catch (error) {
       console.error('Erro no checkout:', error);
       const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao processar seu pagamento';

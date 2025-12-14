@@ -7,13 +7,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Get request data
     const { priceId, planId, userEmail, userId } = await req.json();
     
     console.log('=== Checkout Session Request ===');
@@ -21,8 +19,7 @@ serve(async (req) => {
     console.log('planId:', planId);
     console.log('userEmail:', userEmail);
     console.log('userId:', userId);
-    
-    // Validate required fields
+
     if (!priceId || !userEmail || !userId) {
       console.error('Missing required fields:', { priceId: !!priceId, userEmail: !!userEmail, userId: !!userId });
       return new Response(
@@ -33,8 +30,7 @@ serve(async (req) => {
         }
       );
     }
-    
-    // Get Stripe key
+
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
       console.error('STRIPE_SECRET_KEY is not configured');
@@ -46,12 +42,11 @@ serve(async (req) => {
         }
       );
     }
-    
-    // Get site URL with fallback
-    const siteUrl = Deno.env.get('SITE_URL') || 'https://app.copymonster.me';
+
+    // Use the correct production domain as fallback
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://copymonster.me';
     console.log('Using SITE_URL:', siteUrl);
-    
-    // Create Stripe checkout session using fetch API directly
+
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
@@ -71,9 +66,9 @@ serve(async (req) => {
         'metadata[user_id]': userId,
       }).toString(),
     });
-    
+
     const session = await stripeResponse.json();
-    
+
     if (!stripeResponse.ok) {
       console.error('Stripe API error:', session);
       return new Response(
@@ -84,12 +79,11 @@ serve(async (req) => {
         }
       );
     }
-    
-    console.log('Checkout session created successfully:', session.id);
-    
-    // Return session ID
+
+    console.log('Checkout session created successfully:', session.id, 'url:', session.url);
+
     return new Response(
-      JSON.stringify({ sessionId: session.id }),
+      JSON.stringify({ sessionId: session.id, url: session.url }),
       {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
         status: 200,
@@ -98,7 +92,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error creating checkout session:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
+
     return new Response(
       JSON.stringify({ error: errorMessage }),
       {
