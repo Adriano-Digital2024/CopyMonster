@@ -36,6 +36,10 @@ import AdminMappings from "./pages/admin/PositioningMappings";
 import AdminCampaigns from "./pages/admin/AdminCampaigns";
 import AdminCopyResults from "./pages/admin/AdminCopyResults";
 import AdminHeadlines from "./pages/admin/AdminHeadlines";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import TermsOfService from "./pages/legal/TermsOfService";
+import CookiePolicy from "./pages/legal/CookiePolicy";
+import GDPR from "./pages/legal/GDPR";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
 
@@ -54,6 +58,12 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/update-password" element={<UpdatePassword />} />
+              {/* Legal Pages */}
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/gdpr" element={<GDPR />} />
+              {/* Dashboard */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/agents" element={<Agents />} />
               <Route path="/dashboard/agents/:slug" element={<AgentChat />} />
@@ -67,6 +77,7 @@ const App = () => (
               <Route path="/dashboard/headlines" element={<Headlines />} />
               <Route path="/dashboard/insights" element={<Insights />} />
               <Route path="/dashboard/library" element={<Library />} />
+              {/* Admin */}
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
