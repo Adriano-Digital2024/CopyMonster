@@ -572,6 +572,75 @@ export type Database = {
         }
         Relationships: []
       }
+      positioning_mappings: {
+        Row: {
+          block_1_audience: string | null
+          block_10_transformation: string | null
+          block_11_voice: string | null
+          block_12_promises: string | null
+          block_2_pain_points: string | null
+          block_3_solution: string | null
+          block_4_differentiators: string | null
+          block_5_awareness_stage: string | null
+          block_6_urgency: string | null
+          block_7_social_proof: string | null
+          block_8_objections: string | null
+          block_9_emotional_connection: string | null
+          completed_blocks: number
+          conversation: Json
+          created_at: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          block_1_audience?: string | null
+          block_10_transformation?: string | null
+          block_11_voice?: string | null
+          block_12_promises?: string | null
+          block_2_pain_points?: string | null
+          block_3_solution?: string | null
+          block_4_differentiators?: string | null
+          block_5_awareness_stage?: string | null
+          block_6_urgency?: string | null
+          block_7_social_proof?: string | null
+          block_8_objections?: string | null
+          block_9_emotional_connection?: string | null
+          completed_blocks?: number
+          conversation?: Json
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          block_1_audience?: string | null
+          block_10_transformation?: string | null
+          block_11_voice?: string | null
+          block_12_promises?: string | null
+          block_2_pain_points?: string | null
+          block_3_solution?: string | null
+          block_4_differentiators?: string | null
+          block_5_awareness_stage?: string | null
+          block_6_urgency?: string | null
+          block_7_social_proof?: string | null
+          block_8_objections?: string | null
+          block_9_emotional_connection?: string | null
+          completed_blocks?: number
+          conversation?: Json
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, Download, Trash2, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Send, Download, Trash2, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 
-interface Message {
+export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
@@ -22,7 +22,10 @@ interface ChatInterfaceProps {
   systemPrompt?: string;
   agentSlug?: string;
   autoStart?: boolean;
+  showSaveButton?: boolean;
   onCreditsUpdate?: (newCredits: number) => void;
+  onMessagesChange?: (messages: Message[]) => void;
+  onSave?: (messages: Message[]) => void;
 }
 
 export function ChatInterface({ 
@@ -31,7 +34,10 @@ export function ChatInterface({
   systemPrompt, 
   agentSlug, 
   autoStart = false,
-  onCreditsUpdate 
+  showSaveButton = false,
+  onCreditsUpdate,
+  onMessagesChange,
+  onSave
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -47,6 +53,13 @@ export function ChatInterface({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Notify parent of messages changes
+  useEffect(() => {
+    if (onMessagesChange) {
+      onMessagesChange(messages);
+    }
+  }, [messages, onMessagesChange]);
 
   // Auto-start effect for guided agents
   useEffect(() => {
@@ -333,6 +346,12 @@ export function ChatInterface({
     });
   };
 
+  const handleSave = useCallback(() => {
+    if (onSave && messages.length > 0) {
+      onSave(messages);
+    }
+  }, [messages, onSave]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -347,6 +366,17 @@ export function ChatInterface({
         <div className="flex items-center gap-2">
           {messages.length > 0 && (
             <>
+              {showSaveButton && onSave && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSave}
+                  title={t('chat.saveMapping')}
+                  className="text-primary"
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
