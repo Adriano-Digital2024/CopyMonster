@@ -218,7 +218,9 @@ export function ChatInterface({
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('chat-stream', {
         body: {
-          messages: currentMessages.map(({ role, content }) => ({ role, content })),
+          messages: currentMessages
+            .filter(({ role, content }) => role !== 'assistant' || content.trim() !== '')
+            .map(({ role, content }) => ({ role, content })),
           system_prompt: systemPrompt,
           agent_slug: agentSlug,
         },

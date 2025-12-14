@@ -140,13 +140,10 @@ serve(async (req) => {
 
     console.log(`[chat-stream] Using model: ${modelName} via ${isMistral ? 'Mistral' : 'OpenRouter'}`);
 
-    // Handle auto-start: filter out the __auto_start__ message and add instruction
+    // Handle auto-start: detect the __auto_start__ marker but keep a user message
     let processedMessages = messages;
     if (auto_start || (messages.length === 1 && messages[0]?.content === '__auto_start__')) {
-      // For auto-start, send empty messages array so agent initiates
-      processedMessages = [];
-      
-      // Add auto-start instruction to system prompt
+      // Add auto-start instruction to system prompt so the agent initiates
       finalSystemPrompt += '\n\n# INSTRUÇÃO ESPECIAL\nEsta é a primeira mensagem da conversa. Você DEVE iniciar com sua mensagem de boas-vindas e a primeira pergunta do fluxo guiado imediatamente.';
       
       console.log('[chat-stream] Auto-start mode activated for agent:', agent_slug);
