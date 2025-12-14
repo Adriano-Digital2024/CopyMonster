@@ -21,13 +21,22 @@ interface ChatInterfaceProps {
   agentColor: string;
   systemPrompt?: string;
   agentSlug?: string;
+  autoStart?: boolean;
   onCreditsUpdate?: (newCredits: number) => void;
 }
 
-export function ChatInterface({ agentName, agentColor, systemPrompt, agentSlug, onCreditsUpdate }: ChatInterfaceProps) {
+export function ChatInterface({ 
+  agentName, 
+  agentColor, 
+  systemPrompt, 
+  agentSlug, 
+  autoStart = false,
+  onCreditsUpdate 
+}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -38,6 +47,127 @@ export function ChatInterface({ agentName, agentColor, systemPrompt, agentSlug, 
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Auto-start effect for guided agents
+  useEffect(() => {
+    if (autoStart && !hasAutoStarted && messages.length === 0 && user) {
+      setHasAutoStarted(true);
+      handleAutoStart();
+    }
+  }, [autoStart, hasAutoStarted, messages.length, user]);
+
+  const handleAutoStart = async () => {
+    if (!user || user.credits <= 0) {
+      toast({
+        title: t('chat.insufficientCreditsTitle'),
+        description: t('chat.insufficientCreditsDesc'),
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    const assistantMessageId = Date.now().toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date()
+    };
+    setMessages([assistantMessage]);
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('chat-stream', {
+        body: {
+          messages: [{ role: 'user', content: '__auto_start__' }],
+          system_prompt: systemPrompt,
+          agent_slug: agentSlug,
+          auto_start: true,
+        },
+      });
+
+      if (invokeError) {
+        throw new Error(invokeError.message || 'Failed to get response from AI');
+      }
+
+      const response = new Response(data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get response from AI');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Failed to read response stream');
+      }
+
+      const decoder = new TextDecoder();
+      let fullContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.substring(6);
+            if (jsonStr.trim() === '[DONE]') {
+              break;
+            }
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices[0]?.delta?.content;
+              if (content) {
+                fullContent += content;
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: fullContent }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              // Ignore parsing errors for incomplete JSON chunks
+            }
+          }
+        }
+      }
+      
+      // Deduct credit for auto-start
+      if (user) {
+        const newCredits = user.credits - 1;
+        const { error } = await supabase
+          .from('profiles')
+          .update({ credits: newCredits })
+          .eq('id', user.id);
+        
+        if (!error) {
+          updateUser({ credits: newCredits });
+          if (onCreditsUpdate) {
+            onCreditsUpdate(newCredits);
+          }
+        }
+      }
+
+    } catch (error: any) {
+      console.error('Auto-start error:', error);
+      const errorMessage = t('chat.errorMessage', { error: error.message });
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: errorMessage }
+            : msg
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -196,6 +326,7 @@ export function ChatInterface({ agentName, agentColor, systemPrompt, agentSlug, 
 
   const handleClear = () => {
     setMessages([]);
+    setHasAutoStarted(false);
     toast({
       title: t('chat.clearSuccessTitle'),
       description: t('chat.clearSuccessDesc')
@@ -239,10 +370,20 @@ export function ChatInterface({ agentName, agentColor, systemPrompt, agentSlug, 
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        {messages.length === 0 ? (
+        {messages.length === 0 && !isLoading ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <p className="text-lg font-medium mb-2">{t('chat.startConversation', { agentName })}</p>
-            <p className="text-sm">{t('chat.startConversationDesc')}</p>
+            {autoStart ? (
+              <>
+                <Loader2 className="h-8 w-8 animate-spin mb-4" />
+                <p className="text-lg font-medium mb-2">{t('chat.startingGuide')}</p>
+                <p className="text-sm">{t('chat.preparingQuestions')}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-medium mb-2">{t('chat.startConversation', { agentName })}</p>
+                <p className="text-sm">{t('chat.startConversationDesc')}</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -269,7 +410,7 @@ export function ChatInterface({ agentName, agentColor, systemPrompt, agentSlug, 
                 </div>
               </div>
             ))}
-             {isLoading && (
+             {isLoading && messages.length > 0 && messages[messages.length - 1]?.content === '' && (
               <div className="flex justify-start mt-4">
                 <div className="bg-muted rounded-lg p-4 inline-flex items-center">
                   <Loader2 className="h-5 w-5 animate-spin" />

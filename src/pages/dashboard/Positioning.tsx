@@ -20,9 +20,9 @@ export default function Positioning() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 h-full flex flex-col">
-        {/* Header */}
-        <div className="flex items-center gap-4">
+      <div className="space-y-4 h-full flex flex-col">
+        {/* Compact Header */}
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
@@ -31,50 +31,33 @@ export default function Positioning() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div 
-            className="p-3 rounded-lg"
+            className="p-2.5 rounded-lg"
             style={{ backgroundColor: `${AGENT_CONFIG.color}20` }}
           >
             <Target 
-              className="h-6 w-6" 
+              className="h-5 w-5" 
               style={{ color: AGENT_CONFIG.color }}
             />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{t(`agents.list.${AGENT_CONFIG.tKey}.name`)}</h1>
-              <Badge variant="secondary" className="flex items-center gap-1">
+              <h1 className="text-xl font-bold">{t(`agents.list.${AGENT_CONFIG.tKey}.name`)}</h1>
+              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                 <Sparkles className="h-3 w-3" />
-                {t('positioning.welcomeAgent')}
+                {t('positioning.guided')}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">{t(`agents.list.${AGENT_CONFIG.tKey}.description`)}</p>
+            <p className="text-xs text-muted-foreground">{t('positioning.subtitle')}</p>
           </div>
         </div>
 
-        {/* Welcome Card */}
-        <Card className="p-4 border-l-4" style={{ borderLeftColor: AGENT_CONFIG.color }}>
-          <div className="flex items-start gap-3">
-            <div 
-              className="p-2 rounded-lg shrink-0"
-              style={{ backgroundColor: `${AGENT_CONFIG.color}15` }}
-            >
-              <Target className="h-5 w-5" style={{ color: AGENT_CONFIG.color }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm mb-1">{t('positioning.welcome.title')}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t('positioning.welcome.description')}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Chat Interface */}
-        <Card className="flex-1 min-h-[500px] flex flex-col">
+        {/* Chat Interface - Full Height with Auto-Start */}
+        <Card className="flex-1 min-h-[600px] flex flex-col overflow-hidden">
           <ChatInterface
             agentName={t(`agents.list.${AGENT_CONFIG.tKey}.name`)}
             agentColor={AGENT_CONFIG.color}
             agentSlug={AGENT_CONFIG.slug}
+            autoStart={true}
           />
         </Card>
       </div>
