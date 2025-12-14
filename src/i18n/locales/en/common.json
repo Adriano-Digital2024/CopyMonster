@@ -58,7 +58,77 @@
     "creditsAvailable": "{{credits}} credits available",
     "startingGuide": "Starting guided mapping...",
     "preparingQuestions": "Preparing your strategic questions",
-    "saveMapping": "Save mapping"
+    "saveMapping": "Save mapping",
+    "welcome": {
+      "vsl_monster": {
+        "title": "Let's Create Your High-Converting VSL",
+        "description": "Tell me about your product/service, target audience, and the transformation you offer. I'll create a persuasive video sales script optimized for conversion."
+      },
+      "sales_page_monster": {
+        "title": "Ready to Create Your Irresistible Sales Page",
+        "description": "Share details about your product, the problems it solves, and your differentiators. I'll structure a complete sales page with headlines, bullets, and high-converting CTAs."
+      },
+      "launch_monster": {
+        "title": "Let's Plan Your Strategic Launch",
+        "description": "Tell me about your product and audience. I'll create a complete launch strategy with email sequences, posts, and scripts that generate anticipation and sales."
+      },
+      "email_monster": {
+        "title": "Time to Create Emails That Convert",
+        "description": "Describe your product, your list, and the campaign goal. I'll create persuasive email marketing sequences that nurture leads and generate sales."
+      },
+      "ads_monster": {
+        "title": "Let's Create High-Performance Ads",
+        "description": "Tell me about your product, audience, and platform (Meta, Google, etc.). I'll create optimized ad copy that stops the scroll and generates clicks."
+      },
+      "headline_monster": {
+        "title": "Ready to Create Magnetic Headlines",
+        "description": "Describe your product and the context of use (email, page, ad). I'll generate multiple irresistible headline options that capture attention instantly."
+      },
+      "short_monster": {
+        "title": "Let's Create Viral Short Video Scripts",
+        "description": "Tell me about your product and main message. I'll create 1-minute scripts optimized for Reels, TikTok, and Shorts that delight and convert."
+      },
+      "internal_launch_monster": {
+        "title": "Complete 7-Day Internal Launch Campaign",
+        "description": "I'll create the entire sequence of emails, posts, and scripts for a 7-day internal launch. Tell me about your product and customer base."
+      },
+      "flash_launch_monster": {
+        "title": "3-Day Flash Launch with Maximum Urgency",
+        "description": "High-pressure flash campaign with all assets. Tell me about your offer and list to create an irresistible 3-day sequence."
+      },
+      "evergreen_funnel_monster": {
+        "title": "Automated Funnel That Sells 24/7",
+        "description": "I'll create a complete evergreen funnel with emails, pages, and automated sequences. Describe your product and sales goal."
+      },
+      "webinar_campaign_monster": {
+        "title": "Complete Webinar Campaign with Sales Pitch",
+        "description": "Complete sequence: invitations, reminders, webinar script, and follow-up. Tell me about your webinar and offer to create everything."
+      },
+      "cart_recovery_monster": {
+        "title": "High-Converting Abandoned Cart Recovery",
+        "description": "I'll create email sequences and messages optimized to recover lost sales. Describe your product and checkout process."
+      },
+      "lead_nurture_monster": {
+        "title": "Nurturing Sequence That Turns Leads into Customers",
+        "description": "I'll create a nurturing sequence that warms cold leads until they're ready to buy. Tell me about your product and audience."
+      },
+      "upsell_cross_monster": {
+        "title": "Maximize Value with Strategic Upsell and Cross-sell",
+        "description": "I'll create post-purchase campaigns that increase average order value. Describe your products and upsell opportunities."
+      },
+      "list_revival_monster": {
+        "title": "Powerful Cold List Reactivation",
+        "description": "I'll create a re-engagement sequence that wakes up inactive leads. Tell me about your list and available offers."
+      },
+      "full_vsl_script_monster": {
+        "title": "Complete Professional VSL Script",
+        "description": "I'll create a complete, structured VSL script for high conversion. Describe your product, main promise, and audience."
+      },
+      "whatsapp_sales_monster": {
+        "title": "Sales Sequences Optimized for WhatsApp",
+        "description": "I'll create persuasive message templates and sequences for WhatsApp sales. Tell me about your product and sales process."
+      }
+    }
   },
   "positioning": {
     "welcomeAgent": "Welcome Agent",
