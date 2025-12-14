@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, system_prompt, model, agent_slug } = await req.json();
+    const { messages, system_prompt, model, agent_slug, auto_start } = await req.json();
     
     // Get API keys
     const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
@@ -140,9 +140,21 @@ serve(async (req) => {
 
     console.log(`[chat-stream] Using model: ${modelName} via ${isMistral ? 'Mistral' : 'OpenRouter'}`);
 
+    // Handle auto-start: filter out the __auto_start__ message and add instruction
+    let processedMessages = messages;
+    if (auto_start || (messages.length === 1 && messages[0]?.content === '__auto_start__')) {
+      // For auto-start, send empty messages array so agent initiates
+      processedMessages = [];
+      
+      // Add auto-start instruction to system prompt
+      finalSystemPrompt += '\n\n# INSTRUÇÃO ESPECIAL\nEsta é a primeira mensagem da conversa. Você DEVE iniciar com sua mensagem de boas-vindas e a primeira pergunta do fluxo guiado imediatamente.';
+      
+      console.log('[chat-stream] Auto-start mode activated for agent:', agent_slug);
+    }
+
     const fullMessages = [
       { role: 'system', content: finalSystemPrompt },
-      ...messages,
+      ...processedMessages,
     ];
 
     const requestBody: Record<string, any> = {

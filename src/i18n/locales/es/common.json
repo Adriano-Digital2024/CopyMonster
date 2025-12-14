@@ -55,10 +55,14 @@
     "startConversation": "Iniciar una conversación con {{agentName}}",
     "startConversationDesc": "Escribe tu mensaje abajo para comenzar",
     "inputPlaceholder": "Escribe tu mensaje...",
-    "creditsAvailable": "{{credits}} créditos disponibles"
+    "creditsAvailable": "{{credits}} créditos disponibles",
+    "startingGuide": "Iniciando el mapeo guiado...",
+    "preparingQuestions": "Preparando tus preguntas estratégicas"
   },
   "positioning": {
     "welcomeAgent": "Agente de Entrada",
+    "guided": "Flujo Guiado",
+    "subtitle": "Mapeo completo en 12 bloques estratégicos",
     "welcome": {
       "title": "Tu Viaje de Posicionamiento Estratégico Comienza Aquí",
       "description": "Te guiaré a través de 12 bloques esenciales para crear tu posicionamiento de marca completo. Una pregunta a la vez, construiremos tu base estratégica."
