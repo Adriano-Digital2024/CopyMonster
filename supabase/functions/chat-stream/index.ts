@@ -37,14 +37,39 @@ function detectLanguage(text: string): 'pt-BR' | 'en' | 'es' | 'unknown' {
   return 'en';
 }
 
-// Universal system prompt base
-const UNIVERSAL_LANGUAGE_RULES = `
-# MANDATORY LANGUAGE RULE
-You MUST respond in the SAME LANGUAGE used by the user in their message.
-- If the user writes in English → respond ENTIRELY in English
-- If the user writes in Portuguese → respond ENTIRELY in Portuguese  
-- If the user writes in Spanish → respond ENTIRELY in Spanish
+// Language-aware system prompt rules
+function getUniversalLanguageRules(language: string): string {
+  const rules: Record<string, string> = {
+    'pt-BR': `# REGRA DE IDIOMA OBRIGATÓRIA
+Você DEVE responder INTEIRAMENTE em Português do Brasil.
+- NUNCA misture idiomas na sua resposta
+- Todos os títulos, seções, cabeçalhos e conteúdo devem estar em Português
+- Esta regra substitui qualquer outra configuração de idioma
+
+# PADRÕES UNIVERSAIS DE QUALIDADE
+- O copy deve ser psicologicamente persuasivo
+- Use gatilhos comportamentais e ressonância emocional
+- Evite escrita genérica ou superficial
+- Todas as saídas devem soar como um copywriter premium de alto nível
+- Sempre entregue CLAREZA + EMOÇÃO + ESTRUTURA`,
+
+    'es': `# REGLA DE IDIOMA OBLIGATORIA
+DEBE responder COMPLETAMENTE en Español.
+- NUNCA mezcle idiomas en su respuesta
+- Todos los títulos, secciones, encabezados y contenido deben estar en Español
+- Esta regla anula cualquier otra configuración de idioma
+
+# ESTÁNDARES UNIVERSALES DE CALIDAD
+- El copy debe ser psicológicamente persuasivo
+- Use disparadores conductuales y resonancia emocional
+- Evite escritura genérica o superficial
+- Todos los outputs deben sonar como un copywriter premium de primer nivel
+- Siempre entregue CLARIDAD + EMOCIÓN + ESTRUCTURA`,
+
+    'en': `# MANDATORY LANGUAGE RULE
+You MUST respond ENTIRELY in English.
 - NEVER mix languages in your response
+- ALL titles, sections, headers, and content must be in English
 - This rule overrides any other language configuration
 
 # UNIVERSAL QUALITY STANDARDS
@@ -52,8 +77,21 @@ You MUST respond in the SAME LANGUAGE used by the user in their message.
 - Use behavioral triggers and emotional resonance
 - Avoid generic or superficial writing
 - All outputs must sound like a premium top-tier copywriter
-- Always deliver CLARITY + EMOTION + STRUCTURE
-`;
+- Always deliver CLARITY + EMOTION + STRUCTURE`
+  };
+  
+  return rules[language] || rules['en'];
+}
+
+// Auto-start instructions by language
+function getAutoStartInstruction(language: string): string {
+  const instructions: Record<string, string> = {
+    'pt-BR': '\n\n# INSTRUÇÃO ESPECIAL\nEsta é a primeira mensagem da conversa. Você DEVE iniciar com sua mensagem de boas-vindas e a primeira pergunta do fluxo guiado imediatamente.',
+    'es': '\n\n# INSTRUCCIÓN ESPECIAL\nEste es el primer mensaje de la conversación. DEBE comenzar con su mensaje de bienvenida y la primera pregunta del flujo guiado inmediatamente.',
+    'en': '\n\n# SPECIAL INSTRUCTION\nThis is the first message of the conversation. You MUST start with your welcome message and the first question of the guided flow immediately.'
+  };
+  return instructions[language] || instructions['en'];
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -80,13 +118,9 @@ serve(async (req) => {
     const detectedLanguage = lastUserMessage ? detectLanguage(lastUserMessage.content) : 'unknown';
     console.log(`[chat-stream] Detected language: ${detectedLanguage}`);
 
-    // Language-specific instructions
-    const languageInstructions: Record<string, string> = {
-      'pt-BR': '\n\n# IDIOMA OBRIGATÓRIO\nVocê DEVE responder INTEIRAMENTE em Português do Brasil (PT-BR). Não use outras línguas.',
-      'en': '\n\n# MANDATORY LANGUAGE\nYou MUST respond ENTIRELY in English. Do not use other languages.',
-      'es': '\n\n# IDIOMA OBLIGATORIO\nDEBE responder COMPLETAMENTE en Español. No use otros idiomas.',
-      'unknown': ''
-    };
+    // Get language rules for detected language (default to English if unknown)
+    const effectiveLanguage = detectedLanguage === 'unknown' ? 'en' : detectedLanguage;
+    const universalRules = getUniversalLanguageRules(effectiveLanguage);
 
     // If agent_slug is provided, fetch agent config from database
     let agentConfig: any = null;
@@ -116,11 +150,8 @@ serve(async (req) => {
         // Build dynamic master prompt with language-aware structure
         const parts = [];
 
-        // Start with universal language rules
-        parts.push(UNIVERSAL_LANGUAGE_RULES);
-        
-        // Add detected language instruction
-        parts.push(languageInstructions[detectedLanguage] || '');
+        // Start with universal language rules for the detected language
+        parts.push(universalRules);
 
         parts.push(`\n\n# IDENTITY\nYou are ${agent.name} from CopyMonster.`);
 
@@ -166,7 +197,7 @@ serve(async (req) => {
       }
     } else if (system_prompt) {
       // If using custom system_prompt, prepend language rules
-      finalSystemPrompt = UNIVERSAL_LANGUAGE_RULES + languageInstructions[detectedLanguage] + '\n\n' + system_prompt;
+      finalSystemPrompt = universalRules + '\n\n' + system_prompt;
     }
 
     // Determine which API to use
@@ -214,8 +245,8 @@ serve(async (req) => {
     // Handle auto-start: detect the __auto_start__ marker but keep a user message
     let processedMessages = messages;
     if (auto_start || (messages.length === 1 && messages[0]?.content === '__auto_start__')) {
-      // Add auto-start instruction to system prompt so the agent initiates
-      finalSystemPrompt += '\n\n# INSTRUÇÃO ESPECIAL\nEsta é a primeira mensagem da conversa. Você DEVE iniciar com sua mensagem de boas-vindas e a primeira pergunta do fluxo guiado imediatamente.';
+      // Add auto-start instruction in the detected language
+      finalSystemPrompt += getAutoStartInstruction(effectiveLanguage);
       
       console.log('[chat-stream] Auto-start mode activated for agent:', agent_slug);
     }
