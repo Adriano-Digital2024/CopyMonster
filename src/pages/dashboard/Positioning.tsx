@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Target, Sparkles, Save, Loader2 } from 'lucide-react';
+import { ChevronLeft, Target, Sparkles, Save, Loader2, FileDown, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AgentSelectionModal } from '@/components/positioning/AgentSelectionModal';
+import { ExportDocumentModal } from '@/components/positioning/ExportDocumentModal';
 
 const AGENT_CONFIG = {
   slug: 'brand-positioning-monster',
@@ -38,9 +40,31 @@ export default function Positioning() {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [mappingTitle, setMappingTitle] = useState('');
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isFlowComplete, setIsFlowComplete] = useState(false);
+  const [savedMappingId, setSavedMappingId] = useState<string | null>(null);
 
   const handleMessagesChange = useCallback((newMessages: Message[]) => {
     setMessages(newMessages);
+    
+    // Detect flow completion by checking for completion indicators
+    const lastMessage = newMessages[newMessages.length - 1];
+    if (lastMessage?.role === 'assistant' && lastMessage.content) {
+      const content = lastMessage.content.toLowerCase();
+      const completionIndicators = [
+        'mapeamento estratégico está completo',
+        'strategic mapping is complete',
+        'mapeo estratégico está completo',
+        'qual agente você gostaria',
+        'which agent would you like',
+        'qué agente te gustaría',
+      ];
+      
+      if (completionIndicators.some(indicator => content.includes(indicator))) {
+        setIsFlowComplete(true);
+      }
+    }
   }, []);
 
   const countCompletedBlocks = (msgs: Message[]): number => {
@@ -70,7 +94,7 @@ export default function Positioning() {
         timestamp: m.timestamp.toISOString()
       }));
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('positioning_mappings')
         .insert({
           user_id: user.id,
@@ -78,10 +102,14 @@ export default function Positioning() {
           status: isCompleted ? 'completed' : 'in_progress',
           conversation: conversationData,
           completed_blocks: completedBlocks,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
+      setSavedMappingId(data.id);
+      
       toast({
         title: t('positioning.saveSuccessTitle'),
         description: t('positioning.saveSuccessDesc', { blocks: completedBlocks }),
@@ -163,6 +191,30 @@ export default function Positioning() {
                   <Save className="h-4 w-4" />
                   {t('positioning.save')}
                 </Button>
+                
+                {/* Show export and connect buttons when flow is complete */}
+                {isFlowComplete && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsExportModalOpen(true)}
+                      className="gap-2"
+                    >
+                      <FileDown className="h-4 w-4" />
+                      {t('positioning.export', 'Exportar')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsAgentModalOpen(true)}
+                      className="gap-2"
+                      style={{ backgroundColor: AGENT_CONFIG.color }}
+                    >
+                      <Link2 className="h-4 w-4" />
+                      {t('positioning.connectAgent', 'Conectar Agente')}
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -218,6 +270,25 @@ export default function Positioning() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Agent Selection Modal */}
+      <AgentSelectionModal
+        open={isAgentModalOpen}
+        onOpenChange={setIsAgentModalOpen}
+        mappingId={savedMappingId || undefined}
+        onSaveFirst={() => {
+          setIsAgentModalOpen(false);
+          setIsSaveDialogOpen(true);
+        }}
+      />
+
+      {/* Export Document Modal */}
+      <ExportDocumentModal
+        open={isExportModalOpen}
+        onOpenChange={setIsExportModalOpen}
+        messages={messages}
+        title={mappingTitle || 'Mapeamento Estratégico'}
+      />
     </DashboardLayout>
   );
 }
