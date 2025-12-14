@@ -1,77 +1,147 @@
-import { TrendingUp, FileText, Eye, MousePointerClick } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { TrendingUp, FileText, Star, Copy, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { EmptyState } from '@/components/dashboard/EmptyState';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+
+interface CopyResult {
+  id: string;
+  agent_slug: string;
+  content: string;
+  is_favorite: boolean;
+  rating: number | null;
+  created_at: string;
+  campaign_id: string | null;
+}
 
 export default function CopyResults() {
   const { t } = useTranslation();
-  
-  const performanceData = [
-    { date: '01/10', score: 72, engagement: 45, conversions: 12 },
-    { date: '08/10', score: 78, engagement: 52, conversions: 18 },
-    { date: '15/10', score: 85, engagement: 68, conversions: 24 },
-    { date: '22/10', score: 82, engagement: 61, conversions: 21 },
-    { date: '29/10', score: 89, engagement: 75, conversions: 32 },
-  ];
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [copyResults, setCopyResults] = useState<CopyResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('all');
 
-  const recentCopies = [
-    {
-      id: '1',
-      title: 'Headline VSL - Produto X',
-      type: 'VSL',
-      score: 89,
-      date: '25/10/2024',
-      status: 'active'
-    },
-    {
-      id: '2',
-      title: 'Email de Lançamento',
-      type: 'Email',
-      score: 85,
-      date: '22/10/2024',
-      status: 'active'
-    },
-    {
-      id: '3',
-      title: 'Ad Copy Facebook',
-      type: 'Ads',
-      score: 78,
-      date: '20/10/2024',
-      status: 'paused'
-    },
-  ];
+  useEffect(() => {
+    if (user) {
+      loadCopyResults();
+    }
+  }, [user]);
+
+  const loadCopyResults = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('copy_results')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCopyResults(data || []);
+    } catch (error) {
+      console.error('Error loading copy results:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (id: string, currentFavorite: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('copy_results')
+        .update({ is_favorite: !currentFavorite })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setCopyResults(copyResults.map(c => 
+        c.id === id ? { ...c, is_favorite: !currentFavorite } : c
+      ));
+      
+      toast({
+        title: !currentFavorite ? t('copyResults.toast.favorited') : t('copyResults.toast.unfavorited'),
+      });
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const deleteCopyResult = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('copy_results')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setCopyResults(copyResults.filter(c => c.id !== id));
+      
+      toast({
+        title: t('copyResults.toast.deleted'),
+      });
+    } catch (error) {
+      console.error('Error deleting copy result:', error);
+    }
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: t('copyResults.toast.copied'),
+    });
+  };
+
+  const filteredResults = copyResults.filter(result => {
+    if (filter === 'all') return true;
+    if (filter === 'favorites') return result.is_favorite;
+    return result.agent_slug === filter;
+  });
+
+  const uniqueAgents = [...new Set(copyResults.map(c => c.agent_slug))];
+
+  const getAgentLabel = (slug: string) => {
+    const labels: Record<string, string> = {
+      vsl_monster: 'VSL Monster',
+      sales_page_monster: 'Sales Page Monster',
+      email_monster: 'Email Monster',
+      ads_monster: 'Ads Monster',
+      headline_monster: 'Headline Monster',
+      short_monster: 'Short Monster',
+      launch_monster: 'Launch Monster',
+      brand_positioning_monster: 'Brand Positioning Monster',
+    };
+    return labels[slug] || slug;
+  };
 
   const stats = [
     {
-      icon: TrendingUp,
-      label: t('copyResults.stats.avgScore'),
-      value: '85',
-      change: '+12%',
-      color: '#38A169'
-    },
-    {
-      icon: Eye,
-      label: t('copyResults.stats.engagement'),
-      value: '68%',
-      change: '+8%',
-      color: '#4299E1'
-    },
-    {
-      icon: MousePointerClick,
-      label: t('copyResults.stats.conversionRate'),
-      value: '24%',
-      change: '+15%',
-      color: '#F56565'
-    },
-    {
       icon: FileText,
-      label: t('copyResults.stats.copiesGenerated'),
-      value: '127',
-      change: '+23',
+      label: t('copyResults.stats.totalCopies'),
+      value: copyResults.length.toString(),
+      color: '#6B46C1'
+    },
+    {
+      icon: Star,
+      label: t('copyResults.stats.favorites'),
+      value: copyResults.filter(c => c.is_favorite).length.toString(),
       color: '#ECC94B'
+    },
+    {
+      icon: TrendingUp,
+      label: t('copyResults.stats.thisMonth'),
+      value: copyResults.filter(c => {
+        const date = new Date(c.created_at);
+        const now = new Date();
+        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      }).length.toString(),
+      color: '#38A169'
     }
   ];
 
@@ -85,20 +155,22 @@ export default function CopyResults() {
               {t('copyResults.subtitle')}
             </p>
           </div>
-          <Select defaultValue="30">
-            <SelectTrigger className="w-[180px]">
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">{t('copyResults.filter.last7Days')}</SelectItem>
-              <SelectItem value="30">{t('copyResults.filter.last30Days')}</SelectItem>
-              <SelectItem value="90">{t('copyResults.filter.last90Days')}</SelectItem>
+              <SelectItem value="all">{t('copyResults.filter.all')}</SelectItem>
+              <SelectItem value="favorites">{t('copyResults.filter.favorites')}</SelectItem>
+              {uniqueAgents.map(agent => (
+                <SelectItem key={agent} value={agent}>{getAgentLabel(agent)}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
@@ -115,12 +187,7 @@ export default function CopyResults() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-3xl font-bold">{stat.value}</p>
-                      <Badge variant="secondary" className="text-xs">
-                        {stat.change}
-                      </Badge>
-                    </div>
+                    <p className="text-3xl font-bold">{stat.value}</p>
                   </div>
                 </div>
               </Card>
@@ -128,69 +195,65 @@ export default function CopyResults() {
           })}
         </div>
 
-        {/* Performance Chart */}
-        <Card className="p-6">
-          <h3 className="font-semibold mb-4">{t('copyResults.chart.title')}</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={performanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="score" 
-                stroke="#6B46C1" 
-                strokeWidth={2}
-                name={t('copyResults.chart.copyScore')}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="engagement" 
-                stroke="#4299E1" 
-                strokeWidth={2}
-                name={t('copyResults.chart.engagement')}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="conversions" 
-                stroke="#38A169" 
-                strokeWidth={2}
-                name={t('copyResults.chart.conversions')}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* Recent Copies */}
-        <Card className="p-6">
-          <h3 className="font-semibold mb-4">{t('copyResults.recentCopies.title')}</h3>
+        {/* Copy Results List */}
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {t('common.loading')}
+          </div>
+        ) : filteredResults.length === 0 ? (
+          <EmptyState
+            icon={FileText}
+            title={t('copyResults.empty.title')}
+            description={t('copyResults.empty.description')}
+          />
+        ) : (
           <div className="space-y-4">
-            {recentCopies.map((copy) => (
-              <div 
-                key={copy.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="space-y-1">
-                  <h4 className="font-medium">{copy.title}</h4>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <Badge variant="outline">{copy.type}</Badge>
-                    <span>{copy.date}</span>
+            {filteredResults.map((result) => (
+              <Card key={result.id} className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary">{getAgentLabel(result.agent_slug)}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(result.created_at).toLocaleDateString(t('date.locale'))}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap line-clamp-4">
+                        {result.content}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleFavorite(result.id, result.is_favorite)}
+                      >
+                        <Star 
+                          className={`h-5 w-5 ${result.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                        />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleCopy(result.content)}
+                      >
+                        <Copy className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteCopyResult(result.id)}
+                      >
+                        <Trash2 className="h-5 w-5 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">{t('copyResults.recentCopies.score')}</p>
-                    <p className="text-2xl font-bold">{copy.score}</p>
-                  </div>
-                  <Badge variant={copy.status === 'active' ? 'default' : 'secondary'}>
-                    {copy.status === 'active' ? t('copyResults.recentCopies.active') : t('copyResults.recentCopies.paused')}
-                  </Badge>
-                </div>
-              </div>
+              </Card>
             ))}
           </div>
-        </Card>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -1,9 +1,11 @@
-import { Trophy, TrendingUp, Target, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Trophy, TrendingUp, Target, Zap, FileText, Map } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { XP_LEVELS, calculateLevel, getXPProgress } from '@/lib/copymonster-config';
 import { useTranslation } from 'react-i18next';
 
@@ -14,23 +16,56 @@ export default function Performance() {
   const currentLevel = calculateLevel(xp);
   const xpProgress = getXPProgress(xp);
 
+  const [realStats, setRealStats] = useState({
+    positionings: 0,
+    campaigns: 0,
+    copyResults: 0,
+    headlines: 0,
+  });
+
+  useEffect(() => {
+    if (user) {
+      loadRealStats();
+    }
+  }, [user]);
+
+  const loadRealStats = async () => {
+    try {
+      const [positioningsRes, campaignsRes, copyResultsRes, headlinesRes] = await Promise.all([
+        supabase.from('positioning_mappings').select('id', { count: 'exact', head: true }),
+        supabase.from('campaigns').select('id', { count: 'exact', head: true }),
+        supabase.from('copy_results').select('id', { count: 'exact', head: true }),
+        supabase.from('headlines').select('id', { count: 'exact', head: true }),
+      ]);
+
+      setRealStats({
+        positionings: positioningsRes.count || 0,
+        campaigns: campaignsRes.count || 0,
+        copyResults: copyResultsRes.count || 0,
+        headlines: headlinesRes.count || 0,
+      });
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
+
   const stats = [
     {
-      icon: Target,
-      label: t('performance.stats.diagnosesCompleted'),
-      value: '3',
+      icon: Map,
+      label: t('performance.stats.positionings'),
+      value: realStats.positionings.toString(),
       color: '#6B46C1'
     },
     {
       icon: Zap,
       label: t('performance.stats.campaignsCreated'),
-      value: '7',
+      value: realStats.campaigns.toString(),
       color: '#F56565'
     },
     {
-      icon: TrendingUp,
-      label: t('performance.stats.avgCopyScore'),
-      value: '85',
+      icon: FileText,
+      label: t('performance.stats.copyResults'),
+      value: realStats.copyResults.toString(),
       color: '#38A169'
     },
     {
@@ -168,15 +203,6 @@ export default function Performance() {
                 </div>
               );
             })}
-          </div>
-        </Card>
-
-        {/* Recent Achievements */}
-        <Card className="p-6">
-          <h3 className="font-semibold mb-4">{t('performance.achievementsTitle')}</h3>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>{t('performance.noAchievements')}</p>
-            <p className="text-sm mt-1">{t('performance.continueUsingAgents')}</p>
           </div>
         </Card>
       </div>
