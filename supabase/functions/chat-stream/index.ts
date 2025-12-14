@@ -6,6 +6,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Language detection function
+function detectLanguage(text: string): 'pt-BR' | 'en' | 'es' | 'unknown' {
+  const ptPatterns = /\b(você|não|está|isso|como|para|com|uma|que|por|mais|seu|sua|ter|fazer|muito|também|ainda|aqui|onde|quando|porque|então|assim|além|através|sobre|entre|após|durante|desde|pelo|pela|aos|às|nos|nas|dos|das|uns|umas|meus|minha|nosso|nossa|nós|ele|ela|eles|elas|deles|delas|quem|qual|quais|todo|toda|todos|todas|algum|alguma|alguns|algumas|nenhum|nenhuma|outro|outra|outros|outras|mesmo|mesma|mesmos|mesmas|só|apenas|já|agora|sempre|nunca|talvez|porém|contudo|entretanto|portanto|assim|logo|pois|porque|como|enquanto|embora|apesar|caso|se|senão|seja|são|foi|foram|será|serão|seria|seriam|está|estão|estava|estavam|estará|estarão|estaria|estariam|tem|têm|tinha|tinham|terá|terão|teria|teriam|pode|podem|podia|podiam|poderá|poderão|poderia|poderiam|deve|devem|devia|deviam|deverá|deverão|deveria|deveriam|quer|querem|queria|queriam|quererá|quererão|quereria|quereriam|vai|vão|ia|iam|irá|irão|iria|iriam|faz|fazem|fazia|faziam|fará|farão|faria|fariam|diz|dizem|dizia|diziam|dirá|dirão|diria|diriam|vem|vêm|vinha|vinham|virá|virão|viria|viriam|dá|dão|dava|davam|dará|darão|daria|dariam|sabe|sabem|sabia|sabiam|saberá|saberão|saberia|saberiam|vê|veem|via|viam|verá|verão|veria|veriam)\b/gi;
+  
+  const esPatterns = /\b(usted|ustedes|nosotros|vosotros|ellos|ellas|está|están|estaba|estaban|estará|estarán|estaría|estarían|tiene|tienen|tenía|tenían|tendrá|tendrán|tendría|tendrían|puede|pueden|podía|podían|podrá|podrán|podría|podrían|debe|deben|debía|debían|deberá|deberán|debería|deberían|quiere|quieren|quería|querían|querrá|querrán|querría|querrían|hace|hacen|hacía|hacían|hará|harán|haría|harían|dice|dicen|decía|decían|dirá|dirán|diría|dirían|viene|vienen|venía|venían|vendrá|vendrán|vendría|vendrían|da|dan|daba|daban|dará|darán|daría|darían|sabe|saben|sabía|sabían|sabrá|sabrán|sabría|sabrían|ve|ven|veía|veían|verá|verán|vería|verían|muy|mucho|mucha|muchos|muchas|poco|poca|pocos|pocas|otro|otra|otros|otras|mismo|misma|mismos|mismas|todo|toda|todos|todas|algún|alguno|alguna|algunos|algunas|ningún|ninguno|ninguna|también|además|después|antes|durante|mientras|cuando|donde|como|porque|aunque|sin|con|para|por|entre|sobre|bajo|según|hacia|hasta|desde|contra|mediante|tras|ante|cabe|so)\b/gi;
+  
+  const enPatterns = /\b(the|is|are|was|were|will|would|could|should|have|has|had|do|does|did|can|may|might|must|shall|need|ought|used|this|that|these|those|here|there|where|when|why|how|what|which|who|whom|whose|all|each|every|both|few|many|much|some|any|no|not|only|just|also|very|too|more|most|less|least|other|another|such|same|different|own|else|even|still|already|yet|again|often|always|never|sometimes|usually|perhaps|maybe|probably|certainly|definitely|really|actually|basically|generally|especially|particularly|specifically|exactly|simply|merely|hardly|nearly|almost|about|around|through|between|among|within|without|during|before|after|until|since|while|although|though|unless|except|whether|because|therefore|however|moreover|furthermore|nevertheless|nonetheless|otherwise|instead|meanwhile|accordingly|consequently|hence|thus|indeed|certainly|surely|obviously|apparently|presumably|possibly|probably|perhaps|maybe|somehow|anyway|anywhere|everywhere|nowhere|somewhere|whoever|whatever|wherever|whenever|however|whichever|whatever|my|your|his|her|its|our|their|product|course|video|influencers|monetize|social|media|using|persuasive|structures)\b/gi;
+
+  const ptCount = (text.match(ptPatterns) || []).length;
+  const esCount = (text.match(esPatterns) || []).length;
+  const enCount = (text.match(enPatterns) || []).length;
+  
+  const total = ptCount + esCount + enCount;
+  if (total === 0) return 'unknown';
+  
+  const ptPercent = (ptCount / total) * 100;
+  const esPercent = (esCount / total) * 100;
+  const enPercent = (enCount / total) * 100;
+  
+  console.log(`[chat-stream] Language detection: PT=${ptPercent.toFixed(1)}%, ES=${esPercent.toFixed(1)}%, EN=${enPercent.toFixed(1)}%`);
+  
+  if (ptPercent >= 50) return 'pt-BR';
+  if (esPercent >= 50) return 'es';
+  if (enPercent >= 50) return 'en';
+  
+  // If no clear majority, return the highest
+  if (ptPercent >= esPercent && ptPercent >= enPercent) return 'pt-BR';
+  if (esPercent >= ptPercent && esPercent >= enPercent) return 'es';
+  return 'en';
+}
+
+// Universal system prompt base
+const UNIVERSAL_LANGUAGE_RULES = `
+# MANDATORY LANGUAGE RULE
+You MUST respond in the SAME LANGUAGE used by the user in their message.
+- If the user writes in English → respond ENTIRELY in English
+- If the user writes in Portuguese → respond ENTIRELY in Portuguese  
+- If the user writes in Spanish → respond ENTIRELY in Spanish
+- NEVER mix languages in your response
+- This rule overrides any other language configuration
+
+# UNIVERSAL QUALITY STANDARDS
+- Copy must be psychologically persuasive
+- Use behavioral triggers and emotional resonance
+- Avoid generic or superficial writing
+- All outputs must sound like a premium top-tier copywriter
+- Always deliver CLARITY + EMOTION + STRUCTURE
+`;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,6 +74,19 @@ serve(async (req) => {
     
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Detect language from user's last message
+    const lastUserMessage = [...messages].reverse().find((m: any) => m.role === 'user');
+    const detectedLanguage = lastUserMessage ? detectLanguage(lastUserMessage.content) : 'unknown';
+    console.log(`[chat-stream] Detected language: ${detectedLanguage}`);
+
+    // Language-specific instructions
+    const languageInstructions: Record<string, string> = {
+      'pt-BR': '\n\n# IDIOMA OBRIGATÓRIO\nVocê DEVE responder INTEIRAMENTE em Português do Brasil (PT-BR). Não use outras línguas.',
+      'en': '\n\n# MANDATORY LANGUAGE\nYou MUST respond ENTIRELY in English. Do not use other languages.',
+      'es': '\n\n# IDIOMA OBLIGATORIO\nDEBE responder COMPLETAMENTE en Español. No use otros idiomas.',
+      'unknown': ''
+    };
 
     // If agent_slug is provided, fetch agent config from database
     let agentConfig: any = null;
@@ -51,51 +113,60 @@ serve(async (req) => {
         maxTokens = agent.max_tokens ?? 4096;
         topP = agent.top_p ?? 0.9;
 
-        // Build dynamic master prompt
+        // Build dynamic master prompt with language-aware structure
         const parts = [];
 
-        parts.push(`# IDENTIDADE\nVocê é o ${agent.name} do CopyMonster.`);
+        // Start with universal language rules
+        parts.push(UNIVERSAL_LANGUAGE_RULES);
+        
+        // Add detected language instruction
+        parts.push(languageInstructions[detectedLanguage] || '');
+
+        parts.push(`\n\n# IDENTITY\nYou are ${agent.name} from CopyMonster.`);
 
         if (agent.role_definition) {
-          parts.push(`\n\n# PAPEL\n${agent.role_definition}`);
+          parts.push(`\n\n# ROLE\n${agent.role_definition}`);
         }
 
         if (agent.persona_name && agent.persona_backstory) {
-          parts.push(`\n\n# PERSONA\nNome: ${agent.persona_name}\n${agent.persona_backstory}`);
+          parts.push(`\n\n# PERSONA\nName: ${agent.persona_name}\n${agent.persona_backstory}`);
         }
 
         if (agent.core_function) {
-          parts.push(`\n\n# FUNÇÃO CENTRAL\n${agent.core_function}`);
+          parts.push(`\n\n# CORE FUNCTION\n${agent.core_function}`);
         }
 
         if (agent.quality_rules) {
-          parts.push(`\n\n# REGRAS DE QUALIDADE\n${agent.quality_rules}`);
+          parts.push(`\n\n# QUALITY RULES\n${agent.quality_rules}`);
         }
 
         if (agent.expected_inputs) {
-          parts.push(`\n\n# INPUTS ESPERADOS\n${agent.expected_inputs}`);
+          parts.push(`\n\n# EXPECTED INPUTS\n${agent.expected_inputs}`);
         }
 
         if (agent.output_structure) {
-          parts.push(`\n\n# ESTRUTURA DE SAÍDA OBRIGATÓRIA\nVocê DEVE seguir esta estrutura:\n${agent.output_structure}`);
+          parts.push(`\n\n# MANDATORY OUTPUT STRUCTURE\nYou MUST follow this structure:\n${agent.output_structure}`);
         }
 
-        parts.push(`\n\n# CONFIGURAÇÕES\n- Tom: ${agent.tone || 'professional'}\n- Idioma: ${agent.language || 'pt-BR'}\n- Limites: ${agent.min_words || 100}-${agent.max_words || 2000} palavras`);
+        parts.push(`\n\n# SETTINGS\n- Tone: ${agent.tone || 'professional'}\n- Word limits: ${agent.min_words || 100}-${agent.max_words || 2000} words`);
 
         // Add few-shot examples if available
         if (agent.few_shot_examples && Array.isArray(agent.few_shot_examples) && agent.few_shot_examples.length > 0) {
-          parts.push(`\n\n# EXEMPLOS DE REFERÊNCIA`);
+          parts.push(`\n\n# REFERENCE EXAMPLES`);
           agent.few_shot_examples.forEach((example: any, index: number) => {
-            parts.push(`\n## Exemplo ${index + 1}\n**Input:** ${example.input}\n**Output:** ${example.output}`);
+            parts.push(`\n## Example ${index + 1}\n**Input:** ${example.input}\n**Output:** ${example.output}`);
           });
         }
 
         if (agent.system_prompt) {
-          parts.push(`\n\n# INSTRUÇÕES ADICIONAIS\n${agent.system_prompt}`);
+          parts.push(`\n\n# ADDITIONAL INSTRUCTIONS\n${agent.system_prompt}`);
         }
 
         finalSystemPrompt = parts.join('');
       }
+    } else if (system_prompt) {
+      // If using custom system_prompt, prepend language rules
+      finalSystemPrompt = UNIVERSAL_LANGUAGE_RULES + languageInstructions[detectedLanguage] + '\n\n' + system_prompt;
     }
 
     // Determine which API to use
