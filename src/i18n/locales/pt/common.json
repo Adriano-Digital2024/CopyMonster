@@ -17,28 +17,277 @@
     "success": "Sucesso"
   },
   "nav": {
-    "features": "Funcionalidades",
+    "features": "Agentes",
     "pricing": "Preços",
-    "testimonials": "Depoimentos",
+    "testimonials": "Resultados",
     "dashboard": "Painel",
-    "startTrial": "Iniciar Teste Grátis"
+    "startTrial": "Começar Agora"
   },
   "hero": {
-    "badge": "Powered by IA & Especialistas em Copywriting",
-    "title": "Seu Copywriter de IA",
-    "titleHighlight": "Que Entende Seu Negócio",
-    "titleEnd": "Profundamente",
-    "subtitle": "CopyMonster é a primeira plataforma de IA que combina o DNA do seu negócio com agentes especializados para criar copies de alta conversão em minutos.",
+    "badge": "18 Agentes de IA Especializados em Copy de Alta Conversão",
+    "title": "Pare de Perder Vendas",
+    "titleHighlight": "Por Falta de Copy Persuasivo",
+    "titleEnd": "",
+    "subtitle": "Enquanto você luta para escrever uma headline que funciona, seus concorrentes estão faturando com copy profissional. CopyMonster coloca 18 especialistas de IA trabalhando para você 24 horas por dia, criando VSLs, páginas de vendas, campanhas de lançamento e anúncios que transformam visitantes em compradores.",
     "cta": {
-      "primary": "Começar Teste Grátis de 7 Dias",
-      "secondary": "Veja Como Funciona"
+      "primary": "Quero Multiplicar Minhas Vendas",
+      "secondary": "Ver Agentes em Ação"
     },
-    "trust": "Confiado por mais de 1.000 empreendedores",
-    "rating": "4.9/5.0 de mais de 200 avaliações",
+    "trust": "Mais de 1.000 empreendedores já usam",
+    "rating": "4.9/5.0 de satisfação",
     "stats": {
       "agents": "Agentes Especializados",
-      "dna": "DNA da Marca"
+      "dna": "DNA da Sua Marca"
     }
+  },
+  "howItWorks": {
+    "title": "Como o CopyMonster Transforma Seu Negócio",
+    "subtitle": "Em 3 passos simples, você sai de 'não sei o que escrever' para 'minha copy está vendendo'",
+    "steps": [
+      {
+        "title": "1. Mapeie Seu DNA de Marca",
+        "description": "O Agente de Posicionamento extrai o DNA do seu negócio em 12 blocos estratégicos: público, dores, diferenciais, tom de voz. Tudo que seus textos precisam para conectar profundamente com seu cliente."
+      },
+      {
+        "title": "2. Escolha Seu Especialista",
+        "description": "Precisa de um VSL? Página de vendas? Campanha de lançamento? Selecione entre 18 agentes ultra-especializados. Cada um domina uma área específica do copywriting e já vem carregado com seu DNA de marca."
+      },
+      {
+        "title": "3. Receba Copy Pronta para Usar",
+        "description": "Em minutos, não dias. Copy profissional, formatada, sem lero-lero. Pronta para publicar e começar a converter. Você edita se quiser, mas na maioria das vezes, basta copiar e colar."
+      }
+    ]
+  },
+  "agents": {
+    "title": "18 Especialistas de IA Trabalhando Para Você",
+    "subtitle": "Cada agente é um copywriter sênior em sua área",
+    "description": "Esqueça IAs genéricas que entregam textos sem alma. Cada agente do CopyMonster foi treinado para uma função específica, com regras de qualidade rigorosas e conhecimento profundo de copywriting que converte.",
+    "categories": {
+      "copywriting": "Agentes de Copywriting",
+      "campaign": "Agentes de Campanha"
+    },
+    "copywritingAgents": {
+      "title": "Agentes de Copywriting",
+      "description": "Criam peças individuais de copy com maestria",
+      "list": [
+        {
+          "name": "VSL Monster",
+          "description": "Cria scripts de vídeo de vendas que prendem atenção e convertem. Estrutura persuasiva testada, ganchos irresistíveis, closes que fecham."
+        },
+        {
+          "name": "Sales Page Monster",
+          "description": "Páginas de vendas completas que transformam visitantes em compradores. Headlines magnéticas, bullets de desejo, CTAs impossíveis de ignorar."
+        },
+        {
+          "name": "Launch Monster",
+          "description": "Estratégias de lançamento que geram antecipação e vendas explosivas. Emails, posts, roteiros que criam buzz e escassez real."
+        },
+        {
+          "name": "Email Monster",
+          "description": "Sequências de email que nutrem, engajam e vendem. Assuntos que abrem, corpos que convencem, CTAs que clicam."
+        },
+        {
+          "name": "Ads Monster",
+          "description": "Anúncios que param o scroll e geram cliques. Copy otimizada para Meta, Google, TikTok. ROI é a única métrica."
+        },
+        {
+          "name": "Headline Monster",
+          "description": "Headlines que capturam atenção instantaneamente. Múltiplas variações, diferentes ângulos, todas testadas em frameworks consagrados."
+        },
+        {
+          "name": "Short Monster",
+          "description": "Scripts de Reels, TikToks e Shorts que viralizam. Ganchos de 3 segundos, storytelling compacto, CTAs nativos."
+        }
+      ]
+    },
+    "campaignAgents": {
+      "title": "Agentes de Campanha",
+      "description": "Entregam campanhas completas, prontas para rodar",
+      "list": [
+        {
+          "name": "Internal Launch Monster",
+          "description": "Lançamento interno de 7 dias completo. Emails, posts, stories, sequência de carrinho. Tudo pronto, é só agendar."
+        },
+        {
+          "name": "Flash Launch Monster",
+          "description": "Campanha relâmpago de 3 dias com urgência máxima. Perfeito para vendas rápidas e queima de estoque."
+        },
+        {
+          "name": "Evergreen Funnel Monster",
+          "description": "Funil automatizado que vende 24/7. Páginas, emails, upsells, downsells. Monte uma vez, fature para sempre."
+        },
+        {
+          "name": "Webinar Campaign Monster",
+          "description": "Campanha completa de webinar. Convites, lembretes, roteiro do webinar, follow-up, oferta. Do início ao checkout."
+        },
+        {
+          "name": "Cart Recovery Monster",
+          "description": "Recupere vendas perdidas automaticamente. Emails e mensagens que trazem o comprador de volta ao carrinho."
+        },
+        {
+          "name": "Lead Nurture Monster",
+          "description": "Transforme leads frios em compradores aquecidos. Sequência de nutrição que educa, conecta e vende."
+        },
+        {
+          "name": "Upsell Cross Monster",
+          "description": "Aumente seu ticket médio com campanhas pós-compra. Upsells, cross-sells, order bumps que multiplicam receita."
+        },
+        {
+          "name": "List Revival Monster",
+          "description": "Reative sua lista morta. Sequência de reengajamento que acorda leads inativos e gera vendas esquecidas."
+        },
+        {
+          "name": "Full VSL Script Monster",
+          "description": "Script de VSL completo e profissional. 20-40 minutos de roteiro estruturado para alta conversão."
+        },
+        {
+          "name": "WhatsApp Sales Monster",
+          "description": "Sequências de vendas otimizadas para WhatsApp. Scripts, templates, funil conversacional que fecha no chat."
+        }
+      ]
+    }
+  },
+  "problem": {
+    "title": "A Verdade Que Ninguém Conta",
+    "subtitle": "Sobre Por Que Seu Marketing Não Está Convertendo",
+    "points": [
+      {
+        "title": "Copy genérica não vende",
+        "description": "ChatGPT e ferramentas genéricas entregam texto sem personalidade. Seu cliente percebe que é IA e desconfia. Conversão? Próxima de zero."
+      },
+      {
+        "title": "Contratar copywriter é caro e arriscado",
+        "description": "Um bom copywriter cobra R$5.000+ por página de vendas. E você ainda corre o risco de não gostar do resultado. Revisões infinitas, prazos estourados."
+      },
+      {
+        "title": "Você não tem tempo para aprender",
+        "description": "Cursos de copywriting custam milhares e levam meses para dominar. Enquanto você estuda, seus concorrentes estão vendendo."
+      }
+    ]
+  },
+  "solution": {
+    "title": "CopyMonster É a Solução",
+    "subtitle": "O único sistema que combina IA de ponta com conhecimento real de copywriting",
+    "points": [
+      {
+        "title": "Copy personalizada para seu negócio",
+        "description": "O DNA da sua marca é extraído e injetado em cada texto. Sua voz, seu tom, seus diferenciais. Parece que você escreveu."
+      },
+      {
+        "title": "Custo-benefício impossível de bater",
+        "description": "Por menos que o custo de UMA página de vendas de um copywriter, você tem acesso a 18 especialistas o mês inteiro."
+      },
+      {
+        "title": "Resultados em minutos, não semanas",
+        "description": "Digite seu briefing, receba copy profissional. Enquanto seu concorrente espera o freelancer, você já está vendendo."
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "Resultados Reais de Quem Já Usa",
+    "subtitle": "Empreendedores como você que transformaram seus resultados com CopyMonster",
+    "list": [
+      {
+        "quote": "Fiz meu primeiro lançamento de 6 dígitos usando apenas o CopyMonster. Os emails de carrinho converteram 34%. Nunca vi nada igual.",
+        "author": "Marina Santos",
+        "role": "Infoprodutora, Finanças Pessoais"
+      },
+      {
+        "quote": "Demitia copywriters a cada 3 meses porque nenhum entendia meu negócio. O CopyMonster capturou minha voz na primeira conversa. Economizo R$15k/mês.",
+        "author": "Carlos Mendonça",
+        "role": "CEO, Agência de Marketing Digital"
+      },
+      {
+        "quote": "Minha página de vendas estava convertendo 1.2%. Reescrevi com o Sales Page Monster e pulou para 4.7%. Mesmo tráfego, 4x mais vendas.",
+        "author": "Juliana Ribeiro",
+        "role": "Mentora de Negócios"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Invista Menos Que Uma Página de Vendas",
+    "subtitle": "E tenha acesso a 18 especialistas de copy o mês inteiro",
+    "trialBadge": "7 dias grátis para testar sem compromisso",
+    "starter": {
+      "name": "Starter",
+      "price": "R$97",
+      "period": "/mês",
+      "subtitle": "Para quem está começando",
+      "features": [
+        "50 créditos mensais",
+        "Acesso a todos os 18 agentes",
+        "DNA de Marca (1 mapeamento)",
+        "Suporte por email",
+        "Exportação em texto"
+      ],
+      "cta": "Começar com Starter",
+      "badge": ""
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "R$197",
+      "period": "/mês",
+      "subtitle": "Para quem quer escalar",
+      "features": [
+        "200 créditos mensais",
+        "Acesso a todos os 18 agentes",
+        "DNA de Marca (ilimitado)",
+        "Suporte prioritário",
+        "Exportação em múltiplos formatos",
+        "Histórico completo de conversas"
+      ],
+      "cta": "Escolher Pro",
+      "badge": "Mais Popular"
+    },
+    "legend": {
+      "name": "Legend",
+      "price": "R$397",
+      "period": "/mês",
+      "subtitle": "Para operações de alto volume",
+      "features": [
+        "Créditos ilimitados",
+        "Acesso a todos os 18 agentes",
+        "DNA de Marca (ilimitado)",
+        "Suporte VIP com SLA",
+        "API de integração",
+        "Onboarding personalizado",
+        "Acesso antecipado a novos agentes"
+      ],
+      "cta": "Quero Legend",
+      "badge": "Máximo Poder"
+    }
+  },
+  "cta": {
+    "title": "Chega de Copy Que Não Vende",
+    "subtitle": "Seus concorrentes já estão usando IA para escalar. Cada dia que você espera é dinheiro deixado na mesa. Comece agora e veja seus resultados mudarem em 7 dias.",
+    "primary": "Quero Começar Agora",
+    "secondary": "Ver Demonstração"
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Tudo que você precisa saber antes de começar",
+    "list": [
+      {
+        "question": "O CopyMonster substitui um copywriter humano?",
+        "answer": "Para 90% dos casos, sim. O CopyMonster entrega copy de qualidade profissional em minutos. Para projetos muito específicos ou de altíssimo investimento, você pode usar nossa copy como base e refinar."
+      },
+      {
+        "question": "Como funciona o DNA de Marca?",
+        "answer": "Nosso Agente de Posicionamento faz 12 perguntas estratégicas sobre seu negócio, público, diferenciais e tom de voz. Essas informações são usadas automaticamente por todos os outros agentes para criar copy personalizada."
+      },
+      {
+        "question": "Posso cancelar a qualquer momento?",
+        "answer": "Sim, sem perguntas e sem burocracia. Você pode cancelar sua assinatura a qualquer momento pelo painel e não será cobrado no próximo ciclo."
+      },
+      {
+        "question": "Os textos são originais?",
+        "answer": "100% originais. Cada texto é gerado do zero com base no seu briefing e DNA de marca. Nada é copiado ou reutilizado de outros clientes."
+      },
+      {
+        "question": "Funciona para qualquer nicho?",
+        "answer": "Sim. Nossos agentes são treinados em princípios universais de copywriting que funcionam para qualquer mercado: infoprodutos, e-commerce, serviços, SaaS, coaching, consultoria e mais."
+      }
+    ]
   },
   "chat": {
     "insufficientCreditsTitle": "Créditos Insuficientes",
