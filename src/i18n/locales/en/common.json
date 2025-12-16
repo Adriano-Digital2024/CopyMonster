@@ -24,11 +24,11 @@
     "startTrial": "Start Free Trial"
   },
   "hero": {
-    "badge": "Powered by AI & Copywriting Experts",
-    "title": "Your AI Copywriter",
-    "titleHighlight": "That Understands Your Business",
-    "titleEnd": "Deeply",
-    "subtitle": "CopyMonster is the first AI platform that combines your business DNA with specialized agents to create high-converting copy in minutes.",
+    "badge": "The AI that writes like the world's best copywriters",
+    "title": "No More Blank Pages.",
+    "titleHighlight": "High-Converting Copy",
+    "titleEnd": "In Minutes.",
+    "subtitle": "CopyMonster understands your business, your audience, and their pain points. In just minutes, you get VSLs, sales pages, emails, and complete campaigns ready to sell. No hiring copywriters. No waiting weeks.",
     "cta": {
       "primary": "Start Your 7-Day Free Trial",
       "secondary": "See How It Works"
@@ -37,8 +37,98 @@
     "rating": "4.9/5.0 from 200+ reviews",
     "stats": {
       "agents": "Specialized Agents",
-      "dna": "Brand DNA"
+      "dna": "12-Block DNA Mapping"
     }
+  },
+  "problemSolution": {
+    "title": "The Problem Every Entrepreneur Knows",
+    "subtitle": "And the solution that changes everything",
+    "problemsTitle": "Without CopyMonster",
+    "solutionsTitle": "With CopyMonster",
+    "problems": {
+      "time": "You spend hours staring at a blank page, not knowing what to write to convince your customer.",
+      "cost": "You hire expensive copywriters and wait weeks for copy that doesn't always work as promised.",
+      "creativity": "You know exactly what your product does, but you can't explain it in a way that creates desire.",
+      "conversion": "Your pages and emails don't convert as they should, and you don't know what you're doing wrong."
+    },
+    "solutions": {
+      "speed": "Professional copy in minutes, not weeks. VSLs, sales pages, and complete campaigns ready to use.",
+      "savings": "Save thousands on copywriters. Trained AI delivers agency-quality at a fraction of the cost.",
+      "expertise": "25 specialized agents that understand your business through the DNA you mapped.",
+      "results": "Strategic copy based on high-conversion frameworks, tested on thousands of campaigns."
+    }
+  },
+  "howItWorks": {
+    "title": "How CopyMonster Works",
+    "subtitle": "3 simple steps to copy that sells",
+    "step1": {
+      "title": "Map Your DNA",
+      "description": "Answer guided strategic questions across 12 blocks. CopyMonster deeply understands your business, audience, pain points, and differentiators."
+    },
+    "step2": {
+      "title": "Choose Your Agent",
+      "description": "25 specialists ready for you: VSL, sales pages, emails, ads, launches, automated funnels, and much more."
+    },
+    "step3": {
+      "title": "Get Ready-to-Use Copy",
+      "description": "In minutes, professional and persuasive content ready to use. No editing. No rework. Ready to publish."
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about CopyMonster",
+    "questions": {
+      "niche": {
+        "question": "Does it work for any niche or type of business?",
+        "answer": "Yes. CopyMonster works for any niche because all copy is based on your business DNA mapping. Whether you're a coach, consultant, e-commerce, SaaS, course creator, or service provider, the agents adapt the copy to your specific reality."
+      },
+      "skills": {
+        "question": "Do I need copywriting skills to use it?",
+        "answer": "No. You don't need to be a copywriter. CopyMonster does all the heavy lifting. You just answer the mapping questions and choose the agent. The AI handles the rest."
+      },
+      "time": {
+        "question": "How long does it take to create a complete campaign?",
+        "answer": "It depends on the campaign, but on average you get ready copy in 5-15 minutes. More complex campaigns like 7-day launches may take a bit longer, but nothing compared to weeks of waiting with traditional copywriters."
+      },
+      "languages": {
+        "question": "Can I use it in Portuguese, English, and Spanish?",
+        "answer": "Yes. CopyMonster automatically detects the language you write in and responds in the same language. Works perfectly in Portuguese, English, and Spanish."
+      },
+      "results": {
+        "question": "What if I don't like the result?",
+        "answer": "You can refine the copy by chatting with the agent. Ask for adjustments, tone changes, more urgency, etc. Plus, the 7-day free trial lets you experiment without commitment."
+      },
+      "difference": {
+        "question": "What's the difference from ChatGPT or other AIs?",
+        "answer": "ChatGPT is generic. CopyMonster is specialized in copywriting with 25 agents trained on conversion frameworks, business DNA mapping, and prompts optimized for each type of material. The quality and specificity are unmatched."
+      }
+    }
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Real results from real entrepreneurs",
+    "items": [
+      {
+        "quote": "In 15 minutes I created a sales page that used to take 2 weeks with my copywriter. And it converted 23% better on the first test.",
+        "author": "Marina Costa",
+        "role": "Course Creator"
+      },
+      {
+        "quote": "The business DNA makes all the difference. The copy comes out with my voice, it doesn't sound generic. My clients ask who wrote it.",
+        "author": "Ricardo Mendes",
+        "role": "Business Consultant"
+      },
+      {
+        "quote": "I used Launch Monster for my last launch. Made 47k in 3 days with a list of only 800 people. The email sequence was killer.",
+        "author": "Juliana Ferreira",
+        "role": "Career Coach"
+      }
+    ]
+  },
+  "cta": {
+    "title": "You're One Click Away from Never Struggling with Copy Again",
+    "subtitle": "7-day free trial. No commitment. Cancel anytime.",
+    "button": "Start My Free Trial Now"
   },
   "chat": {
     "insufficientCreditsTitle": "Insufficient Credits",
