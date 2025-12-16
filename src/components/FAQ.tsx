@@ -4,7 +4,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 export const FAQ = () => {
   const { t } = useTranslation();
-  const faqs = t('faq.list', { returnObjects: true }) as Array<{ question: string; answer: string }>;
+  const faqsRaw = t('faq.list', { returnObjects: true });
+  const faqs = Array.isArray(faqsRaw) ? faqsRaw : [];
 
   return (
     <section className="py-20 px-4">
@@ -20,7 +21,7 @@ export const FAQ = () => {
         </motion.div>
 
         <Accordion type="single" collapsible className="w-full">
-          {faqs.map((faq, index) => (
+          {faqs.map((faq: { question: string; answer: string }, index: number) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
