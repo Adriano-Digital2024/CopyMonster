@@ -6,7 +6,8 @@ const icons = [Target, Users, Zap];
 
 export const HowItWorks = () => {
   const { t } = useTranslation();
-  const steps = t('howItWorks.steps', { returnObjects: true }) as Array<{ title: string; description: string }>;
+  const stepsRaw = t('howItWorks.steps', { returnObjects: true });
+  const steps = Array.isArray(stepsRaw) ? stepsRaw : [];
 
   return (
     <section className="py-20 px-4 bg-card/30">
@@ -22,8 +23,8 @@ export const HowItWorks = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((step, index) => {
-            const Icon = icons[index];
+          {steps.map((step: { title: string; description: string }, index: number) => {
+            const Icon = icons[index] || Target;
             return (
               <motion.div
                 key={index}

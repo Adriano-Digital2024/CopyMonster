@@ -4,8 +4,10 @@ import { XCircle, CheckCircle } from 'lucide-react';
 
 export const ProblemSolution = () => {
   const { t } = useTranslation();
-  const problems = t('problem.points', { returnObjects: true }) as Array<{ title: string; description: string }>;
-  const solutions = t('solution.points', { returnObjects: true }) as Array<{ title: string; description: string }>;
+  const problemsRaw = t('problem.points', { returnObjects: true });
+  const solutionsRaw = t('solution.points', { returnObjects: true });
+  const problems = Array.isArray(problemsRaw) ? problemsRaw : [];
+  const solutions = Array.isArray(solutionsRaw) ? solutionsRaw : [];
 
   return (
     <section className="py-20 px-4">
@@ -19,7 +21,7 @@ export const ProblemSolution = () => {
             <h2 className="text-3xl font-bold mb-2 text-destructive">{t('problem.title')}</h2>
             <p className="text-muted-foreground mb-8">{t('problem.subtitle')}</p>
             <div className="space-y-6">
-              {problems.map((point, index) => (
+              {problems.map((point: { title: string; description: string }, index: number) => (
                 <div key={index} className="flex gap-4">
                   <XCircle className="w-6 h-6 text-destructive flex-shrink-0 mt-1" />
                   <div>
@@ -39,7 +41,7 @@ export const ProblemSolution = () => {
             <h2 className="text-3xl font-bold mb-2 text-primary">{t('solution.title')}</h2>
             <p className="text-muted-foreground mb-8">{t('solution.subtitle')}</p>
             <div className="space-y-6">
-              {solutions.map((point, index) => (
+              {solutions.map((point: { title: string; description: string }, index: number) => (
                 <div key={index} className="flex gap-4">
                   <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                   <div>
