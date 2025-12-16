@@ -24,25 +24,15 @@ export const FinalCTA = () => {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             {t('cta.subtitle')}
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button size="lg" className="text-base px-8 py-6 gradient-primary glow-effect">
-                {t('cta.primary')}
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button size="lg" variant="outline" className="text-base px-8 py-6">
-                {t('cta.secondary')}
-              </Button>
-            </motion.div>
-          </div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button size="lg" className="text-base px-8 py-6 gradient-primary glow-effect">
+              {t('cta.button')}
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
     </section>

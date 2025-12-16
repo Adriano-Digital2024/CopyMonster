@@ -24,11 +24,11 @@
     "startTrial": "Iniciar Prueba Gratuita"
   },
   "hero": {
-    "badge": "Impulsado por IA y Expertos en Copywriting",
-    "title": "Tu Copywriter de IA",
-    "titleHighlight": "Que Entiende Tu Negocio",
-    "titleEnd": "Profundamente",
-    "subtitle": "CopyMonster es la primera plataforma de IA que combina el ADN de tu negocio con agentes especializados para crear copys de alta conversión en minutos.",
+    "badge": "La IA que escribe como los mejores copywriters del mundo",
+    "title": "Basta de Páginas en Blanco.",
+    "titleHighlight": "Copy de Alta Conversión",
+    "titleEnd": "En Minutos.",
+    "subtitle": "CopyMonster entiende tu negocio, tu audiencia y sus dolores. En pocos minutos, tienes VSLs, páginas de ventas, emails y campañas completas listas para vender. Sin contratar copywriters. Sin esperar semanas.",
     "cta": {
       "primary": "Comenzar Prueba Gratuita de 7 Días",
       "secondary": "Ver Cómo Funciona"
@@ -37,8 +37,98 @@
     "rating": "4.9/5.0 de más de 200 reseñas",
     "stats": {
       "agents": "Agentes Especializados",
-      "dna": "ADN de Marca"
+      "dna": "Mapeo DNA en 12 Bloques"
     }
+  },
+  "problemSolution": {
+    "title": "El Problema Que Todo Emprendedor Conoce",
+    "subtitle": "Y la solución que lo cambia todo",
+    "problemsTitle": "Sin CopyMonster",
+    "solutionsTitle": "Con CopyMonster",
+    "problems": {
+      "time": "Pasas horas mirando una página en blanco, sin saber qué escribir para convencer a tu cliente.",
+      "cost": "Contratas copywriters caros y esperas semanas por textos que no siempre funcionan como prometen.",
+      "creativity": "Sabes exactamente lo que hace tu producto, pero no logras explicarlo de forma que despierte deseo.",
+      "conversion": "Tus páginas y emails no convierten como deberían, y no sabes qué estás haciendo mal."
+    },
+    "solutions": {
+      "speed": "Copy profesional en minutos, no semanas. VSLs, páginas de ventas y campañas completas listas para usar.",
+      "savings": "Ahorra miles en copywriters. La IA entrenada entrega calidad de agencia por una fracción del costo.",
+      "expertise": "25 agentes especializados que entienden tu negocio a través del DNA que mapeaste.",
+      "results": "Copy estratégica basada en frameworks de alta conversión, probados en miles de campañas."
+    }
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona CopyMonster",
+    "subtitle": "3 pasos simples para copy que vende",
+    "step1": {
+      "title": "Mapea Tu DNA",
+      "description": "Responde preguntas estratégicas guiadas en 12 bloques. CopyMonster entiende profundamente tu negocio, audiencia, dolores y diferenciales."
+    },
+    "step2": {
+      "title": "Elige Tu Agente",
+      "description": "25 especialistas listos para ti: VSL, páginas de venta, emails, anuncios, lanzamientos, embudos automatizados y mucho más."
+    },
+    "step3": {
+      "title": "Recibe Copy Lista",
+      "description": "En minutos, contenido profesional y persuasivo listo para usar. Sin edición. Sin retrabajo. Directo para publicar."
+    }
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "subtitle": "Todo lo que necesitas saber sobre CopyMonster",
+    "questions": {
+      "niche": {
+        "question": "¿Funciona para cualquier nicho o tipo de negocio?",
+        "answer": "Sí. CopyMonster funciona para cualquier nicho porque toda la copy se basa en el mapeo del DNA de tu negocio. Sea que eres coach, consultor, e-commerce, SaaS, infoproductor o servicios, los agentes adaptan la copy a tu realidad específica."
+      },
+      "skills": {
+        "question": "¿Necesito saber copywriting para usarlo?",
+        "answer": "No. No necesitas ser copywriter. CopyMonster hace todo el trabajo pesado. Tú solo respondes las preguntas del mapeo y eliges el agente. La IA se encarga del resto."
+      },
+      "time": {
+        "question": "¿Cuánto tiempo toma crear una campaña completa?",
+        "answer": "Depende de la campaña, pero en promedio tienes copy lista en 5-15 minutos. Campañas más complejas como lanzamientos de 7 días pueden tomar un poco más, pero nada comparado a semanas de espera con copywriters tradicionales."
+      },
+      "languages": {
+        "question": "¿Puedo usarlo en Portugués, Inglés y Español?",
+        "answer": "Sí. CopyMonster detecta automáticamente el idioma que escribes y responde en el mismo idioma. Funciona perfectamente en Portugués, Inglés y Español."
+      },
+      "results": {
+        "question": "¿Y si no me gusta el resultado?",
+        "answer": "Puedes refinar la copy conversando con el agente. Pide ajustes, cambios de tono, más urgencia, etc. Además, la prueba gratuita de 7 días te permite experimentar sin compromiso."
+      },
+      "difference": {
+        "question": "¿Cuál es la diferencia con ChatGPT u otras IAs?",
+        "answer": "ChatGPT es genérico. CopyMonster está especializado en copywriting con 25 agentes entrenados en frameworks de conversión, mapeo de DNA del negocio, y prompts optimizados para cada tipo de material. La calidad y especificidad son incomparables."
+      }
+    }
+  },
+  "testimonials": {
+    "title": "Lo Que Dicen Nuestros Clientes",
+    "subtitle": "Resultados reales de emprendedores reales",
+    "items": [
+      {
+        "quote": "En 15 minutos creé una página de ventas que demoraba 2 semanas con mi copywriter. Y convirtió 23% mejor en la primera prueba.",
+        "author": "Marina Costa",
+        "role": "Infoproductora"
+      },
+      {
+        "quote": "El DNA del negocio hace toda la diferencia. La copy sale con mi voz, no parece genérica. Mis clientes preguntan quién la escribió.",
+        "author": "Ricardo Mendes",
+        "role": "Consultor de Negocios"
+      },
+      {
+        "quote": "Usé el Launch Monster para mi último lanzamiento. Hice 47k en 3 días con una lista de apenas 800 personas. La secuencia de emails fue letal.",
+        "author": "Juliana Ferreira",
+        "role": "Coach de Carrera"
+      }
+    ]
+  },
+  "cta": {
+    "title": "Estás a Un Clic de Nunca Más Sufrir con Copy",
+    "subtitle": "Prueba gratuita de 7 días. Sin compromiso. Cancela cuando quieras.",
+    "button": "Comenzar Mi Prueba Gratuita Ahora"
   },
   "chat": {
     "insufficientCreditsTitle": "Créditos Insuficientes",
