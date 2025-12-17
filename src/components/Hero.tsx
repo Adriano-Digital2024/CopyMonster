@@ -84,7 +84,7 @@ export const Hero = () => {
               className="gradient-card card-shadow rounded-lg p-6 text-center transition-smooth"
             >
               <div className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-                25+
+                7
               </div>
               <div className="text-sm text-muted-foreground mt-1">
                 {t('hero.stats.agents')}

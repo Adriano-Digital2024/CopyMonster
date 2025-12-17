@@ -7,11 +7,11 @@ import { Quote } from 'lucide-react';
 export const Testimonials = () => {
   const { t } = useTranslation();
 
-  const testimonials = t('testimonials.items', { returnObjects: true }) as Array<{
+  const testimonials = t('testimonials.list', { returnObjects: true }) as Array<{
     quote: string;
     author: string;
     role: string;
-  }> || [];
+  }>;
 
   const getInitials = (name: string) => {
     return name
