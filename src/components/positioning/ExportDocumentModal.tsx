@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Copy, FileDown, Check } from 'lucide-react';
+import { Copy, FileDown, Check, FileText, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/components/chat/ChatInterface';
+import { cn } from '@/lib/utils';
 
 interface ExportDocumentModalProps {
   open: boolean;
@@ -43,17 +45,14 @@ function generateCleanDocument(messages: Message[], title: string): string {
     .filter(m => m.role === 'assistant' && m.content.trim())
     .map(m => cleanMarkdown(m.content));
 
-  const userMessages = messages
-    .filter(m => m.role === 'user' && m.content.trim() && m.content !== '__auto_start__')
-    .map(m => m.content);
-
   // Try to find the final mapping document
   const lastAssistantMessage = assistantMessages[assistantMessages.length - 1] || '';
   
   // Check if it contains the complete mapping
   if (lastAssistantMessage.includes('MAPEAMENTO ESTRATÉGICO') || 
-      lastAssistantMessage.includes('STRATEGIC MAPPING')) {
-    return `${title}\n${'='.repeat(title.length)}\n\n${lastAssistantMessage}`;
+      lastAssistantMessage.includes('STRATEGIC MAPPING') ||
+      lastAssistantMessage.includes('MAPEO ESTRATÉGICO')) {
+    return `${title}\n${'='.repeat(title.length)}\n\nData: ${new Date().toLocaleDateString('pt-BR')}\n\n---\n\n${lastAssistantMessage}`;
   }
 
   // Otherwise, compile from all messages
@@ -62,7 +61,7 @@ function generateCleanDocument(messages: Message[], title: string): string {
   document += '---\n\n';
 
   // Interleave Q&A format
-  for (let i = 0; i < Math.max(assistantMessages.length, userMessages.length); i++) {
+  for (let i = 0; i < assistantMessages.length; i++) {
     if (assistantMessages[i]) {
       document += assistantMessages[i] + '\n\n';
     }
@@ -80,6 +79,7 @@ export function ExportDocumentModal({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const cleanDocument = generateCleanDocument(messages, title);
 
@@ -102,57 +102,121 @@ export function ExportDocumentModal({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([cleanDocument], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${title.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setDownloading(true);
+    
+    setTimeout(() => {
+      const blob = new Blob([cleanDocument], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-    toast({
-      title: t('positioning.downloadedTitle', 'Download Iniciado'),
-      description: t('positioning.downloadedDesc', 'Seu documento foi baixado'),
-    });
+      toast({
+        title: t('positioning.downloadedTitle', 'Download Iniciado'),
+        description: t('positioning.downloadedDesc', 'Seu documento foi baixado'),
+      });
+      
+      setDownloading(false);
+    }, 500);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle>
-            {t('positioning.exportDocument', 'Exportar Documento')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('positioning.exportDocumentDesc', 'Documento limpo e formatado para uso profissional')}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-3xl max-h-[85vh]">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary/10">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl">
+                {t('positioning.exportDocument', 'Mapeamento Estratégico')}
+              </DialogTitle>
+              <DialogDescription>
+                {t('positioning.exportDocumentDesc', 'Documento profissional pronto para uso')}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <ScrollArea className="h-[400px] rounded-md border p-4">
-          <pre className="text-sm whitespace-pre-wrap font-sans">
-            {cleanDocument}
-          </pre>
-        </ScrollArea>
+        {/* Document Preview */}
+        <div className="relative">
+          <div className="absolute top-3 right-3 z-10">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 border">
+              <Sparkles className="h-3 w-3" />
+              <span>{t('positioning.cleanFormat', 'Formato limpo')}</span>
+            </div>
+          </div>
+          
+          <ScrollArea className="h-[400px] rounded-xl border bg-muted/20 p-6">
+            <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground/90">
+              {cleanDocument}
+            </pre>
+          </ScrollArea>
+        </div>
 
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={handleCopy}>
-            {copied ? (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                {t('positioning.copied', 'Copiado')}
-              </>
-            ) : (
-              <>
-                <Copy className="h-4 w-4 mr-2" />
-                {t('positioning.copyDocument', 'Copiar')}
-              </>
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleCopy}
+            className={cn(
+              'gap-2 min-w-[140px] transition-all duration-200',
+              copied && 'bg-green-500/10 border-green-500/50 text-green-600'
             )}
+          >
+            <AnimatePresence mode="wait">
+              {copied ? (
+                <motion.div
+                  key="check"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                >
+                  <Check className="h-4 w-4" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="copy"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                >
+                  <Copy className="h-4 w-4" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {copied 
+              ? t('positioning.copied', 'Copiado!')
+              : t('positioning.copyDocument', 'Copiar Texto')
+            }
           </Button>
-          <Button onClick={handleDownload}>
-            <FileDown className="h-4 w-4 mr-2" />
-            {t('positioning.downloadDocument', 'Baixar .txt')}
+          
+          <Button
+            size="lg"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="gap-2 min-w-[160px]"
+          >
+            {downloading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              >
+                <FileDown className="h-4 w-4" />
+              </motion.div>
+            ) : (
+              <FileDown className="h-4 w-4" />
+            )}
+            {downloading
+              ? t('positioning.downloading', 'Baixando...')
+              : t('positioning.downloadDocument', 'Baixar Documento')
+            }
           </Button>
         </div>
       </DialogContent>

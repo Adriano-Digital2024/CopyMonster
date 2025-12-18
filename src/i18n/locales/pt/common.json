@@ -145,9 +145,48 @@
     "saveSuccessTitle": "Mapeamento Salvo!",
     "saveSuccessDesc": "{{blocks}} blocos foram salvos com sucesso.",
     "saveErrorTitle": "Erro ao Salvar",
+    "autoSaveSuccessTitle": "Mapeamento salvo automaticamente",
+    "autoSaveSuccessDesc": "Seu posicionamento foi salvo com sucesso",
+    "completion": {
+      "title": "Mapeamento Estratégico Completo!",
+      "subtitle": "Seu DNA de marca está pronto para uso",
+      "description": "Agora você pode baixar seu documento de posicionamento ou utilizar esse mapeamento para criar copys de alta conversão com nossos agentes especializados.",
+      "viewMapping": "Ver Mapeamento",
+      "viewMappingHint": "Baixar documento completo",
+      "createCopys": "Criar Copys",
+      "createCopysHint": "Escolher próximo agente",
+      "contextNote": "O contexto do seu mapeamento será automaticamente passado para o próximo agente."
+    },
+    "selectNextAgent": "Criar Copys com seu Posicionamento",
+    "selectNextAgentDesc": "Escolha um agente especializado para criar sua campanha",
+    "contextWillBeShared": "Seu mapeamento estratégico será automaticamente compartilhado com o agente escolhido",
+    "exportDocument": "Mapeamento Estratégico",
+    "exportDocumentDesc": "Documento profissional pronto para uso",
+    "cleanFormat": "Formato limpo",
+    "copiedTitle": "Copiado!",
+    "copiedDesc": "Documento copiado para a área de transferência",
+    "copyErrorTitle": "Erro ao copiar",
+    "copyErrorDesc": "Não foi possível copiar o documento",
+    "downloadedTitle": "Download Iniciado",
+    "downloadedDesc": "Seu documento foi baixado",
+    "copied": "Copiado!",
+    "copyDocument": "Copiar Texto",
+    "downloading": "Baixando...",
+    "downloadDocument": "Baixar Documento",
     "welcome": {
       "title": "Sua Jornada de Posicionamento Estratégico Começa Aqui",
       "description": "Vou guiá-lo através de 12 blocos essenciais para criar seu posicionamento de marca completo. Uma pergunta de cada vez, construiremos sua base estratégica."
+    }
+  },
+  "agents": {
+    "positioningContextLoaded": "Contexto de posicionamento carregado",
+    "categories": {
+      "copywriting": "Agentes de Copywriting",
+      "campaign": "Agentes de Campanha Completa",
+      "campaignDesc": "Campanhas prontas para uso imediato com todos os assets inclusos"
+    },
+    "badge": {
+      "new": "Novo"
     }
   }
 }
