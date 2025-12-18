@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Target, Sparkles, Save, Loader2, FileDown, Link2 } from 'lucide-react';
+import { ChevronLeft, Target, Sparkles, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AgentSelectionModal } from '@/components/positioning/AgentSelectionModal';
 import { ExportDocumentModal } from '@/components/positioning/ExportDocumentModal';
+import { CompletionPanel } from '@/components/positioning/CompletionPanel';
 
 const AGENT_CONFIG = {
   slug: 'brand-positioning-monster',
@@ -44,6 +45,7 @@ export default function Positioning() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isFlowComplete, setIsFlowComplete] = useState(false);
   const [savedMappingId, setSavedMappingId] = useState<string | null>(null);
+  const [showCompletionPanel, setShowCompletionPanel] = useState(false);
 
   const handleMessagesChange = useCallback((newMessages: Message[]) => {
     setMessages(newMessages);
@@ -59,18 +61,69 @@ export default function Positioning() {
         'qual agente você gostaria',
         'which agent would you like',
         'qué agente te gustaría',
+        'mapeamento estratégico completo',
+        'strategic mapping complete',
+        'mapeo estratégico completo',
       ];
       
       if (completionIndicators.some(indicator => content.includes(indicator))) {
         setIsFlowComplete(true);
+        setShowCompletionPanel(true);
       }
     }
   }, []);
+
+  // Auto-save when flow completes
+  useEffect(() => {
+    if (isFlowComplete && !savedMappingId && user && messages.length > 0) {
+      autoSaveMapping();
+    }
+  }, [isFlowComplete]);
 
   const countCompletedBlocks = (msgs: Message[]): number => {
     // Count user messages as completed blocks (each user response = 1 block completed)
     const userMessages = msgs.filter(m => m.role === 'user');
     return Math.min(userMessages.length, 12);
+  };
+
+  const autoSaveMapping = async () => {
+    if (!user || messages.length === 0 || savedMappingId) return;
+    
+    try {
+      const completedBlocks = countCompletedBlocks(messages);
+      const autoTitle = `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`;
+      
+      // Prepare conversation data
+      const conversationData = messages.map(m => ({
+        role: m.role,
+        content: m.content,
+        timestamp: m.timestamp.toISOString()
+      }));
+
+      const { data, error } = await supabase
+        .from('positioning_mappings')
+        .insert({
+          user_id: user.id,
+          title: autoTitle,
+          status: 'completed',
+          conversation: conversationData,
+          completed_blocks: completedBlocks,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      setSavedMappingId(data.id);
+      setMappingTitle(autoTitle);
+      
+      toast({
+        title: t('positioning.autoSaveSuccessTitle', 'Mapeamento salvo automaticamente'),
+        description: t('positioning.autoSaveSuccessDesc', 'Seu posicionamento foi salvo com sucesso'),
+      });
+    } catch (error: any) {
+      console.error('Error auto-saving mapping:', error);
+    }
   };
 
   const handleSave = useCallback((msgs: Message[]) => {
@@ -94,21 +147,35 @@ export default function Positioning() {
         timestamp: m.timestamp.toISOString()
       }));
 
-      const { data, error } = await supabase
-        .from('positioning_mappings')
-        .insert({
-          user_id: user.id,
-          title: mappingTitle || `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`,
-          status: isCompleted ? 'completed' : 'in_progress',
-          conversation: conversationData,
-          completed_blocks: completedBlocks,
-        })
-        .select('id')
-        .single();
+      // If already saved, update instead
+      if (savedMappingId) {
+        const { error } = await supabase
+          .from('positioning_mappings')
+          .update({
+            title: mappingTitle || `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`,
+            status: isCompleted ? 'completed' : 'in_progress',
+            conversation: conversationData,
+            completed_blocks: completedBlocks,
+          })
+          .eq('id', savedMappingId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('positioning_mappings')
+          .insert({
+            user_id: user.id,
+            title: mappingTitle || `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`,
+            status: isCompleted ? 'completed' : 'in_progress',
+            conversation: conversationData,
+            completed_blocks: completedBlocks,
+          })
+          .select('id')
+          .single();
 
-      setSavedMappingId(data.id);
+        if (error) throw error;
+        setSavedMappingId(data.id);
+      }
       
       toast({
         title: t('positioning.saveSuccessTitle'),
@@ -126,6 +193,14 @@ export default function Positioning() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleViewMapping = () => {
+    setIsExportModalOpen(true);
+  };
+
+  const handleCreateCopys = () => {
+    setIsAgentModalOpen(true);
   };
 
   const completedBlocks = countCompletedBlocks(messages);
@@ -191,30 +266,6 @@ export default function Positioning() {
                   <Save className="h-4 w-4" />
                   {t('positioning.save')}
                 </Button>
-                
-                {/* Show export and connect buttons when flow is complete */}
-                {isFlowComplete && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsExportModalOpen(true)}
-                      className="gap-2"
-                    >
-                      <FileDown className="h-4 w-4" />
-                      {t('positioning.export', 'Exportar')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => setIsAgentModalOpen(true)}
-                      className="gap-2"
-                      style={{ backgroundColor: AGENT_CONFIG.color }}
-                    >
-                      <Link2 className="h-4 w-4" />
-                      {t('positioning.connectAgent', 'Conectar Agente')}
-                    </Button>
-                  </>
-                )}
               </>
             )}
           </div>
@@ -227,11 +278,20 @@ export default function Positioning() {
             agentColor={AGENT_CONFIG.color}
             agentSlug={AGENT_CONFIG.slug}
             autoStart={true}
-            showSaveButton={true}
+            showSaveButton={false}
             onMessagesChange={handleMessagesChange}
             onSave={handleSave}
           />
         </Card>
+
+        {/* Completion Panel - Shows inline when flow is complete */}
+        {showCompletionPanel && (
+          <CompletionPanel
+            onViewMapping={handleViewMapping}
+            onCreateCopys={handleCreateCopys}
+            agentColor={AGENT_CONFIG.color}
+          />
+        )}
       </div>
 
       {/* Save Dialog */}
@@ -276,10 +336,6 @@ export default function Positioning() {
         open={isAgentModalOpen}
         onOpenChange={setIsAgentModalOpen}
         mappingId={savedMappingId || undefined}
-        onSaveFirst={() => {
-          setIsAgentModalOpen(false);
-          setIsSaveDialogOpen(true);
-        }}
       />
 
       {/* Export Document Modal */}

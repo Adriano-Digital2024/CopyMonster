@@ -145,9 +145,48 @@
     "saveSuccessTitle": "Mapping Saved!",
     "saveSuccessDesc": "{{blocks}} blocks were saved successfully.",
     "saveErrorTitle": "Error Saving",
+    "autoSaveSuccessTitle": "Mapping saved automatically",
+    "autoSaveSuccessDesc": "Your positioning was saved successfully",
+    "completion": {
+      "title": "Strategic Mapping Complete!",
+      "subtitle": "Your brand DNA is ready to use",
+      "description": "You can now download your positioning document or use this mapping to create high-converting copy with our specialized agents.",
+      "viewMapping": "View Mapping",
+      "viewMappingHint": "Download complete document",
+      "createCopys": "Create Copy",
+      "createCopysHint": "Choose next agent",
+      "contextNote": "Your mapping context will be automatically passed to the next agent."
+    },
+    "selectNextAgent": "Create Copy with your Positioning",
+    "selectNextAgentDesc": "Choose a specialized agent to create your campaign",
+    "contextWillBeShared": "Your strategic mapping will be automatically shared with the chosen agent",
+    "exportDocument": "Strategic Mapping",
+    "exportDocumentDesc": "Professional document ready to use",
+    "cleanFormat": "Clean format",
+    "copiedTitle": "Copied!",
+    "copiedDesc": "Document copied to clipboard",
+    "copyErrorTitle": "Error copying",
+    "copyErrorDesc": "Could not copy the document",
+    "downloadedTitle": "Download Started",
+    "downloadedDesc": "Your document has been downloaded",
+    "copied": "Copied!",
+    "copyDocument": "Copy Text",
+    "downloading": "Downloading...",
+    "downloadDocument": "Download Document",
     "welcome": {
       "title": "Your Strategic Positioning Journey Starts Here",
       "description": "I'll guide you through 12 essential blocks to create your complete brand positioning. One question at a time, we'll build your strategic foundation."
+    }
+  },
+  "agents": {
+    "positioningContextLoaded": "Positioning context loaded",
+    "categories": {
+      "copywriting": "Copywriting Agents",
+      "campaign": "Complete Campaign Agents",
+      "campaignDesc": "Ready-to-use campaigns with all assets included"
+    },
+    "badge": {
+      "new": "New"
     }
   }
 }
