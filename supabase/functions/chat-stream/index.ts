@@ -6,6 +6,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting: Map of user_id -> { count, resetTime }
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX = 20; // Max requests per window
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in ms
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (userLimit.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
 // Language detection function
 function detectLanguage(text: string): 'pt-BR' | 'en' | 'es' | 'unknown' {
   const ptPatterns = /\b(você|não|está|isso|como|para|com|uma|que|por|mais|seu|sua|ter|fazer|muito|também|ainda|aqui|onde|quando|porque|então|assim|além|através|sobre|entre|após|durante|desde|pelo|pela|aos|às|nos|nas|dos|das|uns|umas|meus|minha|nosso|nossa|nós|ele|ela|eles|elas|deles|delas|quem|qual|quais|todo|toda|todos|todas|algum|alguma|alguns|algumas|nenhum|nenhuma|outro|outra|outros|outras|mesmo|mesma|mesmos|mesmas|só|apenas|já|agora|sempre|nunca|talvez|porém|contudo|entretanto|portanto|assim|logo|pois|porque|como|enquanto|embora|apesar|caso|se|senão|seja|são|foi|foram|será|serão|seria|seriam|está|estão|estava|estavam|estará|estarão|estaria|estariam|tem|têm|tinha|tinham|terá|terão|teria|teriam|pode|podem|podia|podiam|poderá|poderão|poderia|poderiam|deve|devem|devia|deviam|deverá|deverão|deveria|deveriam|quer|querem|queria|queriam|quererá|quererão|quereria|quereriam|vai|vão|ia|iam|irá|irão|iria|iriam|faz|fazem|fazia|faziam|fará|farão|faria|fariam|diz|dizem|dizia|diziam|dirá|dirão|diria|diriam|vem|vêm|vinha|vinham|virá|virão|viria|viriam|dá|dão|dava|davam|dará|darão|daria|dariam|sabe|sabem|sabia|sabiam|saberá|saberão|saberia|saberiam|vê|veem|via|viam|verá|verão|veria|veriam)\b/gi;
@@ -31,7 +53,6 @@ function detectLanguage(text: string): 'pt-BR' | 'en' | 'es' | 'unknown' {
   if (esPercent >= 50) return 'es';
   if (enPercent >= 50) return 'en';
   
-  // If no clear majority, return the highest
   if (ptPercent >= esPercent && ptPercent >= enPercent) return 'pt-BR';
   if (esPercent >= ptPercent && esPercent >= enPercent) return 'es';
   return 'en';
@@ -98,27 +119,125 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
   try {
-    const { messages, system_prompt, model, agent_slug, auto_start } = await req.json();
+    // 1. AUTHENTICATE USER
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('[chat-stream] No authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    // Verify JWT and get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !authUser) {
+      console.error('[chat-stream] Auth error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const userId = authUser.id;
+    console.log(`[chat-stream] User authenticated: ${userId}`);
+
+    // 2. RATE LIMITING
+    if (!checkRateLimit(userId)) {
+      console.warn(`[chat-stream] Rate limit exceeded for user: ${userId}`);
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please wait a moment and try again.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+      );
+    }
+
+    // 3. GET USER PROFILE AND VALIDATE CREDITS/TRIAL
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('credits, subscription_status, trial_expires_at')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('[chat-stream] Profile fetch error:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'User profile not found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      );
+    }
+
+    // Check if user can use the service
+    const now = new Date();
+    const trialExpired = profile.trial_expires_at && new Date(profile.trial_expires_at) < now;
+    const isFreeUser = profile.subscription_status === 'free';
+    const hasCredits = profile.credits > 0;
+
+    // Free users with expired trial cannot use the service
+    if (isFreeUser && trialExpired) {
+      console.warn(`[chat-stream] Trial expired for user: ${userId}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Trial expired',
+          code: 'TRIAL_EXPIRED',
+          message: 'Your free trial has expired. Please upgrade to continue.'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
+      );
+    }
+
+    // No credits available
+    if (!hasCredits) {
+      console.warn(`[chat-stream] No credits for user: ${userId}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Insufficient credits',
+          code: 'NO_CREDITS',
+          message: 'You have no credits remaining. Please upgrade your plan.'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
+      );
+    }
+
+    // 4. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING
+    const { data: updatedProfile, error: debitError } = await supabase
+      .from('profiles')
+      .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .eq('credits', profile.credits) // Optimistic locking
+      .select('credits')
+      .single();
+
+    if (debitError || !updatedProfile) {
+      console.error('[chat-stream] Credit debit failed:', debitError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+      );
+    }
+
+    const newCredits = updatedProfile.credits;
+    console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
+
+    // 5. PARSE REQUEST BODY
+    const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
     
     // Get API keys
     const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
     const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-    // Get auth header
-    const authHeader = req.headers.get('Authorization');
-    
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Detect language from user's last message
     const lastUserMessage = [...messages].reverse().find((m: any) => m.role === 'user');
     const detectedLanguage = lastUserMessage ? detectLanguage(lastUserMessage.content) : 'unknown';
     console.log(`[chat-stream] Detected language: ${detectedLanguage}`);
 
-    // Get language rules for detected language (default to English if unknown)
+    // Get language rules for detected language
     const effectiveLanguage = detectedLanguage === 'unknown' ? 'en' : detectedLanguage;
     const universalRules = getUniversalLanguageRules(effectiveLanguage);
 
@@ -196,8 +315,37 @@ serve(async (req) => {
         finalSystemPrompt = parts.join('');
       }
     } else if (system_prompt) {
-      // If using custom system_prompt, prepend language rules
       finalSystemPrompt = universalRules + '\n\n' + system_prompt;
+    }
+
+    // If positioning_mapping_id is provided, fetch and inject context
+    if (positioning_mapping_id) {
+      const { data: mapping, error: mappingError } = await supabase
+        .from('positioning_mappings')
+        .select('*')
+        .eq('id', positioning_mapping_id)
+        .eq('user_id', userId) // Security: only own mappings
+        .single();
+
+      if (!mappingError && mapping) {
+        const contextParts = [];
+        contextParts.push('\n\n# POSITIONING CONTEXT (User\'s Brand DNA)');
+        if (mapping.block_1_audience) contextParts.push(`\n## Target Audience\n${mapping.block_1_audience}`);
+        if (mapping.block_2_pain_points) contextParts.push(`\n## Pain Points\n${mapping.block_2_pain_points}`);
+        if (mapping.block_3_solution) contextParts.push(`\n## Solution\n${mapping.block_3_solution}`);
+        if (mapping.block_4_differentiators) contextParts.push(`\n## Differentiators\n${mapping.block_4_differentiators}`);
+        if (mapping.block_5_awareness_stage) contextParts.push(`\n## Awareness Stage\n${mapping.block_5_awareness_stage}`);
+        if (mapping.block_6_urgency) contextParts.push(`\n## Urgency\n${mapping.block_6_urgency}`);
+        if (mapping.block_7_social_proof) contextParts.push(`\n## Social Proof\n${mapping.block_7_social_proof}`);
+        if (mapping.block_8_objections) contextParts.push(`\n## Objections\n${mapping.block_8_objections}`);
+        if (mapping.block_9_emotional_connection) contextParts.push(`\n## Emotional Connection\n${mapping.block_9_emotional_connection}`);
+        if (mapping.block_10_transformation) contextParts.push(`\n## Transformation\n${mapping.block_10_transformation}`);
+        if (mapping.block_11_voice) contextParts.push(`\n## Brand Voice\n${mapping.block_11_voice}`);
+        if (mapping.block_12_promises) contextParts.push(`\n## Promises\n${mapping.block_12_promises}`);
+        
+        finalSystemPrompt += contextParts.join('');
+        console.log(`[chat-stream] Positioning context injected from mapping: ${positioning_mapping_id}`);
+      }
     }
 
     // Determine which API to use
@@ -242,12 +390,10 @@ serve(async (req) => {
 
     console.log(`[chat-stream] Using model: ${modelName} via ${isMistral ? 'Mistral' : 'OpenRouter'}`);
 
-    // Handle auto-start: detect the __auto_start__ marker but keep a user message
+    // Handle auto-start
     let processedMessages = messages;
     if (auto_start || (messages.length === 1 && messages[0]?.content === '__auto_start__')) {
-      // Add auto-start instruction in the detected language
       finalSystemPrompt += getAutoStartInstruction(effectiveLanguage);
-      
       console.log('[chat-stream] Auto-start mode activated for agent:', agent_slug);
     }
 
@@ -275,29 +421,48 @@ serve(async (req) => {
       const errorBody = await res.text();
       console.error('[chat-stream] API error:', res.status, errorBody);
       
+      // Refund credit on API error
+      await supabase
+        .from('profiles')
+        .update({ credits: newCredits + 1 })
+        .eq('id', userId);
+      console.log(`[chat-stream] Credit refunded due to API error`);
+      
       if (res.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please wait a moment and try again.' }),
+          JSON.stringify({ error: 'AI service rate limit exceeded. Please wait a moment and try again.' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
-        );
-      }
-      
-      if (res.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Insufficient AI credits. Please contact support.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
         );
       }
       
       throw new Error(`AI Gateway error: ${res.statusText}`);
     }
 
+    // 6. LOG USAGE FOR AUDITING (async, don't block response)
+    const logUsage = async () => {
+      try {
+        await supabase.from('usage_logs').insert({
+          user_id: userId,
+          agent_slug: agent_slug || null,
+          model_used: modelName,
+          input_tokens: 0, // Could estimate from message length
+          output_tokens: 0, // Could estimate from response length
+          credits_consumed: 1,
+        });
+      } catch (e) {
+        console.error('[chat-stream] Failed to log usage:', e);
+      }
+    };
+    logUsage(); // Fire and forget
+
+    // 7. RETURN STREAMING RESPONSE WITH CREDITS HEADER
     return new Response(res.body, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
+        'X-Credits-Remaining': newCredits.toString(),
       },
       status: 200,
     });

@@ -59,6 +59,8 @@
     "startingGuide": "Starting guided mapping...",
     "preparingQuestions": "Preparing your strategic questions",
     "saveMapping": "Save mapping",
+    "rateLimitTitle": "Too many requests",
+    "rateLimitDesc": "Please wait a few seconds before trying again",
     "welcome": {
       "vsl_monster": {
         "title": "Let's Create Your High-Converting VSL",
@@ -176,6 +178,23 @@
     "welcome": {
       "title": "Your Strategic Positioning Journey Starts Here",
       "description": "I'll guide you through 12 essential blocks to create your complete brand positioning. One question at a time, we'll build your strategic foundation."
+    }
+  },
+  "trial": {
+    "expired": {
+      "title": "Free Trial Ended",
+      "description": "Your 7-day free trial has expired. Choose a plan to continue using the agents."
+    },
+    "noCredits": {
+      "title": "Credits Depleted",
+      "description": "You have no credits remaining. Upgrade your plan to continue."
+    },
+    "upgrade": {
+      "benefits": "With a paid plan you get:",
+      "benefit1": "Unlimited access to all agents",
+      "benefit2": "Monthly credits auto-renewed",
+      "benefit3": "Priority support",
+      "button": "Choose a Plan"
     }
   },
   "agents": {
