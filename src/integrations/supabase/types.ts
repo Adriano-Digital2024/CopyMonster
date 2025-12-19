@@ -653,6 +653,7 @@ export type Database = {
           preferred_language: string | null
           stripe_customer_id: string | null
           subscription_status: string
+          trial_expires_at: string | null
           updated_at: string
           xp: number
         }
@@ -667,6 +668,7 @@ export type Database = {
           preferred_language?: string | null
           stripe_customer_id?: string | null
           subscription_status?: string
+          trial_expires_at?: string | null
           updated_at?: string
           xp?: number
         }
@@ -681,6 +683,7 @@ export type Database = {
           preferred_language?: string | null
           stripe_customer_id?: string | null
           subscription_status?: string
+          trial_expires_at?: string | null
           updated_at?: string
           xp?: number
         }
@@ -727,6 +730,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      usage_logs: {
+        Row: {
+          agent_slug: string | null
+          created_at: string | null
+          credits_consumed: number | null
+          id: string
+          input_tokens: number | null
+          model_used: string | null
+          output_tokens: number | null
+          user_id: string
+        }
+        Insert: {
+          agent_slug?: string | null
+          created_at?: string | null
+          credits_consumed?: number | null
+          id?: string
+          input_tokens?: number | null
+          model_used?: string | null
+          output_tokens?: number | null
+          user_id: string
+        }
+        Update: {
+          agent_slug?: string | null
+          created_at?: string | null
+          credits_consumed?: number | null
+          id?: string
+          input_tokens?: number | null
+          model_used?: string | null
+          output_tokens?: number | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

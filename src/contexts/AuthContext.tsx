@@ -9,9 +9,10 @@ interface UserProfile {
   first_name: string;
   phone: string | null;
   credits: number;
-  subscription_status: 'free' | 'pro' | 'legend';
+  subscription_status: 'free' | 'starter' | 'pro' | 'legend';
   xp: number;
   level: number;
+  trial_expires_at: string | null;
 }
 
 interface User extends UserProfile {
@@ -23,6 +24,8 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isTrialExpired: boolean;
+  canUseAgents: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => void;
@@ -44,6 +47,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Computed properties for trial status
+  const isTrialExpired = React.useMemo(() => {
+    if (!user) return false;
+    if (user.subscription_status !== 'free') return false;
+    if (!user.trial_expires_at) return false;
+    return new Date(user.trial_expires_at) < new Date();
+  }, [user]);
+
+  const canUseAgents = React.useMemo(() => {
+    if (!user) return false;
+    
+    // Paid users can always use if they have credits
+    if (user.subscription_status !== 'free') {
+      return user.credits > 0;
+    }
+    
+    // Free users: check trial and credits
+    const hasCredits = user.credits > 0;
+    const trialValid = !user.trial_expires_at || new Date(user.trial_expires_at) > new Date();
+    
+    return hasCredits && trialValid;
+  }, [user]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -77,9 +103,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 first_name: profile.first_name,
                 phone: profile.phone,
                 credits: profile.credits,
-                subscription_status: profile.subscription_status as 'free' | 'pro' | 'legend',
+                subscription_status: profile.subscription_status as 'free' | 'starter' | 'pro' | 'legend',
                 xp: profile.xp,
                 level: profile.level,
+                trial_expires_at: profile.trial_expires_at,
                 isAdmin: roles && roles.length > 0,
               });
               
@@ -148,6 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     isLoading,
     isAuthenticated: !!user,
+    isTrialExpired,
+    canUseAgents,
     login,
     signup,
     logout,

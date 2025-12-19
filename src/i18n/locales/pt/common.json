@@ -59,6 +59,8 @@
     "startingGuide": "Iniciando o mapeamento guiado...",
     "preparingQuestions": "Preparando suas perguntas estratégicas",
     "saveMapping": "Salvar mapeamento",
+    "rateLimitTitle": "Muitas requisições",
+    "rateLimitDesc": "Aguarde alguns segundos antes de tentar novamente",
     "welcome": {
       "vsl_monster": {
         "title": "Vamos Criar Seu VSL de Alta Conversão",
@@ -176,6 +178,23 @@
     "welcome": {
       "title": "Sua Jornada de Posicionamento Estratégico Começa Aqui",
       "description": "Vou guiá-lo através de 12 blocos essenciais para criar seu posicionamento de marca completo. Uma pergunta de cada vez, construiremos sua base estratégica."
+    }
+  },
+  "trial": {
+    "expired": {
+      "title": "Período de Teste Encerrado",
+      "description": "Seu período de teste gratuito de 7 dias expirou. Escolha um plano para continuar usando os agentes."
+    },
+    "noCredits": {
+      "title": "Créditos Esgotados",
+      "description": "Você não possui mais créditos disponíveis. Atualize seu plano para continuar."
+    },
+    "upgrade": {
+      "benefits": "Com um plano pago você terá:",
+      "benefit1": "Acesso ilimitado a todos os agentes",
+      "benefit2": "Créditos mensais renovados automaticamente",
+      "benefit3": "Suporte prioritário",
+      "button": "Escolher um Plano"
     }
   },
   "agents": {

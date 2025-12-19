@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 export interface Message {
   id: string;
@@ -23,6 +24,7 @@ interface ChatInterfaceProps {
   agentSlug?: string;
   autoStart?: boolean;
   showSaveButton?: boolean;
+  positioningMappingId?: string;
   onCreditsUpdate?: (newCredits: number) => void;
   onMessagesChange?: (messages: Message[]) => void;
   onSave?: (messages: Message[]) => void;
@@ -35,6 +37,7 @@ export function ChatInterface({
   agentSlug, 
   autoStart = false,
   showSaveButton = false,
+  positioningMappingId,
   onCreditsUpdate,
   onMessagesChange,
   onSave
@@ -46,6 +49,7 @@ export function ChatInterface({
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,6 +72,53 @@ export function ChatInterface({
       handleAutoStart();
     }
   }, [autoStart, hasAutoStarted, messages.length, user]);
+
+  // Handle API errors
+  const handleApiError = (response: Response, errorData: any) => {
+    if (response.status === 402) {
+      // Credits depleted or trial expired
+      if (errorData.code === 'TRIAL_EXPIRED') {
+        toast({
+          title: t('trial.expired.title'),
+          description: t('trial.expired.description'),
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: t('chat.insufficientCreditsTitle'),
+          description: t('chat.insufficientCreditsDesc'),
+          variant: 'destructive'
+        });
+      }
+      navigate('/dashboard/billing');
+      return true;
+    }
+    
+    if (response.status === 429) {
+      toast({
+        title: t('chat.rateLimitTitle'),
+        description: t('chat.rateLimitDesc'),
+        variant: 'destructive'
+      });
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Update credits from response header
+  const updateCreditsFromResponse = (response: Response) => {
+    const creditsHeader = response.headers.get('X-Credits-Remaining');
+    if (creditsHeader !== null) {
+      const newCredits = parseInt(creditsHeader, 10);
+      if (!isNaN(newCredits)) {
+        updateUser({ credits: newCredits });
+        if (onCreditsUpdate) {
+          onCreditsUpdate(newCredits);
+        }
+      }
+    }
+  };
 
   const handleAutoStart = async () => {
     if (!user || user.credits <= 0) {
@@ -104,14 +155,22 @@ export function ChatInterface({
             system_prompt: systemPrompt,
             agent_slug: agentSlug,
             auto_start: true,
+            positioning_mapping_id: positioningMappingId,
           }),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (handleApiError(response, errorData)) {
+          setMessages([]);
+          return;
+        }
         throw new Error(errorData.error || 'Failed to get response from AI');
       }
+
+      // Update credits from header
+      updateCreditsFromResponse(response);
 
       const reader = response.body?.getReader();
       if (!reader) {
@@ -158,22 +217,11 @@ export function ChatInterface({
           }
         }
       }
-      
-      // Deduct credit for auto-start
-      if (user) {
-        const newCredits = user.credits - 1;
-        const { error } = await supabase
-          .from('profiles')
-          .update({ credits: newCredits })
-          .eq('id', user.id);
-        
-        if (!error) {
-          updateUser({ credits: newCredits });
-          if (onCreditsUpdate) {
-            onCreditsUpdate(newCredits);
-          }
-        }
-      }
+
+      toast({
+        title: t('chat.creditUsedTitle'),
+        description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
+      });
 
     } catch (error: any) {
       console.error('Auto-start error:', error);
@@ -240,14 +288,23 @@ export function ChatInterface({
             messages: messagesPayload,
             system_prompt: systemPrompt,
             agent_slug: agentSlug,
+            positioning_mapping_id: positioningMappingId,
           }),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (handleApiError(response, errorData)) {
+          // Remove the empty assistant message
+          setMessages(prev => prev.filter(m => m.id !== assistantMessageId));
+          return;
+        }
         throw new Error(errorData.error || 'Failed to get response from AI');
       }
+
+      // Update credits from header
+      updateCreditsFromResponse(response);
 
       const reader = response.body?.getReader();
       if (!reader) {
@@ -295,31 +352,10 @@ export function ChatInterface({
         }
       }
       
-      if (user) {
-        const newCredits = user.credits - 1;
-        const { error } = await supabase
-          .from('profiles')
-          .update({ credits: newCredits })
-          .eq('id', user.id);
-        
-        if (error) {
-          console.error("Error updating credits:", error);
-          toast({
-            title: 'Erro ao atualizar créditos',
-            description: 'Sua resposta foi gerada, mas houve um problema ao debitar o crédito.',
-            variant: 'destructive'
-          });
-        } else {
-          updateUser({ credits: newCredits });
-          if (onCreditsUpdate) {
-            onCreditsUpdate(newCredits);
-          }
-          toast({
-            title: t('chat.creditUsedTitle'),
-            description: t('chat.creditUsedDesc', { credits: newCredits })
-          });
-        }
-      }
+      toast({
+        title: t('chat.creditUsedTitle'),
+        description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
+      });
 
     } catch (error: any) {
       console.error('Chat error:', error);
