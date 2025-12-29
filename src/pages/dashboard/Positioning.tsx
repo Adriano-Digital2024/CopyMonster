@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Target, Sparkles, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { AgentSelectionModal } from '@/components/positioning/AgentSelectionModal';
 import { ExportDocumentModal } from '@/components/positioning/ExportDocumentModal';
 import { CompletionPanel } from '@/components/positioning/CompletionPanel';
+import { extractBlocksFromConversation } from '@/lib/positioning-extractor';
 
 const AGENT_CONFIG = {
   slug: 'brand-positioning-monster',
@@ -33,6 +34,7 @@ const AGENT_CONFIG = {
 
 export default function Positioning() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -46,6 +48,44 @@ export default function Positioning() {
   const [isFlowComplete, setIsFlowComplete] = useState(false);
   const [savedMappingId, setSavedMappingId] = useState<string | null>(null);
   const [showCompletionPanel, setShowCompletionPanel] = useState(false);
+
+  // Check for mapping to continue from library
+  useEffect(() => {
+    const continueId = localStorage.getItem('continue_mapping_id');
+    if (continueId && user) {
+      localStorage.removeItem('continue_mapping_id');
+      loadExistingMapping(continueId);
+    }
+  }, [user]);
+
+  const loadExistingMapping = async (mappingId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('positioning_mappings')
+        .select('*')
+        .eq('id', mappingId)
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setSavedMappingId(data.id);
+        setMappingTitle(data.title);
+        // Restore conversation
+        if (data.conversation && Array.isArray(data.conversation)) {
+          const restoredMessages = data.conversation.map((msg: any, index: number) => ({
+            id: String(index),
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            timestamp: new Date(msg.timestamp || Date.now())
+          }));
+          setMessages(restoredMessages);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading mapping:', error);
+    }
+  };
 
   const handleMessagesChange = useCallback((newMessages: Message[]) => {
     setMessages(newMessages);
@@ -100,6 +140,9 @@ export default function Positioning() {
         timestamp: m.timestamp.toISOString()
       }));
 
+      // Extract blocks from conversation
+      const extractedBlocks = extractBlocksFromConversation(messages);
+
       const { data, error } = await supabase
         .from('positioning_mappings')
         .insert({
@@ -108,6 +151,7 @@ export default function Positioning() {
           status: 'completed',
           conversation: conversationData,
           completed_blocks: completedBlocks,
+          ...extractedBlocks,
         })
         .select('id')
         .single();

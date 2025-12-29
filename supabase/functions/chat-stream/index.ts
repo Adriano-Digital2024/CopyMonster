@@ -232,14 +232,19 @@ serve(async (req) => {
     const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
     const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
 
-    // Detect language from user's last message
-    const lastUserMessage = [...messages].reverse().find((m: any) => m.role === 'user');
-    const detectedLanguage = lastUserMessage ? detectLanguage(lastUserMessage.content) : 'unknown';
-    console.log(`[chat-stream] Detected language: ${detectedLanguage}`);
-
-    // Get language rules for detected language
-    const effectiveLanguage = detectedLanguage === 'unknown' ? 'en' : detectedLanguage;
-    const universalRules = getUniversalLanguageRules(effectiveLanguage);
+    // Language detection strategy:
+    // 1. Priority: agent's configured language (most reliable)
+    // 2. Fallback: detect from first user message in conversation (session consistency)
+    // 3. Final fallback: detect from last message or default to 'pt-BR'
+    
+    let effectiveLanguage: 'pt-BR' | 'en' | 'es' = 'pt-BR'; // Default
+    let languageSource = 'default';
+    
+    // Will be set after fetching agent config
+    const firstUserMessage = messages.find((m: any) => m.role === 'user' && m.content !== '__auto_start__');
+    const detectedFromFirst = firstUserMessage ? detectLanguage(firstUserMessage.content) : 'unknown';
+    
+    console.log(`[chat-stream] Initial language detection from first message: ${detectedFromFirst}`);
 
     // If agent_slug is provided, fetch agent config from database
     let agentConfig: any = null;
@@ -265,6 +270,24 @@ serve(async (req) => {
         temperature = agent.temperature ?? 0.7;
         maxTokens = agent.max_tokens ?? 4096;
         topP = agent.top_p ?? 0.9;
+
+        // LANGUAGE PRIORITY: 
+        // 1. Agent's configured language (most reliable, prevents language switching)
+        // 2. Detected from first user message (session consistency)
+        // 3. Default to pt-BR
+        const validLanguages = ['pt-BR', 'en', 'es'];
+        if (agent.language && validLanguages.includes(agent.language)) {
+          effectiveLanguage = agent.language as 'pt-BR' | 'en' | 'es';
+          languageSource = 'agent_config';
+        } else if (detectedFromFirst && detectedFromFirst !== 'unknown') {
+          effectiveLanguage = detectedFromFirst as 'pt-BR' | 'en' | 'es';
+          languageSource = 'first_message_detection';
+        }
+        
+        console.log(`[chat-stream] Final language: ${effectiveLanguage} (source: ${languageSource})`);
+
+        // Get language rules AFTER determining effective language
+        const universalRules = getUniversalLanguageRules(effectiveLanguage);
 
         // Build dynamic master prompt with language-aware structure
         const parts = [];
@@ -315,6 +338,13 @@ serve(async (req) => {
         finalSystemPrompt = parts.join('');
       }
     } else if (system_prompt) {
+      // No agent, use detection from first message
+      if (detectedFromFirst && detectedFromFirst !== 'unknown') {
+        effectiveLanguage = detectedFromFirst as 'pt-BR' | 'en' | 'es';
+        languageSource = 'first_message_detection';
+      }
+      console.log(`[chat-stream] Final language (no agent): ${effectiveLanguage} (source: ${languageSource})`);
+      const universalRules = getUniversalLanguageRules(effectiveLanguage);
       finalSystemPrompt = universalRules + '\n\n' + system_prompt;
     }
 
