@@ -684,6 +684,226 @@ const resources = {
           savedDesc: 'Your settings have been updated successfully.',
         },
       },
+      start: {
+        hero: {
+          intro: "In 1920, a brilliant book didn't sell a single copy.",
+          story: "An advertiser — quoted decades later by Napoleon Hill — tore off the cover, rewrote 47 words... and turned it into a bestseller.",
+          power: "Today, that power is in your hands: agents trained in the millionaire tactics of Claude Hopkins, Caples and Ogilvy to Russell Brunson and Alex Hormozi.",
+          cta: "Activate CopyMonster",
+          tagline: "Leave your audience in love — and profitable."
+        },
+        problem: {
+          title: "Your time is too valuable to spend hours fixing 'robots' that write like Wikipedia.",
+          honest: "Let's be brutally honest for a second.",
+          frustration: "Have you ever felt that frustration of opening ChatGPT (or any other generic AI), typing a 10-line prompt explaining your product, and receiving... an 'okay' text? A technically correct text, but completely bland. No triggers. No your voice. No soul?",
+          reason: "This happens because generic tools are blind. They don't know who your ideal customer is. They don't know the deep pain your product cures. They don't understand your differentiator.",
+          analogy: "They're like average-intelligence interns: you need to hold their hand the whole time."
+        },
+        intro: {
+          context: "The digital marketing world has changed. While amateurs fight over generic prompts, the top 1% of Experts, Infoproducers and Elite Agencies use a new secret weapon:",
+          presenting: "Introducing",
+          platform: "The First AI Platform that Combines Your Business DNA with Specialized Agents.",
+          notJust: "It's not just a 'text generator'. It's the first Strategic Copywriting ecosystem that forces you to map the strategy before writing a single word.",
+          result: "The result? World-class copy, polished by 22 Specialist Agents, in English, Portuguese and Spanish, in minutes.",
+          cta: "Immediate Access"
+        },
+        dna: {
+          secret: "The Secret No One Is Telling About AI",
+          mistake: "Most people lose money with AI because they skip straight to execution without the foundation.",
+          agentName: "Brand Positioning Monster",
+          agentSubtitle: "The fundamental agent that changes everything",
+          forget: "Forget 'filling out forms'. The Brand Positioning Monster takes you through a 12-Block Strategic Mapping. It doesn't ask 'what your product is about', it unearths:",
+          blocks: {
+            audience: { title: "The Hidden Target Audience", desc: "Not just 'women aged 30', but their psyche." },
+            pains: { title: "The 3 Mainline Pains", desc: "What keeps them up at night." },
+            differentiator: { title: "The Irrefutable Differentiator", desc: "Why no one can copy you." },
+            transformation: { title: "The Before/After Transformation", desc: "The customer's emotional journey." }
+          },
+          magic: "Once you fill in your brand's DNA, something magical happens: That DNA is automatically injected into all other 21 agents. They no longer write 'generic text'. They write your business's voice."
+        },
+        agents: {
+          title: "Meet Your Private Copywriting Army",
+          subtitle: "22 Elite Agents",
+          description: "While ChatGPT is a 'mediocre generalist', CopyMonster gives you access to specialists trained on millions of high-converting examples.",
+          architects: {
+            title: "The Sales Architects",
+            subtitle: "(For Those Who Sell Millions)",
+            vsl: { name: "VSL Monster", desc: "Creates complete 12-20 minute Video Sales Letter scripts. Gene Schwartz structure, attention triggers, pain agitation and Irresistible offer." },
+            salesPage: { name: "Sales Page Monster", desc: "Long, complete sales pages, ready to convert cold to hot. From Headline to FAQ." },
+            headline: { name: "Headline Monster", desc: "Generates dozens of psychologically tested magnetic headlines to stop the scroll." }
+          },
+          traffic: {
+            title: "The Paid Traffic Masters",
+            ads: { name: "Ads Monster", desc: "Complete campaigns for Meta, Google, TikTok and YouTube. From Top to Bottom of the funnel." },
+            fbGoogle: { name: "Facebook Ads and Google Ads", desc: "Specialists in creating ads that pass network approval and convert the click." },
+            short: { name: "Short Monster", desc: "Scripts for Reels, TikTok and Shorts that don't just entertain, but convert." }
+          },
+          email: {
+            title: "The Email and Retention Wizards",
+            emailMonster: { name: "Email Monster", desc: "Complete sequences (Launch, Abandoned Cart, Re-engagement). Sales emails that look like they were written by a friend." },
+            leadNurture: { name: "Lead Nurture Monster", desc: "Transforms cold leads into hot buyers in 4 weeks of strategic nurturing." },
+            whatsapp: { name: "WhatsApp Sales Monster", desc: "Direct sales scripts in chat to close in the heat of the moment." }
+          },
+          launch: {
+            title: "The Launch Strategists",
+            subtitle: "(The Secret of the Big Gurus)",
+            launchMonster: { name: "Launch Monster", desc: "Complete coordination of a digital launch. From pre-sale to post-sale." },
+            internal: { name: "Internal Launch Monster", desc: "7-day strategy to burn the internal list and generate quick cash." },
+            flash: { name: "Flash Launch Monster", desc: "3-day lightning launch for high urgency offers." },
+            webinar: { name: "Webinar Campaign Monster", desc: "From the 60-minute presentation script to follow-up emails that make the offer explode." }
+          },
+          fullList: {
+            title: "Meet Your Private Copywriting Army",
+            subtitle: "22 Elite Agents",
+            description: "They're not just text generators. They're specialists trained on millions of high-converting examples, ready to work in English, Portuguese and Spanish.",
+            categories: {
+              architects: {
+                title: "The Sales Architects",
+                subtitle: "For Those Who Sell Millions",
+                agents: {
+                  vsl: { name: "VSL Monster", desc: "The master of attention retention. Creates VSLs using Gene Schwartz's method, programmed to break the pattern in the first 10 seconds." },
+                  fullVsl: { name: "Full VSL Script Monster", desc: "The perfect structure in 15 minutes. Ideal for 12-15 minute videos with exact timing for each section." },
+                  salesPage: { name: "Sales Page Monster", desc: "Pages that sell for you. Develops long sales pages that work as 24/7 salespeople." },
+                  launch: { name: "Launch Monster", desc: "The maestro of your event. Plans and executes complex product launches with strategy and narrative." }
+                }
+              },
+              traffic: {
+                title: "The Paid Traffic and Attention Masters",
+                agents: {
+                  ads: { name: "Ads Monster", desc: "Ads that stop the thumb. Creates complete campaigns for Meta, Google, TikTok and YouTube." },
+                  headline: { name: "Headline Monster", desc: "The first contact is everything. Generates dozens of headlines using curiosity triggers, direct benefit and urgency." },
+                  short: { name: "Short Monster", desc: "Virality in 60 seconds. Scripts for Reels, TikTok and Shorts that convert." }
+                }
+              },
+              relationship: {
+                title: "The Relationship and Conversion Wizards",
+                agents: {
+                  email: { name: "Email Monster", desc: "Letters that turn into cash. Creates high-performance email marketing sequences with a sincere conversation tone." },
+                  whatsapp: { name: "WhatsApp Sales Monster", desc: "The intimacy that generates sales. Direct sales sequences via WhatsApp that sound natural." }
+                }
+              },
+              campaigns: {
+                title: "Complete Campaign Agents",
+                subtitle: "Operations on Autopilot",
+                agents: {
+                  internal: { name: "Internal Launch Monster", desc: "Waking up your base. Complete 7-day internal launch to generate immediate revenue." },
+                  flash: { name: "Flash Launch Monster", desc: "Supersonic speed. 3-day lightning launch structure for quick cash." },
+                  webinar: { name: "Webinar Campaign Monster", desc: "The full room, without the headache. Complete campaign from script to follow-up emails." },
+                  evergreen: { name: "Evergreen Funnel Monster", desc: "Sales while you sleep. Perpetual funnels that pay your bills on autopilot." },
+                  cartRecovery: { name: "Cart Recovery Monster", desc: "Rescuing your money. Surgical abandoned cart recovery sequences." },
+                  leadNurture: { name: "Lead Nurture Monster", desc: "Turning ice into water. Strategically warms leads over 4 weeks." },
+                  upsell: { name: "Upsell Cross Monster", desc: "Increasing LTV. Post-purchase upsell and cross-sell offers to maximize value." },
+                  listRevival: { name: "List Revival Monster", desc: "Giving life to the dead. Re-engagement sequences for old lists." }
+                }
+              }
+            }
+          }
+        },
+        more: {
+          title: "And Much More...",
+          description: "SEO Blog Posts, Short Video Scripts (Reels/Shorts), Social Media, Upsells... all speaking your customer's language.",
+          cta: "Immediate Access"
+        },
+        exoskeleton: {
+          notJust: "CopyMonster is not just a writing tool.",
+          superpower: "It's the exoskeleton for your creative mind.",
+          wearing: "By wearing the CopyMonster shirt, you're not automating boring tasks. You're activating superpowers of engaging communication that are born from your own original essence.",
+          others: "Most AI platforms today are just digital stenographers: they write what you say, without understanding why.",
+          different: "CopyMonster is different. It works like a Senior Creative Director living in your head. It understands your business's DNA, knows your customer's pain and knows exactly which trigger to pull to convert.",
+          explore: "Explore our platform",
+          connect: "Connect with 22 Specialist Agents ready to skyrocket your results.",
+          cta: "Immediate Access"
+        },
+        howItWorks: {
+          title: "How CopyMonster Changes the Game",
+          step1: {
+            number: "1",
+            title: "We Activate the Fundamental Agent",
+            description: "Before writing a single word, the Brand Positioning Monster performs a deep 12-Block Strategic Mapping. It discovers the 'x' of your business, your brand's voice and the transformation you offer."
+          },
+          step2: {
+            number: "2",
+            title: "DNA Injected into All Agents",
+            description: "Once the DNA is mapped, it's injected into all other agents. The result is not 'robot text'. It's polished persuasive copy, with your signature, but at machine speed."
+          }
+        },
+        testimonials: {
+          title: "Testimonials from Those Already at the Vanguard",
+          list: {
+            t1: { quote: "CopyMonster has transformed the way I create content. I save hours every week and my conversion rates have never been higher. It's like having a silent partner who never sleeps.", author: "Adriano Vieira", role: "Marketing Expert" },
+            t2: { quote: "The VSL Monster is simply incredible. It created a script that sold more in one week than my previous one did in a month. The pain agitation structure is perfect.", author: "Juliana Silva", role: "Course Creator" },
+            t3: { quote: "As a marketing agency, this tool is essential. We deliver better results to our clients in less time. The business DNA changes the game.", author: "Carlos Mendes", role: "Agency CEO" }
+          }
+        },
+        pricing: {
+          title: "Are You Ready to Become Unstoppable?",
+          subtitle: "While your competitors are asking ChatGPT to 'write a sales email', you'll have a Team of 22 Elite Agents knowing every detail of your product, speaking English, Portuguese or Spanish, and generating copy that sells.",
+          trialTitle: "Choose Your Plan and Start Your 7-Day Free Trial",
+          trialSubtitle: "Whether you're just starting (Starter) or you're a conversion 'Monster' seeking total domination (Legend). We have the right army for you.",
+          starter: {
+            name: "Starter",
+            subtitle: "Ideal for those just starting to tame the CopyMonster.",
+            price: "$47",
+            period: "/month",
+            features: {
+              f1: "1,000 credits/month",
+              f2: "Access to all 22 agents",
+              f3: "Positioning Diagnosis (Brand DNA)",
+              f4: "Community Support"
+            },
+            cta: "Immediate Access"
+          },
+          pro: {
+            name: "Pro",
+            subtitle: "For businesses and Copywriters seeking scale and agility.",
+            price: "$97",
+            period: "/month",
+            badge: "Most Popular",
+            features: {
+              f1: "5,000 credits/month (Agency volume)",
+              f2: "Everything in Starter plan",
+              f3: "Performance Analytics of your texts",
+              f4: "Exclusive Framework Library",
+              f5: "Priority email support"
+            },
+            cta: "Immediate Access"
+          },
+          legend: {
+            name: "Legend",
+            subtitle: "For the conversion monsters who demand supremacy.",
+            price: "$197",
+            period: "/month",
+            features: {
+              f1: "15,000 credits/month",
+              f2: "Everything in Pro plan",
+              f3: "Agent Training (Coming soon - Create your own logic)",
+              f4: "Early access to new features (Beta Testing)",
+              f5: "VIP WhatsApp Support (Talk directly with the team)"
+            },
+            cta: "Immediate Access"
+          }
+        },
+        guarantee: {
+          title: "Zero Risk Guarantee",
+          description: "Test CopyMonster for 7 days. Use the Brand Positioning Monster. Run a Launch campaign. If you don't feel this is the most powerful copy tool you've ever used, cancel whenever you want. No questions asked.",
+          tagline: "Master the strategy. Become unstoppable.",
+          cta: "Immediate Access",
+          trial: "Start 7-Day Free Trial"
+        },
+        agencies: {
+          title: "Why CopyMonster is Unbeatable for Agencies and Copywriters",
+          subtitle: "Pro and Legend Plan",
+          intro: "If you're a professional Copywriter or Agency owner, the Pro and Legend Plans were made for you to scale without blowing up your schedule.",
+          benefits: {
+            b1: "Scale Your Operation: Deliver 10x more projects to your clients with the same team.",
+            b2: "\"Tier 1\" Quality: Don't deliver drafts. Deliver structured copy that looks like it was written by a $10,000/month senior.",
+            b3: "Framework Library: Have access to the most valuable digital marketing structures saved and ready to use.",
+            b4: "Priority and VIP Support: Your question is an emergency."
+          },
+          legend: "In the Legend plan, you're not just a user, you're a strategic partner with early access to new features and agent training.",
+          cta: "Immediate Access"
+        }
+      },
     },
   },
   pt: {
@@ -1368,6 +1588,226 @@ const resources = {
           savedDesc: 'Suas configurações foram atualizadas com sucesso.',
         },
       },
+      start: {
+        hero: {
+          intro: "Em 1920, um livro brilhante não vendia uma única cópia.",
+          story: "Um publicitário — citado décadas depois por Napoleon Hill — rasgou a capa, reescreveu 47 palavras… e o transformou em best-seller.",
+          power: "Hoje, esse poder está em suas mãos: agentes treinados nas táticas milionárias de Claude Hopkins, Caples e Ogilvy até Russell Brunson e Alex Hormozi.",
+          cta: "Ative o CopyMonster",
+          tagline: "Deixe sua audiência apaixonada — e lucrativa."
+        },
+        problem: {
+          title: "Seu tempo é muito valioso para passar horas corrigindo \"robôs\" que escrevem como se fossem da Wikipedia.",
+          honest: "Vamos ser brutamente honestos por um segundo.",
+          frustration: "Você já sentiu aquela frustração de abrir o ChatGPT (ou qualquer outra IA genérica), digitar um prompt de 10 linhas explicando seu produto, e receber... um texto \"ok\"? Um texto tecnicamente correto, mas totalmente sem sal. Sem gatilhos. Sem a sua voz. Sem alma?",
+          reason: "Isso acontece porque ferramentas genéricas são cegas. Elas não sabem quem é seu cliente ideal. Elas não conhecem a dor profunda que seu produto cura. Elas não entendem seu diferencial.",
+          analogy: "Elas são como estagiários de inteligência média: você precisa segurar a mão delas o tempo todo."
+        },
+        intro: {
+          context: "O mundo do marketing digital mudou. Enquanto amadores brigam por prompts genéricos, os 1% dos principais Experts, Infoprodutores e Agências de Elite usam uma nova arma secreta:",
+          presenting: "Apresentando",
+          platform: "A Primeira Plataforma de IA que Combina o DNA do Seu Negócio com Agentes Especializados.",
+          notJust: "Não é apenas um \"gerador de texto\". É o primeiro ecossistema de Copywriting Estratégico que obriga você a mapear a estratégia antes de escrever uma única palavra.",
+          result: "O resultado? Copys de classe mundial, lapidadas por 22 Agentes Especialistas, em Inglês, Português e Espanhol, em minutos.",
+          cta: "Acesso Imediato"
+        },
+        dna: {
+          secret: "O Segredo que Ninguém Está Contando Sobre IA",
+          mistake: "A maioria das pessoas perde dinheiro com IA porque pula direto para a execução sem a base.",
+          agentName: "Brand Positioning Monster",
+          agentSubtitle: "O agente fundamental que muda tudo",
+          forget: "Esqueça \"preencher formulários\". O Brand Positioning Monster conduz você por um Mapeamento Estratégico de 12 Blocos. Ele não pergunta \"sobre o que é seu produto\", ele desenterra:",
+          blocks: {
+            audience: { title: "O Público-Alvo Oculto", desc: "Não apenas \"mulheres de 30 anos\", mas a psique delas." },
+            pains: { title: "As 3 Dores Mainline", desc: "O que tira o sono delas à noite." },
+            differentiator: { title: "O Diferencial Irrefutável", desc: "Por que ninguém pode copiar você." },
+            transformation: { title: "A Transformação Antes/Depois", desc: "A jornada emocional do cliente." }
+          },
+          magic: "Uma vez que você preenche o DNA da sua marca, algo mágico acontece: Esse DNA é injetado automaticamente em todos os outros 21 agentes. Eles não escrevem mais \"texto genérico\". Eles escrevem a voz do seu negócio."
+        },
+        agents: {
+          title: "Conheça Seu Exército Privado de Copywriting",
+          subtitle: "22 Agentes de Elite",
+          description: "Enquanto o ChatGPT é um \"generalista medíocre\", o CopyMonster te dá acesso a especialistas formados em milhões de exemplos de alta conversão.",
+          architects: {
+            title: "Os Arquitetos de Vendas",
+            subtitle: "(Para Quem Vende Milhões)",
+            vsl: { name: "VSL Monster", desc: "Cria scripts completos de Video Sales Letter de 12 a 20 minutos. Estrutura Gene Schwartz, gatilhos de atenção, agitação da dor e oferta Irresistível." },
+            salesPage: { name: "Sales Page Monster", desc: "Páginas de vendas longas, completas, prontas para converter frio em quente. Do Headline ao FAQ." },
+            headline: { name: "Headline Monster", desc: "Gera dezenas de manchetes magnéticas testadas psicológicamente para parar o scroll." }
+          },
+          traffic: {
+            title: "Os Mestres do Tráfego Pago",
+            ads: { name: "Ads Monster", desc: "Campanhas completas para Meta, Google, TikTok e YouTube. Do Topo ao Fundo do funil." },
+            fbGoogle: { name: "Facebook Ads e Google Ads", desc: "Especialistas em criar anúncios que passam pela aprovação das redes e convertem o clique." },
+            short: { name: "Short Monster", desc: "Roteiros para Reels, TikTok e Shorts que não apenas entretêm, mas convertem." }
+          },
+          email: {
+            title: "Os Magos do Email e Retenção",
+            emailMonster: { name: "Email Monster", desc: "Sequências completas (Lançamento, Carrinho Abandonado, Reengajamento). Email de vendas que parece que foi escrito por um amigo." },
+            leadNurture: { name: "Lead Nurture Monster", desc: "Transforma leads frios em compradores quentes em 4 semanas de nutrição estratégica." },
+            whatsapp: { name: "WhatsApp Sales Monster", desc: "Scripts de venda direta no chat para fechar no calor do momento." }
+          },
+          launch: {
+            title: "Os Estrategistas de Lançamento",
+            subtitle: "(O Segredo dos Grandes Gurus)",
+            launchMonster: { name: "Launch Monster", desc: "A coordenação completa de um lançamento digital. Da pré-venda ao pós-venda." },
+            internal: { name: "Internal Launch Monster", desc: "Estratégia de 7 dias para queimar a lista interna e gerar caixa rápido." },
+            flash: { name: "Flash Launch Monster", desc: "Lançamento relâmpago de 3 dias para ofertas de alta urgência." },
+            webinar: { name: "Webinar Campaign Monster", desc: "Do script de apresentação de 60 minutos aos emails de follow-up que fazem a oferta explodir." }
+          },
+          fullList: {
+            title: "Conheça Seu Exército Privado de Copywriting",
+            subtitle: "22 Agentes de Elite",
+            description: "Não são apenas geradores de texto. São especialistas treinados em milhões de exemplos de alta conversão, prontos para atuar em Inglês, Português e Espanhol.",
+            categories: {
+              architects: {
+                title: "Os Arquitetos de Vendas",
+                subtitle: "Para Quem Vende Milhões",
+                agents: {
+                  vsl: { name: "VSL Monster", desc: "O mestre da retenção de atenção. Cria VSLs usando o método de Gene Schwartz, programado para quebrar o padrão nos primeiros 10 segundos." },
+                  fullVsl: { name: "Full VSL Script Monster", desc: "A estrutura perfeita em 15 minutos. Ideal para vídeos de 12 a 15 minutos com timing exato de cada seção." },
+                  salesPage: { name: "Sales Page Monster", desc: "Páginas que vendem por você. Desenvolve páginas de vendas longas que funcionam como vendedores 24/7." },
+                  launch: { name: "Launch Monster", desc: "O maestro do seu evento. Planeja e executa lançamentos de produtos complexos com estratégia e narrativa." }
+                }
+              },
+              traffic: {
+                title: "Os Mestres do Tráfego Pago e Atenção",
+                agents: {
+                  ads: { name: "Ads Monster", desc: "Anúncios que param o polegar. Cria campanhas completas para Meta, Google, TikTok e YouTube." },
+                  headline: { name: "Headline Monster", desc: "O primeiro contato é tudo. Gera dezenas de headlines usando gatilhos de curiosidade, benefício direto e urgência." },
+                  short: { name: "Short Monster", desc: "Viralidade em 60 segundos. Roteiros para Reels, TikTok e Shorts que convertem." }
+                }
+              },
+              relationship: {
+                title: "Os Magos do Relacionamento e Conversão",
+                agents: {
+                  email: { name: "Email Monster", desc: "Cartas que viram caixa. Cria sequências de email marketing de alta performance com tom de conversa sincera." },
+                  whatsapp: { name: "WhatsApp Sales Monster", desc: "A intimidade que gera vendas. Sequências de venda direta pelo WhatsApp que soam naturais." }
+                }
+              },
+              campaigns: {
+                title: "Agentes de Campanha Completa",
+                subtitle: "Operações em Piloto Automático",
+                agents: {
+                  internal: { name: "Internal Launch Monster", desc: "Acordando sua base. Lançamento interno completo de 7 dias para gerar receita imediata." },
+                  flash: { name: "Flash Launch Monster", desc: "Velocidade supersônica. Estrutura de lançamento relâmpago de 3 dias para caixa rápido." },
+                  webinar: { name: "Webinar Campaign Monster", desc: "A sala cheia, sem dor de cabeça. Campanha completa do script aos emails de follow-up." },
+                  evergreen: { name: "Evergreen Funnel Monster", desc: "Vendas enquanto você dorme. Funis perpétuos que pagam suas contas no piloto automático." },
+                  cartRecovery: { name: "Cart Recovery Monster", desc: "Resgatando seu dinheiro. Sequências cirúrgicas de recuperação de carrinho abandonado." },
+                  leadNurture: { name: "Lead Nurture Monster", desc: "Transformando gelo em água. Aquece leads estrategicamente ao longo de 4 semanas." },
+                  upsell: { name: "Upsell Cross Monster", desc: "Aumentando o LTV. Ofertas de upsell e cross-sell pós-compra para maximizar valor." },
+                  listRevival: { name: "List Revival Monster", desc: "Dando vida aos mortos. Sequências de reengajamento para listas antigas." }
+                }
+              }
+            }
+          }
+        },
+        more: {
+          title: "E Muito Mais...",
+          description: "Blog Posts SEO, Scripts para Vídeos Curtos (Reels/Shorts), Social Media, Upsells... tudo falando a língua do seu cliente.",
+          cta: "Acesso Imediato"
+        },
+        exoskeleton: {
+          notJust: "CopyMonster não é apenas uma ferramenta de escrita.",
+          superpower: "É o exoesqueleto para a sua mente criativa.",
+          wearing: "Ao vestir a camisa do CopyMonster, você não está automatizando tarefas chatas. Você está ativando superpoderes de comunicação envolvente que nascem da sua própria essência original.",
+          others: "A maioria das plataformas de IA hoje são apenas estenógrafos digitais: elas escrevem o que você diz, sem entender o porquê.",
+          different: "O CopyMonster é diferente. Ele funciona como um Diretor de Criação Sênior que vive na sua cabeça. Ele entende o DNA do seu negócio, conhece a dor do seu cliente e sabe exatamente qual gatilho puxar para converter.",
+          explore: "Explore nossa plataforma",
+          connect: "Conecte-se com 22 Agentes Especialistas prontos para decolar seus resultados.",
+          cta: "Acesso Imediato"
+        },
+        howItWorks: {
+          title: "Como o CopyMonster Troca o Jogo",
+          step1: {
+            number: "1",
+            title: "Ativamos o Agente Fundamental",
+            description: "Antes de escrever uma única palavra, o Brand Positioning Monster realiza um Mapeamento Estratégico de 12 Blocos profundo. Ele descobre o \"x\" da questão do seu negócio, a voz da sua marca e a transformação que você oferece."
+          },
+          step2: {
+            number: "2",
+            title: "DNA Injetado em Todos os Agentes",
+            description: "Uma vez que o DNA é mapeado, ele é injetado em todos os outros agentes. O resultado não é um \"texto de robô\". É copy persuasiva lapidada, com a sua assinatura, mas em velocidade de máquina."
+          }
+        },
+        testimonials: {
+          title: "Depoimentos de Quem Já Está na Vanguarda",
+          list: {
+            t1: { quote: "O CopyMonster transformou a forma como eu crio conteúdo. Economizo horas toda semana e minhas taxas de conversão nunca foram tão altas. É como ter um sócio silencioso que nunca dorme.", author: "Adriano Vieira", role: "Especialista em Marketing" },
+            t2: { quote: "O VSL Monster é simplesmente incrível. Criou um roteiro que vendeu mais em uma semana do que o meu anterior em um mês. A estrutura de agitação de dor é perfeita.", author: "Juliana Silva", role: "Criadora de Cursos" },
+            t3: { quote: "Como agência de marketing, essa ferramenta é essencial. Entregamos melhores resultados para nossos clientes em menos tempo. O DNA do negócio muda o jogo.", author: "Carlos Mendes", role: "CEO de Agência" }
+          }
+        },
+        pricing: {
+          title: "Você Está Pronto Para Se Tornar Imparável?",
+          subtitle: "Enquanto seus competidores estão pedindo para o ChatGPT \"escrever um email de vendas\", você terá um Time de 22 Agentes de Elite conhecendo cada detalhe do seu produto, falando Inglês, Português ou Espanhol, e gerando copy que vende.",
+          trialTitle: "Escolha Seu Plano e Comece Seu Teste Gratuito de 7 Dias",
+          trialSubtitle: "Não importa se você está começando (Starter) ou se é um \"Monstro\" das conversões buscando dominação total (Legend). Temos o exército certo para você.",
+          starter: {
+            name: "Starter",
+            subtitle: "Ideal para quem está começando a domar o CopyMonster.",
+            price: "R$97",
+            period: "/mês",
+            features: {
+              f1: "1.000 créditos/mês",
+              f2: "Acesso a todos os 22 agentes",
+              f3: "Diagnóstico de Posicionamento (O DNA da Marca)",
+              f4: "Suporte via comunidade"
+            },
+            cta: "Acesso Imediato"
+          },
+          pro: {
+            name: "Pro",
+            subtitle: "Para negócios e Copywriters que buscam escala e agilidade.",
+            price: "R$297",
+            period: "/mês",
+            badge: "Mais Popular",
+            features: {
+              f1: "5.000 créditos/mês (Volume para agências)",
+              f2: "Tudo do plano Starter",
+              f3: "Análises de Performance dos seus textos",
+              f4: "Biblioteca de Frameworks Exclusivos",
+              f5: "Suporte prioritário via email"
+            },
+            cta: "Acesso Imediato"
+          },
+          legend: {
+            name: "Legend",
+            subtitle: "Para os monstros da conversão que exigem supremacia.",
+            price: "R$597",
+            period: "/mês",
+            features: {
+              f1: "15.000 créditos/mês",
+              f2: "Tudo do plano Pro",
+              f3: "Treinamento de Agentes (Em breve - Crie sua própria lógica)",
+              f4: "Acesso antecipado a novos recursos (Beta Testing)",
+              f5: "Suporte VIP via WhatsApp (Fale direto com a equipe)"
+            },
+            cta: "Acesso Imediato"
+          }
+        },
+        guarantee: {
+          title: "Garantia Risco Zero",
+          description: "Teste o CopyMonster por 7 dias. Use o Brand Positioning Monster. Rode uma campanha de Lançamento. Se você não sentir que esta é a ferramenta mais poderosa de copy que você já usou, cancele quando quiser. Sem perguntas.",
+          tagline: "Domine a estratégia. Torne-se imparável.",
+          cta: "Acesso Imediato",
+          trial: "Começar Teste Gratuito de 7 Dias"
+        },
+        agencies: {
+          title: "Por Que o CopyMonster é Imbatível para Agências e Copywriters",
+          subtitle: "Plano Pro e Legend",
+          intro: "Se você é um Copywriter profissional ou dono de Agência, o Plano Pro e Legend foram feitos para você escalar sem explodir sua agenda.",
+          benefits: {
+            b1: "Escale sua Operação: Entregue 10x mais projetos para seus clientes com a mesma equipe.",
+            b2: "Qualidade de \"Tier 1\": Não entregue rascunhos. Entregue copys estruturadas que parecem escritas por um senior de US$ 10.000/mês.",
+            b3: "Biblioteca de Frameworks: Tenha acesso às estruturas mais valiosas do marketing digital salvas e prontas para uso.",
+            b4: "Suporte Prioritário e VIP: Sua dúvida é emergência."
+          },
+          legend: "No plano Legend, você não é apenas um usuário, você é um parceiro estratégico com acesso antecipado a novos recursos e treinamento de agentes.",
+          cta: "Acesso Imediato"
+        }
+      },
     },
   },
   es: {
@@ -2051,6 +2491,226 @@ const resources = {
           saved: 'Configuración Guardada',
           savedDesc: 'Tu configuración ha sido actualizada correctamente.',
         },
+      },
+      start: {
+        hero: {
+          intro: "En 1920, un libro brillante no vendía ni una sola copia.",
+          story: "Un publicista — citado décadas después por Napoleon Hill — arrancó la portada, reescribió 47 palabras... y lo convirtió en un best-seller.",
+          power: "Hoy, ese poder está en tus manos: agentes entrenados en las tácticas millonarias de Claude Hopkins, Caples y Ogilvy hasta Russell Brunson y Alex Hormozi.",
+          cta: "Activa CopyMonster",
+          tagline: "Deja a tu audiencia enamorada — y rentable."
+        },
+        problem: {
+          title: "Tu tiempo es demasiado valioso para pasarlo corrigiendo 'robots' que escriben como Wikipedia.",
+          honest: "Seamos brutalmente honestos por un segundo.",
+          frustration: "¿Alguna vez has sentido esa frustración de abrir ChatGPT (o cualquier otra IA genérica), escribir un prompt de 10 líneas explicando tu producto, y recibir... un texto 'ok'? Un texto técnicamente correcto, pero completamente insípido. Sin gatillos. Sin tu voz. ¿Sin alma?",
+          reason: "Esto sucede porque las herramientas genéricas son ciegas. No saben quién es tu cliente ideal. No conocen el dolor profundo que tu producto cura. No entienden tu diferenciador.",
+          analogy: "Son como pasantes de inteligencia promedio: necesitas llevarlos de la mano todo el tiempo."
+        },
+        intro: {
+          context: "El mundo del marketing digital ha cambiado. Mientras los aficionados pelean por prompts genéricos, el 1% de los principales Expertos, Infoproductores y Agencias de Élite usan una nueva arma secreta:",
+          presenting: "Presentando",
+          platform: "La Primera Plataforma de IA que Combina el ADN de Tu Negocio con Agentes Especializados.",
+          notJust: "No es solo un 'generador de texto'. Es el primer ecosistema de Copywriting Estratégico que te obliga a mapear la estrategia antes de escribir una sola palabra.",
+          result: "¿El resultado? Copys de clase mundial, pulidos por 22 Agentes Especialistas, en Inglés, Portugués y Español, en minutos.",
+          cta: "Acceso Inmediato"
+        },
+        dna: {
+          secret: "El Secreto Que Nadie Está Contando Sobre IA",
+          mistake: "La mayoría de las personas pierden dinero con IA porque saltan directamente a la ejecución sin la base.",
+          agentName: "Brand Positioning Monster",
+          agentSubtitle: "El agente fundamental que lo cambia todo",
+          forget: "Olvídate de 'llenar formularios'. El Brand Positioning Monster te lleva a través de un Mapeo Estratégico de 12 Bloques. No pregunta 'de qué se trata tu producto', desentierra:",
+          blocks: {
+            audience: { title: "El Público Objetivo Oculto", desc: "No solo 'mujeres de 30 años', sino su psique." },
+            pains: { title: "Los 3 Dolores Principales", desc: "Lo que les quita el sueño por la noche." },
+            differentiator: { title: "El Diferenciador Irrefutable", desc: "Por qué nadie puede copiarte." },
+            transformation: { title: "La Transformación Antes/Después", desc: "El viaje emocional del cliente." }
+          },
+          magic: "Una vez que llenas el ADN de tu marca, algo mágico sucede: Ese ADN se inyecta automáticamente en los otros 21 agentes. Ya no escriben 'texto genérico'. Escriben la voz de tu negocio."
+        },
+        agents: {
+          title: "Conoce Tu Ejército Privado de Copywriting",
+          subtitle: "22 Agentes de Élite",
+          description: "Mientras ChatGPT es un 'generalista mediocre', CopyMonster te da acceso a especialistas formados en millones de ejemplos de alta conversión.",
+          architects: {
+            title: "Los Arquitectos de Ventas",
+            subtitle: "(Para Quienes Venden Millones)",
+            vsl: { name: "VSL Monster", desc: "Crea guiones completos de Video Sales Letter de 12 a 20 minutos. Estructura Gene Schwartz, gatillos de atención, agitación del dolor y oferta Irresistible." },
+            salesPage: { name: "Sales Page Monster", desc: "Páginas de ventas largas, completas, listas para convertir frío en caliente. Del Headline al FAQ." },
+            headline: { name: "Headline Monster", desc: "Genera docenas de titulares magnéticos probados psicológicamente para detener el scroll." }
+          },
+          traffic: {
+            title: "Los Maestros del Tráfico Pagado",
+            ads: { name: "Ads Monster", desc: "Campañas completas para Meta, Google, TikTok y YouTube. De Arriba a Abajo del embudo." },
+            fbGoogle: { name: "Facebook Ads y Google Ads", desc: "Especialistas en crear anuncios que pasan la aprobación de las redes y convierten el clic." },
+            short: { name: "Short Monster", desc: "Guiones para Reels, TikTok y Shorts que no solo entretienen, sino convierten." }
+          },
+          email: {
+            title: "Los Magos del Email y Retención",
+            emailMonster: { name: "Email Monster", desc: "Secuencias completas (Lanzamiento, Carrito Abandonado, Reenganche). Emails de ventas que parecen escritos por un amigo." },
+            leadNurture: { name: "Lead Nurture Monster", desc: "Transforma leads fríos en compradores calientes en 4 semanas de nutrición estratégica." },
+            whatsapp: { name: "WhatsApp Sales Monster", desc: "Guiones de venta directa en el chat para cerrar en el momento caliente." }
+          },
+          launch: {
+            title: "Los Estrategas de Lanzamiento",
+            subtitle: "(El Secreto de los Grandes Gurús)",
+            launchMonster: { name: "Launch Monster", desc: "La coordinación completa de un lanzamiento digital. De la pre-venta a la post-venta." },
+            internal: { name: "Internal Launch Monster", desc: "Estrategia de 7 días para quemar la lista interna y generar caja rápido." },
+            flash: { name: "Flash Launch Monster", desc: "Lanzamiento relámpago de 3 días para ofertas de alta urgencia." },
+            webinar: { name: "Webinar Campaign Monster", desc: "Del guion de presentación de 60 minutos a los emails de seguimiento que hacen explotar la oferta." }
+          },
+          fullList: {
+            title: "Conoce Tu Ejército Privado de Copywriting",
+            subtitle: "22 Agentes de Élite",
+            description: "No son solo generadores de texto. Son especialistas entrenados en millones de ejemplos de alta conversión, listos para actuar en Inglés, Portugués y Español.",
+            categories: {
+              architects: {
+                title: "Los Arquitectos de Ventas",
+                subtitle: "Para Quienes Venden Millones",
+                agents: {
+                  vsl: { name: "VSL Monster", desc: "El maestro de la retención de atención. Crea VSLs usando el método de Gene Schwartz, programado para romper el patrón en los primeros 10 segundos." },
+                  fullVsl: { name: "Full VSL Script Monster", desc: "La estructura perfecta en 15 minutos. Ideal para videos de 12 a 15 minutos con timing exacto de cada sección." },
+                  salesPage: { name: "Sales Page Monster", desc: "Páginas que venden por ti. Desarrolla páginas de ventas largas que funcionan como vendedores 24/7." },
+                  launch: { name: "Launch Monster", desc: "El maestro de tu evento. Planifica y ejecuta lanzamientos de productos complejos con estrategia y narrativa." }
+                }
+              },
+              traffic: {
+                title: "Los Maestros del Tráfico Pagado y Atención",
+                agents: {
+                  ads: { name: "Ads Monster", desc: "Anuncios que detienen el pulgar. Crea campañas completas para Meta, Google, TikTok y YouTube." },
+                  headline: { name: "Headline Monster", desc: "El primer contacto lo es todo. Genera docenas de headlines usando gatillos de curiosidad, beneficio directo y urgencia." },
+                  short: { name: "Short Monster", desc: "Viralidad en 60 segundos. Guiones para Reels, TikTok y Shorts que convierten." }
+                }
+              },
+              relationship: {
+                title: "Los Magos de la Relación y Conversión",
+                agents: {
+                  email: { name: "Email Monster", desc: "Cartas que se convierten en caja. Crea secuencias de email marketing de alto rendimiento con tono de conversación sincera." },
+                  whatsapp: { name: "WhatsApp Sales Monster", desc: "La intimidad que genera ventas. Secuencias de venta directa por WhatsApp que suenan naturales." }
+                }
+              },
+              campaigns: {
+                title: "Agentes de Campaña Completa",
+                subtitle: "Operaciones en Piloto Automático",
+                agents: {
+                  internal: { name: "Internal Launch Monster", desc: "Despertando tu base. Lanzamiento interno completo de 7 días para generar ingresos inmediatos." },
+                  flash: { name: "Flash Launch Monster", desc: "Velocidad supersónica. Estructura de lanzamiento relámpago de 3 días para caja rápida." },
+                  webinar: { name: "Webinar Campaign Monster", desc: "La sala llena, sin dolor de cabeza. Campaña completa del guion a los emails de seguimiento." },
+                  evergreen: { name: "Evergreen Funnel Monster", desc: "Ventas mientras duermes. Embudos perpetuos que pagan tus cuentas en piloto automático." },
+                  cartRecovery: { name: "Cart Recovery Monster", desc: "Rescatando tu dinero. Secuencias quirúrgicas de recuperación de carrito abandonado." },
+                  leadNurture: { name: "Lead Nurture Monster", desc: "Convirtiendo hielo en agua. Calienta leads estratégicamente durante 4 semanas." },
+                  upsell: { name: "Upsell Cross Monster", desc: "Aumentando el LTV. Ofertas de upsell y cross-sell post-compra para maximizar valor." },
+                  listRevival: { name: "List Revival Monster", desc: "Dando vida a los muertos. Secuencias de reenganche para listas antiguas." }
+                }
+              }
+            }
+          }
+        },
+        more: {
+          title: "Y Mucho Más...",
+          description: "Blog Posts SEO, Guiones para Videos Cortos (Reels/Shorts), Redes Sociales, Upsells... todo hablando el idioma de tu cliente.",
+          cta: "Acceso Inmediato"
+        },
+        exoskeleton: {
+          notJust: "CopyMonster no es solo una herramienta de escritura.",
+          superpower: "Es el exoesqueleto para tu mente creativa.",
+          wearing: "Al ponerte la camiseta de CopyMonster, no estás automatizando tareas aburridas. Estás activando superpoderes de comunicación envolvente que nacen de tu propia esencia original.",
+          others: "La mayoría de las plataformas de IA hoy son solo estenógrafos digitales: escriben lo que dices, sin entender por qué.",
+          different: "CopyMonster es diferente. Funciona como un Director Creativo Senior que vive en tu cabeza. Entiende el ADN de tu negocio, conoce el dolor de tu cliente y sabe exactamente qué gatillo activar para convertir.",
+          explore: "Explora nuestra plataforma",
+          connect: "Conéctate con 22 Agentes Especialistas listos para disparar tus resultados.",
+          cta: "Acceso Inmediato"
+        },
+        howItWorks: {
+          title: "Cómo CopyMonster Cambia el Juego",
+          step1: {
+            number: "1",
+            title: "Activamos el Agente Fundamental",
+            description: "Antes de escribir una sola palabra, el Brand Positioning Monster realiza un Mapeo Estratégico de 12 Bloques profundo. Descubre la 'x' de tu negocio, la voz de tu marca y la transformación que ofreces."
+          },
+          step2: {
+            number: "2",
+            title: "ADN Inyectado en Todos los Agentes",
+            description: "Una vez que el ADN está mapeado, se inyecta en todos los demás agentes. El resultado no es 'texto de robot'. Es copy persuasivo pulido, con tu firma, pero a velocidad de máquina."
+          }
+        },
+        testimonials: {
+          title: "Testimonios de Quienes Ya Están en la Vanguardia",
+          list: {
+            t1: { quote: "CopyMonster ha transformado la forma en que creo contenido. Ahorro horas cada semana y mis tasas de conversión nunca han sido tan altas. Es como tener un socio silencioso que nunca duerme.", author: "Adriano Vieira", role: "Experto en Marketing" },
+            t2: { quote: "El VSL Monster es simplemente increíble. Creó un guion que vendió más en una semana que el anterior en un mes. La estructura de agitación del dolor es perfecta.", author: "Juliana Silva", role: "Creadora de Cursos" },
+            t3: { quote: "Como agencia de marketing, esta herramienta es esencial. Entregamos mejores resultados a nuestros clientes en menos tiempo. El ADN del negocio cambia el juego.", author: "Carlos Mendes", role: "CEO de Agencia" }
+          }
+        },
+        pricing: {
+          title: "¿Estás Listo Para Volverte Imparable?",
+          subtitle: "Mientras tus competidores le piden a ChatGPT que 'escriba un email de ventas', tú tendrás un Equipo de 22 Agentes de Élite conociendo cada detalle de tu producto, hablando Inglés, Portugués o Español, y generando copy que vende.",
+          trialTitle: "Elige Tu Plan y Comienza Tu Prueba Gratuita de 7 Días",
+          trialSubtitle: "No importa si estás empezando (Starter) o si eres un 'Monstruo' de las conversiones buscando dominación total (Legend). Tenemos el ejército adecuado para ti.",
+          starter: {
+            name: "Starter",
+            subtitle: "Ideal para quienes están empezando a domar el CopyMonster.",
+            price: "$47",
+            period: "/mes",
+            features: {
+              f1: "1,000 créditos/mes",
+              f2: "Acceso a los 22 agentes",
+              f3: "Diagnóstico de Posicionamiento (El ADN de la Marca)",
+              f4: "Soporte vía comunidad"
+            },
+            cta: "Acceso Inmediato"
+          },
+          pro: {
+            name: "Pro",
+            subtitle: "Para negocios y Copywriters que buscan escala y agilidad.",
+            price: "$97",
+            period: "/mes",
+            badge: "Más Popular",
+            features: {
+              f1: "5,000 créditos/mes (Volumen para agencias)",
+              f2: "Todo del plan Starter",
+              f3: "Análisis de Performance de tus textos",
+              f4: "Biblioteca de Frameworks Exclusivos",
+              f5: "Soporte prioritario vía email"
+            },
+            cta: "Acceso Inmediato"
+          },
+          legend: {
+            name: "Legend",
+            subtitle: "Para los monstruos de la conversión que exigen supremacía.",
+            price: "$197",
+            period: "/mes",
+            features: {
+              f1: "15,000 créditos/mes",
+              f2: "Todo del plan Pro",
+              f3: "Entrenamiento de Agentes (Próximamente - Crea tu propia lógica)",
+              f4: "Acceso anticipado a nuevas funciones (Beta Testing)",
+              f5: "Soporte VIP vía WhatsApp (Habla directo con el equipo)"
+            },
+            cta: "Acceso Inmediato"
+          }
+        },
+        guarantee: {
+          title: "Garantía Riesgo Cero",
+          description: "Prueba CopyMonster por 7 días. Usa el Brand Positioning Monster. Ejecuta una campaña de Lanzamiento. Si no sientes que esta es la herramienta de copy más poderosa que has usado, cancela cuando quieras. Sin preguntas.",
+          tagline: "Domina la estrategia. Vuélvete imparable.",
+          cta: "Acceso Inmediato",
+          trial: "Comenzar Prueba Gratuita de 7 Días"
+        },
+        agencies: {
+          title: "Por Qué CopyMonster es Imbatible para Agencias y Copywriters",
+          subtitle: "Plan Pro y Legend",
+          intro: "Si eres un Copywriter profesional o dueño de Agencia, los Planes Pro y Legend fueron hechos para que escales sin explotar tu agenda.",
+          benefits: {
+            b1: "Escala Tu Operación: Entrega 10x más proyectos a tus clientes con el mismo equipo.",
+            b2: "Calidad \"Tier 1\": No entregues borradores. Entrega copys estructurados que parecen escritos por un senior de US$ 10,000/mes.",
+            b3: "Biblioteca de Frameworks: Ten acceso a las estructuras más valiosas del marketing digital guardadas y listas para usar.",
+            b4: "Soporte Prioritario y VIP: Tu duda es una emergencia."
+          },
+          legend: "En el plan Legend, no eres solo un usuario, eres un socio estratégico con acceso anticipado a nuevas funciones y entrenamiento de agentes.",
+          cta: "Acceso Inmediato"
+        }
       },
     },
   },
