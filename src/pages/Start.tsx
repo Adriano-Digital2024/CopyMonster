@@ -9,6 +9,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
+import heroBackground from '@/assets/hero-background.jpg';
 import { 
   Target, 
   Video, 
@@ -54,42 +55,48 @@ const HeroSection = () => {
   const { t } = useTranslation();
   
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden pt-20">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+    <section className="relative min-h-screen flex items-center overflow-hidden pt-20">
+      {/* Imagem de fundo */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBackground})` }}
+      />
       
+      {/* Overlay/Película para contraste */}
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-900/85 via-orange-800/75 to-orange-700/60" />
+      
+      {/* Conteúdo */}
       <div className="container mx-auto px-4 relative z-10">
         <motion.div 
-          className="max-w-4xl mx-auto text-center"
+          className="max-w-2xl text-left"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <p className="text-lg md:text-xl text-muted-foreground mb-6 italic">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
             {t('start.hero.intro')}
-          </p>
+          </h1>
           
-          <p className="text-xl md:text-2xl text-foreground/90 mb-8 font-medium">
+          <p className="text-lg md:text-xl text-white/90 mb-4">
             {t('start.hero.story')}
           </p>
           
-          <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 p-8 rounded-2xl border border-primary/30 mb-10">
-            <p className="text-lg md:text-xl text-foreground mb-8">
-              {t('start.hero.power')}
-            </p>
-            
-            <Button 
-              size="lg" 
-              className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
-              onClick={() => navigate('/auth')}
-            >
-              {t('start.hero.cta')}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            
-            <p className="mt-6 text-primary font-semibold text-lg">
-              {t('start.hero.tagline')}
-            </p>
-          </div>
+          <p className="text-base md:text-lg text-white/80 mb-8">
+            {t('start.hero.power')}
+          </p>
+          
+          <Button 
+            size="lg" 
+            className="text-lg px-8 py-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+            onClick={() => navigate('/auth')}
+          >
+            {t('start.hero.cta')}
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+          
+          <p className="mt-6 text-orange-300 font-medium text-lg italic">
+            {t('start.hero.tagline')}
+          </p>
         </motion.div>
       </div>
     </section>
