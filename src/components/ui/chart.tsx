@@ -58,6 +58,17 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
+// Validate color values to prevent CSS injection
+const isSafeColor = (color: string): boolean => {
+  // Allow hex, rgb, rgba, hsl, hsla, and CSS variables
+  return /^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|var\(--[a-zA-Z0-9-_]+\))$/.test(color.trim());
+};
+
+// Sanitize CSS variable names to prevent injection
+const sanitizeKey = (key: string): string => {
+  return key.replace(/[^a-zA-Z0-9-_]/g, '');
+};
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color);
 
@@ -75,8 +86,16 @@ ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
+    if (!color) return null;
+    // Validate color and sanitize key to prevent CSS injection
+    if (!isSafeColor(color)) {
+      console.warn(`Unsafe color value rejected for key "${key}":`, color);
+      return null;
+    }
+    const safeKey = sanitizeKey(key);
+    return `  --color-${safeKey}: ${color};`;
   })
+  .filter(Boolean)
   .join("\n")}
 }
 `,

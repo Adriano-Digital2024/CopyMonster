@@ -13,8 +13,9 @@ import { cn } from '@/lib/utils';
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// Stripe publishable key is public and safe to include in client code
-const stripePromise = loadStripe('pk_live_51S6NJXRiKNxooUH0rzAdEzlbsSAQSSwgo5cc7jISDtLnRpkOIIr3GOrrbTQ7S1dWVGOYzLAB7BooYCtzh6B0YzCD00mom0T3E5');
+// Load Stripe publishable key from environment variable for easier key rotation
+const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 export default function Billing() {
   const { user } = useAuth();
