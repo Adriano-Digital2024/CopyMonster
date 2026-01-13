@@ -63,7 +63,7 @@ const HeroSection = () => {
       />
       
       {/* Overlay/Película para contraste - tons escuros premium */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/70 to-black/55" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/55 to-black/40" />
       
       {/* Conteúdo */}
       <div className="container mx-auto px-4 relative z-10">
