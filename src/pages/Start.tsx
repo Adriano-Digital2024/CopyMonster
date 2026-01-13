@@ -62,8 +62,8 @@ const HeroSection = () => {
         style={{ backgroundImage: `url(${heroBackground})` }}
       />
       
-      {/* Overlay/Película para contraste */}
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-900/85 via-orange-800/75 to-orange-700/60" />
+      {/* Overlay/Película para contraste - tons escuros premium */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-black/70" />
       
       {/* Conteúdo */}
       <div className="container mx-auto px-4 relative z-10">
@@ -73,7 +73,7 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
             {t('start.hero.intro')}
           </h1>
           
@@ -94,7 +94,7 @@ const HeroSection = () => {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           
-          <p className="mt-6 text-orange-300 font-medium text-lg italic">
+          <p className="mt-6 text-primary font-medium text-lg italic">
             {t('start.hero.tagline')}
           </p>
         </motion.div>
