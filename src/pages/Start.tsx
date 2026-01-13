@@ -267,7 +267,7 @@ const SalesArchitectsSection = () => {
   ];
   
   return (
-    <section className="py-20 bg-background">
+    <section id="agents" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <motion.div className="max-w-5xl mx-auto" {...fadeInUp}>
           <div className="text-center mb-12">
@@ -524,7 +524,7 @@ const TestimonialsSection = () => {
   ];
   
   return (
-    <section className="py-20 bg-background">
+    <section id="testimonials" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <motion.div className="max-w-5xl mx-auto" {...fadeInUp}>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-12">{t('start.testimonials.title')}</h2>
@@ -611,7 +611,7 @@ const PricingSection = () => {
   ];
   
   return (
-    <section className="py-20 bg-muted/30">
+    <section id="pricing" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <motion.div className="max-w-6xl mx-auto" {...fadeInUp}>
           <div className="text-center mb-12">
