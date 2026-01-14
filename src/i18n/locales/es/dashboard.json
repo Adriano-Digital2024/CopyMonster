@@ -226,5 +226,30 @@
       "benefit3": "Soporte prioritario y nuevas funcionalidades",
       "button": "Elegir un Plan"
     }
+  },
+  "copyResults": {
+    "title": "Resultados de Copy",
+    "subtitle": "Ver y gestionar todas las copys generadas",
+    "stats": {
+      "totalCopies": "Total de Copys",
+      "favorites": "Favoritos",
+      "thisMonth": "Este Mes"
+    },
+    "filter": {
+      "all": "Todos",
+      "favorites": "Favoritos"
+    },
+    "toast": {
+      "favorited": "Añadido a favoritos",
+      "unfavorited": "Eliminado de favoritos",
+      "deleted": "Copy eliminada",
+      "copied": "¡Copiado!",
+      "autoSaved": "Copy guardada automáticamente",
+      "autoSaveError": "Error al guardar copy"
+    },
+    "empty": {
+      "title": "Ninguna copy aún",
+      "description": "Las copys generadas por los agentes aparecerán aquí."
+    }
   }
 }
