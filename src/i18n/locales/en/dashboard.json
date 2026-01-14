@@ -209,5 +209,22 @@
       "launchAgent": "Launch Agent",
       "noAgents": "No agents available at the moment."
     }
+  },
+  "trial": {
+    "expired": {
+      "title": "Your Trial Period Has Expired",
+      "description": "Your 7-day free trial has ended. Upgrade to continue using all AI agents."
+    },
+    "noCredits": {
+      "title": "Credits Exhausted",
+      "description": "You have used all your available credits. Upgrade to continue creating content."
+    },
+    "upgrade": {
+      "benefits": "What you get with an upgrade:",
+      "benefit1": "Unlimited access to all AI agents",
+      "benefit2": "Monthly credits renewed automatically",
+      "benefit3": "Priority support and new features",
+      "button": "Choose a Plan"
+    }
   }
 }
