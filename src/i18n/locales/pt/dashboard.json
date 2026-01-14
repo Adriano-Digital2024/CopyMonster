@@ -209,5 +209,22 @@
       "launchAgent": "Iniciar Agente",
       "noAgents": "Nenhum agente disponível no momento."
     }
+  },
+  "trial": {
+    "expired": {
+      "title": "Seu Período de Teste Expirou",
+      "description": "Seu período de teste gratuito de 7 dias terminou. Faça upgrade para continuar usando todos os agentes de IA."
+    },
+    "noCredits": {
+      "title": "Créditos Esgotados",
+      "description": "Você usou todos os seus créditos disponíveis. Faça upgrade para continuar criando conteúdo."
+    },
+    "upgrade": {
+      "benefits": "O que você ganha com o upgrade:",
+      "benefit1": "Acesso ilimitado a todos os agentes de IA",
+      "benefit2": "Créditos mensais renovados automaticamente",
+      "benefit3": "Suporte prioritário e novas funcionalidades",
+      "button": "Escolher um Plano"
+    }
   }
 }
