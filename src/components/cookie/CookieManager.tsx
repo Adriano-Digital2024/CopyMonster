@@ -4,10 +4,11 @@ import { CookiePreferencesModal } from './CookiePreferencesModal';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { registerConsentChecker, initializeTracking } from '@/lib/tracking';
 
-// Optional: Configure your tracking IDs here or via environment variables
+// Tracking configuration
+// Meta Pixel is now managed by MetaPixelTracker component for better SPA support
 const TRACKING_CONFIG = {
-  ga4MeasurementId: undefined, // e.g., 'G-XXXXXXXXXX'
-  metaPixelId: undefined, // e.g., '1234567890'
+  ga4MeasurementId: undefined, // e.g., 'G-XXXXXXXXXX' - Configure when needed
+  metaPixelId: undefined, // Managed by MetaPixelTracker for SPA compatibility
 };
 
 export const CookieManager = () => {
