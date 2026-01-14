@@ -22,7 +22,7 @@ interface CopyResult {
 }
 
 export default function CopyResults() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['dashboard', 'common']);
   const { user } = useAuth();
   const { toast } = useToast();
   const [copyResults, setCopyResults] = useState<CopyResult[]>([]);
@@ -65,7 +65,7 @@ export default function CopyResults() {
       ));
       
       toast({
-        title: !currentFavorite ? t('copyResults.toast.favorited') : t('copyResults.toast.unfavorited'),
+        title: !currentFavorite ? t('dashboard:copyResults.toast.favorited') : t('dashboard:copyResults.toast.unfavorited'),
       });
     } catch (error) {
       console.error('Error toggling favorite:', error);
@@ -84,7 +84,7 @@ export default function CopyResults() {
       setCopyResults(copyResults.filter(c => c.id !== id));
       
       toast({
-        title: t('copyResults.toast.deleted'),
+        title: t('dashboard:copyResults.toast.deleted'),
       });
     } catch (error) {
       console.error('Error deleting copy result:', error);
@@ -94,7 +94,7 @@ export default function CopyResults() {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: t('copyResults.toast.copied'),
+      title: t('dashboard:copyResults.toast.copied'),
     });
   };
 
@@ -123,19 +123,19 @@ export default function CopyResults() {
   const stats = [
     {
       icon: FileText,
-      label: t('copyResults.stats.totalCopies'),
+      label: t('dashboard:copyResults.stats.totalCopies'),
       value: copyResults.length.toString(),
       color: '#6B46C1'
     },
     {
       icon: Star,
-      label: t('copyResults.stats.favorites'),
+      label: t('dashboard:copyResults.stats.favorites'),
       value: copyResults.filter(c => c.is_favorite).length.toString(),
       color: '#ECC94B'
     },
     {
       icon: TrendingUp,
-      label: t('copyResults.stats.thisMonth'),
+      label: t('dashboard:copyResults.stats.thisMonth'),
       value: copyResults.filter(c => {
         const date = new Date(c.created_at);
         const now = new Date();
@@ -150,9 +150,9 @@ export default function CopyResults() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">{t('copyResults.title')}</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('dashboard:copyResults.title')}</h1>
             <p className="text-muted-foreground">
-              {t('copyResults.subtitle')}
+              {t('dashboard:copyResults.subtitle')}
             </p>
           </div>
           <Select value={filter} onValueChange={setFilter}>
@@ -160,8 +160,8 @@ export default function CopyResults() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('copyResults.filter.all')}</SelectItem>
-              <SelectItem value="favorites">{t('copyResults.filter.favorites')}</SelectItem>
+              <SelectItem value="all">{t('dashboard:copyResults.filter.all')}</SelectItem>
+              <SelectItem value="favorites">{t('dashboard:copyResults.filter.favorites')}</SelectItem>
               {uniqueAgents.map(agent => (
                 <SelectItem key={agent} value={agent}>{getAgentLabel(agent)}</SelectItem>
               ))}
@@ -198,13 +198,13 @@ export default function CopyResults() {
         {/* Copy Results List */}
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">
-            {t('common.loading')}
+            {t('common:common.loading')}
           </div>
         ) : filteredResults.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title={t('copyResults.empty.title')}
-            description={t('copyResults.empty.description')}
+            title={t('dashboard:copyResults.empty.title')}
+            description={t('dashboard:copyResults.empty.description')}
           />
         ) : (
           <div className="space-y-4">
@@ -216,7 +216,7 @@ export default function CopyResults() {
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="secondary">{getAgentLabel(result.agent_slug)}</Badge>
                         <span className="text-sm text-muted-foreground">
-                          {new Date(result.created_at).toLocaleDateString(t('date.locale'))}
+                          {new Date(result.created_at).toLocaleDateString(t('common:date.locale'))}
                         </span>
                       </div>
                       <p className="text-sm whitespace-pre-wrap line-clamp-4">

@@ -50,6 +50,8 @@
     "errorMessage": "Error: {{error}}",
     "exportSuccessTitle": "Exported",
     "exportSuccessDesc": "Conversation exported successfully",
+    "exportConversation": "Export conversation",
+    "clearHistory": "Clear history",
     "clearSuccessTitle": "Cleared",
     "clearSuccessDesc": "Conversation history cleared",
     "startConversation": "Start a conversation with {{agentName}}",

@@ -10,6 +10,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+// Constants for localStorage fallback
+const PENDING_COPYS_KEY = 'pending_copys';
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -46,11 +49,86 @@ export function ChatInterface({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
+  const [savedCopyIds, setSavedCopyIds] = useState<Set<string>>(new Set());
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'dashboard']);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-save copy result to database
+  const saveCopyResult = useCallback(async (content: string, messageId: string) => {
+    if (!user || !content.trim() || !agentSlug || savedCopyIds.has(messageId)) return;
+    
+    // Mark as saved to prevent duplicates
+    setSavedCopyIds(prev => new Set(prev).add(messageId));
+    
+    const copyData = {
+      user_id: user.id,
+      agent_slug: agentSlug,
+      content: content.trim(),
+      is_favorite: false
+    };
+
+    try {
+      const { error } = await supabase
+        .from('copy_results')
+        .insert(copyData);
+
+      if (error) {
+        console.error('Error saving copy result:', error);
+        // Fallback: save to localStorage
+        const pendingCopys = JSON.parse(localStorage.getItem(PENDING_COPYS_KEY) || '[]');
+        pendingCopys.push({ ...copyData, created_at: new Date().toISOString(), id: messageId });
+        localStorage.setItem(PENDING_COPYS_KEY, JSON.stringify(pendingCopys));
+      }
+    } catch (err) {
+      console.error('Error saving copy result:', err);
+      // Fallback: save to localStorage
+      const pendingCopys = JSON.parse(localStorage.getItem(PENDING_COPYS_KEY) || '[]');
+      pendingCopys.push({ ...copyData, created_at: new Date().toISOString(), id: messageId });
+      localStorage.setItem(PENDING_COPYS_KEY, JSON.stringify(pendingCopys));
+    }
+  }, [user, agentSlug, savedCopyIds]);
+
+  // Sync pending copys from localStorage on mount
+  useEffect(() => {
+    const syncPendingCopys = async () => {
+      if (!user) return;
+      
+      const pendingCopys = JSON.parse(localStorage.getItem(PENDING_COPYS_KEY) || '[]');
+      if (pendingCopys.length === 0) return;
+      
+      const successfulIds: string[] = [];
+      
+      for (const copy of pendingCopys) {
+        try {
+          const { error } = await supabase
+            .from('copy_results')
+            .insert({
+              user_id: copy.user_id,
+              agent_slug: copy.agent_slug,
+              content: copy.content,
+              is_favorite: copy.is_favorite
+            });
+          
+          if (!error) {
+            successfulIds.push(copy.id);
+          }
+        } catch (err) {
+          console.error('Error syncing pending copy:', err);
+        }
+      }
+      
+      // Remove successfully synced copys from localStorage
+      if (successfulIds.length > 0) {
+        const remainingCopys = pendingCopys.filter((c: any) => !successfulIds.includes(c.id));
+        localStorage.setItem(PENDING_COPYS_KEY, JSON.stringify(remainingCopys));
+      }
+    };
+    
+    syncPendingCopys();
+  }, [user]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -65,13 +143,6 @@ export function ChatInterface({
     }
   }, [messages, onMessagesChange]);
 
-  // Auto-start effect for guided agents
-  useEffect(() => {
-    if (autoStart && !hasAutoStarted && messages.length === 0 && user) {
-      setHasAutoStarted(true);
-      handleAutoStart();
-    }
-  }, [autoStart, hasAutoStarted, messages.length, user]);
 
   // Handle API errors
   const handleApiError = (response: Response, errorData: any) => {
@@ -79,14 +150,14 @@ export function ChatInterface({
       // Credits depleted or trial expired
       if (errorData.code === 'TRIAL_EXPIRED') {
         toast({
-          title: t('trial.expired.title'),
-          description: t('trial.expired.description'),
+          title: t('common:trial.expired.title'),
+          description: t('common:trial.expired.description'),
           variant: 'destructive'
         });
       } else {
         toast({
-          title: t('chat.insufficientCreditsTitle'),
-          description: t('chat.insufficientCreditsDesc'),
+          title: t('common:chat.insufficientCreditsTitle'),
+          description: t('common:chat.insufficientCreditsDesc'),
           variant: 'destructive'
         });
       }
@@ -96,8 +167,8 @@ export function ChatInterface({
     
     if (response.status === 429) {
       toast({
-        title: t('chat.rateLimitTitle'),
-        description: t('chat.rateLimitDesc'),
+        title: t('common:chat.rateLimitTitle'),
+        description: t('common:chat.rateLimitDesc'),
         variant: 'destructive'
       });
       return true;
@@ -120,11 +191,11 @@ export function ChatInterface({
     }
   };
 
-  const handleAutoStart = async () => {
+  const handleAutoStart = useCallback(async () => {
     if (!user || user.credits <= 0) {
       toast({
-        title: t('chat.insufficientCreditsTitle'),
-        description: t('chat.insufficientCreditsDesc'),
+        title: t('common:chat.insufficientCreditsTitle'),
+        description: t('common:chat.insufficientCreditsDesc'),
         variant: 'destructive'
       });
       return;
@@ -218,9 +289,14 @@ export function ChatInterface({
         }
       }
 
+      // Auto-save the generated copy
+      if (fullContent.trim()) {
+        saveCopyResult(fullContent, assistantMessageId);
+      }
+
       toast({
-        title: t('chat.creditUsedTitle'),
-        description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
+        title: t('common:chat.creditUsedTitle'),
+        description: t('common:chat.creditUsedDesc', { credits: user.credits - 1 })
       });
 
     } catch (error: any) {
@@ -236,15 +312,23 @@ export function ChatInterface({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast, t, systemPrompt, agentSlug, positioningMappingId, saveCopyResult]);
+
+  // Auto-start effect for guided agents (placed after handleAutoStart declaration)
+  useEffect(() => {
+    if (autoStart && !hasAutoStarted && messages.length === 0 && user) {
+      setHasAutoStarted(true);
+      handleAutoStart();
+    }
+  }, [autoStart, hasAutoStarted, messages.length, user, handleAutoStart]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
     if (!user || user.credits <= 0) {
       toast({
-        title: t('chat.insufficientCreditsTitle'),
-        description: t('chat.insufficientCreditsDesc'),
+        title: t('common:chat.insufficientCreditsTitle'),
+        description: t('common:chat.insufficientCreditsDesc'),
         variant: 'destructive'
       });
       return;
@@ -351,15 +435,20 @@ export function ChatInterface({
           }
         }
       }
+
+      // Auto-save the generated copy
+      if (fullContent.trim()) {
+        saveCopyResult(fullContent, assistantMessageId);
+      }
       
       toast({
-        title: t('chat.creditUsedTitle'),
-        description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
+        title: t('common:chat.creditUsedTitle'),
+        description: t('common:chat.creditUsedDesc', { credits: user.credits - 1 })
       });
 
     } catch (error: any) {
       console.error('Chat error:', error);
-      const errorMessage = t('chat.errorMessage', { error: error.message });
+      const errorMessage = t('common:chat.errorMessage', { error: error.message });
       setMessages(prev =>
         prev.map(msg =>
           msg.id === assistantMessageId
@@ -368,8 +457,8 @@ export function ChatInterface({
         )
       );
       toast({
-        title: t('chat.errorTitle'),
-        description: t('chat.errorDesc'),
+        title: t('common:chat.errorTitle'),
+        description: t('common:chat.errorDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -388,17 +477,18 @@ export function ChatInterface({
     URL.revokeObjectURL(url);
     
     toast({
-      title: t('chat.exportSuccessTitle'),
-      description: t('chat.exportSuccessDesc')
+      title: t('common:chat.exportSuccessTitle'),
+      description: t('common:chat.exportSuccessDesc')
     });
   };
 
   const handleClear = () => {
     setMessages([]);
     setHasAutoStarted(false);
+    setSavedCopyIds(new Set());
     toast({
-      title: t('chat.clearSuccessTitle'),
-      description: t('chat.clearSuccessDesc')
+      title: t('common:chat.clearSuccessTitle'),
+      description: t('common:chat.clearSuccessDesc')
     });
   };
 
@@ -427,7 +517,7 @@ export function ChatInterface({
                   variant="ghost"
                   size="sm"
                   onClick={handleSave}
-                  title={t('chat.saveMapping')}
+                  title={t('common:chat.saveMapping')}
                   className="text-primary"
                 >
                   <Save className="h-4 w-4" />
@@ -437,7 +527,7 @@ export function ChatInterface({
                 variant="ghost"
                 size="sm"
                 onClick={handleExport}
-                title="Exportar conversa"
+                title={t('common:chat.exportConversation')}
               >
                 <Download className="h-4 w-4" />
               </Button>
@@ -445,7 +535,7 @@ export function ChatInterface({
                 variant="ghost"
                 size="sm"
                 onClick={handleClear}
-                title="Limpar histórico"
+                title={t('common:chat.clearHistory')}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -461,16 +551,16 @@ export function ChatInterface({
             {autoStart ? (
               <>
                 <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                <p className="text-lg font-medium mb-2">{t('chat.startingGuide')}</p>
-                <p className="text-sm">{t('chat.preparingQuestions')}</p>
+                <p className="text-lg font-medium mb-2">{t('common:chat.startingGuide')}</p>
+                <p className="text-sm">{t('common:chat.preparingQuestions')}</p>
               </>
             ) : (
               <>
                 <p className="text-lg font-medium mb-2">
-                  {t(`chat.welcome.${agentSlug?.replace(/-/g, '_')}.title`, { defaultValue: t('chat.startConversation', { agentName }) })}
+                  {t(`common:chat.welcome.${agentSlug?.replace(/-/g, '_')}.title`, { defaultValue: t('common:chat.startConversation', { agentName }) })}
                 </p>
                 <p className="text-sm max-w-md">
-                  {t(`chat.welcome.${agentSlug?.replace(/-/g, '_')}.description`, { defaultValue: t('chat.startConversationDesc') })}
+                  {t(`common:chat.welcome.${agentSlug?.replace(/-/g, '_')}.description`, { defaultValue: t('common:chat.startConversationDesc') })}
                 </p>
               </>
             )}
@@ -541,7 +631,7 @@ export function ChatInterface({
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          {t('chat.creditsAvailable', { credits: user?.credits ?? 0 })}
+          {t('common:chat.creditsAvailable', { credits: user?.credits ?? 0 })}
         </p>
       </div>
     </div>
