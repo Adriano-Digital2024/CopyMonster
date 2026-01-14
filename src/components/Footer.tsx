@@ -1,9 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { Cookie } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import logoDark from '@/assets/logo-dark.png';
+
 export const Footer = () => {
+  const { setShowPreferencesModal } = useCookieConsent();
   const {
     t
   } = useTranslation();
@@ -126,6 +130,15 @@ export const Footer = () => {
                     {link.label}
                   </Link>
                 </li>)}
+              <li>
+                <button 
+                  onClick={() => setShowPreferencesModal(true)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                >
+                  <Cookie className="w-3.5 h-3.5" />
+                  {t('footer.manageCookies')}
+                </button>
+              </li>
             </ul>
           </div>
         </div>
