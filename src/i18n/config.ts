@@ -153,7 +153,40 @@ const resources = {
           placeholder: "Your email",
           cta: "Subscribe"
         },
-        copyright: "© 2024 CopyMonster. All rights reserved."
+        copyright: "© 2024 CopyMonster. All rights reserved.",
+        manageCookies: "Manage Cookies"
+      },
+      cookies: {
+        banner: {
+          title: "This website uses cookies",
+          description: "We use cookies to enhance your experience, analyze traffic, and personalize content. You can manage your preferences or accept all cookies.",
+          learnMore: "Learn more",
+          acceptAll: "Accept All",
+          rejectNonEssential: "Reject Non-Essential",
+          customize: "Customize"
+        },
+        preferences: {
+          title: "Cookie Preferences",
+          description: "Manage your cookie settings. Essential cookies are always active as they are necessary for the website to function.",
+          alwaysActive: "Always active",
+          savePreferences: "Save Preferences",
+          acceptAll: "Accept All",
+          viewFullPolicy: "View full cookie policy"
+        },
+        categories: {
+          essential: {
+            title: "Essential Cookies",
+            description: "These cookies are necessary for the website to function properly. They enable basic functions like page navigation and access to secure areas."
+          },
+          analytics: {
+            title: "Analytics Cookies",
+            description: "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously."
+          },
+          marketing: {
+            title: "Marketing Cookies",
+            description: "These cookies are used to track visitors across websites to display relevant advertisements based on your browsing habits."
+          }
+        }
       },
       auth: {
         welcome: 'Welcome to CopyMonster',
@@ -1057,7 +1090,40 @@ const resources = {
           placeholder: "Seu email",
           cta: "Inscrever-se"
         },
-        copyright: "© 2024 CopyMonster. Todos os direitos reservados."
+        copyright: "© 2024 CopyMonster. Todos os direitos reservados.",
+        manageCookies: "Gerenciar Cookies"
+      },
+      cookies: {
+        banner: {
+          title: "Este site utiliza cookies",
+          description: "Utilizamos cookies para melhorar sua experiência, analisar tráfego e personalizar conteúdo. Você pode gerenciar suas preferências ou aceitar todos os cookies.",
+          learnMore: "Saiba mais",
+          acceptAll: "Aceitar Todos",
+          rejectNonEssential: "Rejeitar Não Essenciais",
+          customize: "Configurar"
+        },
+        preferences: {
+          title: "Preferências de Cookies",
+          description: "Gerencie suas configurações de cookies. Cookies essenciais estão sempre ativos pois são necessários para o funcionamento do site.",
+          alwaysActive: "Sempre ativo",
+          savePreferences: "Salvar Preferências",
+          acceptAll: "Aceitar Todos",
+          viewFullPolicy: "Ver política completa de cookies"
+        },
+        categories: {
+          essential: {
+            title: "Cookies Essenciais",
+            description: "Estes cookies são necessários para o funcionamento correto do site. Eles permitem funções básicas como navegação e acesso a áreas seguras."
+          },
+          analytics: {
+            title: "Cookies Analíticos",
+            description: "Estes cookies nos ajudam a entender como os visitantes interagem com nosso site, coletando e reportando informações de forma anônima."
+          },
+          marketing: {
+            title: "Cookies de Marketing",
+            description: "Estes cookies são usados para rastrear visitantes em sites para exibir anúncios relevantes baseados em seus hábitos de navegação."
+          }
+        }
       },
       auth: {
         welcome: 'Bem-vindo ao CopyMonster',
@@ -1961,7 +2027,40 @@ const resources = {
           placeholder: "Tu email",
           cta: "Suscribirse"
         },
-        copyright: "© 2024 CopyMonster. Todos los derechos reservados."
+        copyright: "© 2024 CopyMonster. Todos los derechos reservados.",
+        manageCookies: "Gestionar Cookies"
+      },
+      cookies: {
+        banner: {
+          title: "Este sitio web utiliza cookies",
+          description: "Utilizamos cookies para mejorar tu experiencia, analizar el tráfico y personalizar el contenido. Puedes gestionar tus preferencias o aceptar todas las cookies.",
+          learnMore: "Más información",
+          acceptAll: "Aceptar Todas",
+          rejectNonEssential: "Rechazar No Esenciales",
+          customize: "Configurar"
+        },
+        preferences: {
+          title: "Preferencias de Cookies",
+          description: "Gestiona tus configuraciones de cookies. Las cookies esenciales están siempre activas ya que son necesarias para el funcionamiento del sitio.",
+          alwaysActive: "Siempre activo",
+          savePreferences: "Guardar Preferencias",
+          acceptAll: "Aceptar Todas",
+          viewFullPolicy: "Ver política completa de cookies"
+        },
+        categories: {
+          essential: {
+            title: "Cookies Esenciales",
+            description: "Estas cookies son necesarias para el correcto funcionamiento del sitio web. Permiten funciones básicas como navegación y acceso a áreas seguras."
+          },
+          analytics: {
+            title: "Cookies Analíticas",
+            description: "Estas cookies nos ayudan a entender cómo los visitantes interactúan con nuestro sitio web recopilando información de forma anónima."
+          },
+          marketing: {
+            title: "Cookies de Marketing",
+            description: "Estas cookies se utilizan para rastrear visitantes en sitios web para mostrar anuncios relevantes según tus hábitos de navegación."
+          }
+        }
       },
       auth: {
         welcome: 'Bienvenido a CopyMonster',
