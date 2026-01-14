@@ -7,9 +7,11 @@ import { Link } from 'react-router-dom';
 
 export const CookieBanner = () => {
   const { t } = useTranslation();
-  const { showBanner, acceptAll, rejectNonEssential, setShowPreferencesModal } = useCookieConsent();
-
-  if (!showBanner) return null;
+  const cookieConsent = useCookieConsent();
+  
+  if (!cookieConsent || !cookieConsent.showBanner) return null;
+  
+  const { acceptAll, rejectNonEssential, setShowPreferencesModal } = cookieConsent;
 
   return (
     <AnimatePresence>

@@ -35,13 +35,10 @@ const defaultPreferences: CookiePreferences = {
   version: CONSENT_VERSION,
 };
 
-const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
+const CookieConsentContext = createContext<CookieConsentContextType | null>(null);
 
 export const useCookieConsent = () => {
   const context = useContext(CookieConsentContext);
-  if (!context) {
-    throw new Error('useCookieConsent must be used within a CookieConsentProvider');
-  }
   return context;
 };
 

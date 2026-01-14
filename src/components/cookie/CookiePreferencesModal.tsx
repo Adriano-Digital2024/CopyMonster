@@ -17,18 +17,19 @@ import { Link } from 'react-router-dom';
 
 export const CookiePreferencesModal = () => {
   const { t } = useTranslation();
-  const {
-    showPreferencesModal,
-    setShowPreferencesModal,
-    preferences,
-    updatePreferences,
-    acceptAll,
-  } = useCookieConsent();
+  const cookieConsent = useCookieConsent();
 
   const [localPrefs, setLocalPrefs] = useState({
     analytics: false,
     marketing: false,
   });
+
+  // Get values from context safely
+  const showPreferencesModal = cookieConsent?.showPreferencesModal ?? false;
+  const setShowPreferencesModal = cookieConsent?.setShowPreferencesModal;
+  const preferences = cookieConsent?.preferences;
+  const updatePreferences = cookieConsent?.updatePreferences;
+  const acceptAll = cookieConsent?.acceptAll;
 
   // Sync local state with context preferences
   useEffect(() => {
@@ -41,7 +42,7 @@ export const CookiePreferencesModal = () => {
   }, [preferences]);
 
   const handleSave = () => {
-    updatePreferences(localPrefs);
+    updatePreferences?.(localPrefs);
   };
 
   const categories = [
@@ -71,8 +72,10 @@ export const CookiePreferencesModal = () => {
     },
   ];
 
+  if (!cookieConsent) return null;
+
   return (
-    <Dialog open={showPreferencesModal} onOpenChange={setShowPreferencesModal}>
+    <Dialog open={showPreferencesModal} onOpenChange={(open) => setShowPreferencesModal?.(open)}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -141,7 +144,7 @@ export const CookiePreferencesModal = () => {
             <Link
               to="/cookie-policy"
               className="text-primary hover:underline"
-              onClick={() => setShowPreferencesModal(false)}
+              onClick={() => setShowPreferencesModal?.(false)}
             >
               {t('cookies.preferences.viewFullPolicy')}
             </Link>
