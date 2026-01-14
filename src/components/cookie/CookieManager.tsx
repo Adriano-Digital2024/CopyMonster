@@ -11,11 +11,15 @@ const TRACKING_CONFIG = {
 };
 
 export const CookieManager = () => {
-  const { hasConsent, preferences } = useCookieConsent();
+  const cookieConsent = useCookieConsent();
+  const hasConsent = cookieConsent?.hasConsent;
+  const preferences = cookieConsent?.preferences;
 
   // Register consent checker for tracking utilities
   useEffect(() => {
-    registerConsentChecker(hasConsent);
+    if (hasConsent) {
+      registerConsentChecker(hasConsent);
+    }
   }, [hasConsent]);
 
   // Initialize tracking when consent changes

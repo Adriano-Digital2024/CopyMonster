@@ -7,7 +7,8 @@ import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import logoDark from '@/assets/logo-dark.png';
 
 export const Footer = () => {
-  const { setShowPreferencesModal } = useCookieConsent();
+  const cookieConsent = useCookieConsent();
+  const setShowPreferencesModal = cookieConsent?.setShowPreferencesModal;
   const {
     t
   } = useTranslation();
@@ -130,15 +131,17 @@ export const Footer = () => {
                     {link.label}
                   </Link>
                 </li>)}
-              <li>
-                <button 
-                  onClick={() => setShowPreferencesModal(true)}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-                >
-                  <Cookie className="w-3.5 h-3.5" />
-                  {t('footer.manageCookies')}
-                </button>
-              </li>
+              {setShowPreferencesModal && (
+                <li>
+                  <button 
+                    onClick={() => setShowPreferencesModal(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  >
+                    <Cookie className="w-3.5 h-3.5" />
+                    {t('footer.manageCookies')}
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
         </div>
