@@ -17,27 +17,50 @@ import { supabase } from '@/integrations/supabase/client';
 const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
+// Price IDs mapping by language/currency
+const priceIdsByLanguage: Record<string, { starter: string; pro: string; legend: string }> = {
+  en: {
+    starter: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
+    pro: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
+    legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG'
+  },
+  pt: {
+    starter: 'price_1SqRcbRiKNxooUH09cijDYsq',
+    pro: 'price_1SqRe4RiKNxooUH0tYyprM4P',
+    legend: 'price_1SqRgVRiKNxooUH0knqhTTF9'
+  },
+  es: {
+    starter: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
+    pro: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
+    legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG'
+  }
+};
+
 export default function Billing() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [discountCode, setDiscountCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Get price IDs based on current language
+  const currentLanguage = i18n.language?.substring(0, 2) || 'en';
+  const priceIds = priceIdsByLanguage[currentLanguage] || priceIdsByLanguage.en;
 
   const plans = [
     {
       id: 'starter',
-      priceId: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
+      priceId: priceIds.starter,
       popular: false
     },
     {
       id: 'pro',
-      priceId: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
+      priceId: priceIds.pro,
       popular: true
     },
     {
       id: 'legend',
-      priceId: 'price_1SDHAJRiKNxooUH0nUcBIFaG',
+      priceId: priceIds.legend,
       popular: false
     }
   ];
