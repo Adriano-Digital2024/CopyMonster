@@ -137,8 +137,8 @@ export default function Insights() {
                       </div>
                       <p className="text-muted-foreground">{insight.content}</p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{new Date(insight.created_at).toLocaleDateString(t('date.locale'))}</span>
-                        {insight.source && <span>Source: {insight.source}</span>}
+                        <span>{new Date(insight.created_at).toLocaleDateString()}</span>
+                        {insight.source && <span>{t('insights.source')}: {insight.source}</span>}
                       </div>
                     </div>
                   </div>

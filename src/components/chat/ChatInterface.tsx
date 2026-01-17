@@ -615,7 +615,7 @@ export function ChatInterface({
                 handleSend();
               }
             }}
-            placeholder={t('chat.inputPlaceholder')}
+            placeholder={t('common:chat.inputPlaceholder')}
             className="min-h-[60px] max-h-[200px]"
             disabled={isLoading}
           />

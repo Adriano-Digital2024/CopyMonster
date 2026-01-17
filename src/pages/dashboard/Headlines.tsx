@@ -200,7 +200,7 @@ export default function Headlines() {
                         </Badge>
                       )}
                       <span className="text-sm text-muted-foreground">
-                        {new Date(headline.created_at).toLocaleDateString(t('date.locale'))}
+                        {new Date(headline.created_at).toLocaleDateString()}
                       </span>
                     </div>
                     <Button
