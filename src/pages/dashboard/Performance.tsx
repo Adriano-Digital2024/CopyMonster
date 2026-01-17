@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trophy, TrendingUp, Target, Zap, FileText, Map } from 'lucide-react';
+import { Trophy, Zap, FileText, Map, Egg, Bird, Flame, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -9,12 +9,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { XP_LEVELS, calculateLevel, getXPProgress } from '@/lib/copymonster-config';
 import { useTranslation } from 'react-i18next';
 
+const levelIcons: Record<number, React.ComponentType<{ className?: string }>> = {
+  1: Egg,
+  2: Bird,
+  3: Flame,
+  4: Crown,
+};
+
 export default function Performance() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const xp = user?.xp || 0;
   const currentLevel = calculateLevel(xp);
   const xpProgress = getXPProgress(xp);
+  const CurrentLevelIcon = levelIcons[currentLevel.level] || Trophy;
 
   const [realStats, setRealStats] = useState({
     positionings: 0,
@@ -91,7 +99,9 @@ export default function Performance() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="text-6xl">{currentLevel.icon}</div>
+                <div className="p-4 rounded-lg bg-primary/10">
+                  <CurrentLevelIcon className="h-12 w-12 text-primary" />
+                </div>
                 <div>
                   <Badge variant="secondary" className="mb-2">
                     {t('common.level')} {currentLevel.level}
@@ -121,7 +131,7 @@ export default function Performance() {
                 {currentLevel.benefits.map((benefit, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-primary">•</span>
-                    <span>{benefit}</span>
+                    <span>{t(benefit)}</span>
                   </li>
                 ))}
               </ul>
@@ -162,6 +172,7 @@ export default function Performance() {
             {XP_LEVELS.map((level) => {
               const isCurrentLevel = level.level === currentLevel.level;
               const isUnlocked = xp >= level.minXP;
+              const LevelIcon = levelIcons[level.level] || Trophy;
 
               return (
                 <div 
@@ -170,7 +181,9 @@ export default function Performance() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">{level.icon}</div>
+                      <div className={`p-3 rounded-lg ${isUnlocked ? 'bg-primary/10' : 'bg-muted'}`}>
+                        <LevelIcon className={`h-8 w-8 ${isUnlocked ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant={isUnlocked ? 'default' : 'secondary'}>
@@ -188,7 +201,7 @@ export default function Performance() {
                           {level.benefits.map((benefit, i) => (
                             <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                               <span>•</span>
-                              <span>{benefit}</span>
+                              <span>{t(benefit)}</span>
                             </li>
                           ))}
                         </ul>

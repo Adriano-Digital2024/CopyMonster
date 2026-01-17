@@ -527,6 +527,8 @@ const resources = {
           campaignsCreated: 'Campaigns Created',
           avgCopyScore: 'Avg. Copy Score',
           totalXP: 'Total XP',
+          positionings: 'Positionings',
+          copyResults: 'Copy Results',
         },
         progress: 'Progress to next level',
         xpRemaining: '{{xp}} XP remaining for the next level',
@@ -540,6 +542,29 @@ const resources = {
         achievementsTitle: 'Recent Achievements',
         noAchievements: 'No achievements yet.',
         continueUsingAgents: 'Continue using the agents to unlock them!',
+        levels: {
+          novice: {
+            benefit1: 'Access to 7 basic agents',
+            benefit2: '100 initial credits',
+          },
+          junior: {
+            benefit1: 'Extended conversation history',
+            benefit2: '+50 bonus credits',
+            benefit3: 'Junior Badge',
+          },
+          pro: {
+            benefit1: 'Priority access to new agents',
+            benefit2: '+100 bonus credits',
+            benefit3: 'Advanced analytics',
+            benefit4: 'Pro Badge',
+          },
+          legend: {
+            benefit1: 'Personalized agent training',
+            benefit2: '+200 bonus credits',
+            benefit3: 'VIP Support',
+            benefit4: 'Legend Badge',
+          },
+        },
       },
       admin: {
         title: 'Admin Dashboard',
@@ -1479,6 +1504,8 @@ const resources = {
           campaignsCreated: 'Campanhas Criadas',
           avgCopyScore: 'Pontuação Média',
           totalXP: 'XP Total',
+          positionings: 'Posicionamentos',
+          copyResults: 'Resultados de Copy',
         },
         progress: 'Progresso para o próximo nível',
         xpRemaining: 'Faltam {{xp}} XP para o próximo nível',
@@ -1492,6 +1519,29 @@ const resources = {
         achievementsTitle: 'Conquistas Recentes',
         noAchievements: 'Nenhuma conquista ainda.',
         continueUsingAgents: 'Continue usando os agentes para desbloqueá-las!',
+        levels: {
+          novice: {
+            benefit1: 'Acesso aos 7 agentes básicos',
+            benefit2: '100 créditos iniciais',
+          },
+          junior: {
+            benefit1: 'Histórico estendido de conversas',
+            benefit2: '+50 créditos bônus',
+            benefit3: 'Badge de Junior',
+          },
+          pro: {
+            benefit1: 'Acesso prioritário a novos agentes',
+            benefit2: '+100 créditos bônus',
+            benefit3: 'Análises avançadas',
+            benefit4: 'Badge de Pro',
+          },
+          legend: {
+            benefit1: 'Treinamento personalizado de agentes',
+            benefit2: '+200 créditos bônus',
+            benefit3: 'Suporte VIP',
+            benefit4: 'Badge de Legend',
+          },
+        },
       },
       admin: {
         title: 'Painel do Administrador',
@@ -2431,6 +2481,8 @@ const resources = {
           campaignsCreated: 'Campañas Creadas',
           avgCopyScore: 'Puntuación Media',
           totalXP: 'XP Total',
+          positionings: 'Posicionamientos',
+          copyResults: 'Resultados de Copy',
         },
         progress: 'Progreso al siguiente nivel',
         xpRemaining: 'Faltan {{xp}} XP para el siguiente nivel',
@@ -2444,6 +2496,29 @@ const resources = {
         achievementsTitle: 'Logros Recientes',
         noAchievements: 'Aún no hay logros.',
         continueUsingAgents: '¡Sigue usando los agentes para desbloquearlos!',
+        levels: {
+          novice: {
+            benefit1: 'Acceso a 7 agentes básicos',
+            benefit2: '100 créditos iniciales',
+          },
+          junior: {
+            benefit1: 'Historial extendido de conversaciones',
+            benefit2: '+50 créditos de bonificación',
+            benefit3: 'Insignia de Junior',
+          },
+          pro: {
+            benefit1: 'Acceso prioritario a nuevos agentes',
+            benefit2: '+100 créditos de bonificación',
+            benefit3: 'Análisis avanzados',
+            benefit4: 'Insignia de Pro',
+          },
+          legend: {
+            benefit1: 'Entrenamiento personalizado de agentes',
+            benefit2: '+200 créditos de bonificación',
+            benefit3: 'Soporte VIP',
+            benefit4: 'Insignia de Legend',
+          },
+        },
       },
       admin: {
         title: 'Panel de Administrador',
