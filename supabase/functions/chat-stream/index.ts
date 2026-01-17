@@ -227,6 +227,35 @@ serve(async (req) => {
 
     // 5. PARSE REQUEST BODY
     const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
+
+    // INPUT VALIDATION - Prevent abuse and control costs
+    const MAX_MESSAGES = 50;
+    const MAX_CONTENT_LENGTH = 10000; // 10k chars per message
+
+    if (!messages || !Array.isArray(messages)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid messages format' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    if (messages.length > MAX_MESSAGES) {
+      console.warn(`[chat-stream] Message limit exceeded: ${messages.length} messages from user ${userId}`);
+      return new Response(
+        JSON.stringify({ error: `Too many messages. Maximum ${MAX_MESSAGES} allowed.` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    for (const msg of messages) {
+      if (msg.content && typeof msg.content === 'string' && msg.content.length > MAX_CONTENT_LENGTH) {
+        console.warn(`[chat-stream] Content too long: ${msg.content.length} chars from user ${userId}`);
+        return new Response(
+          JSON.stringify({ error: `Message content too long. Maximum ${MAX_CONTENT_LENGTH} characters per message.` }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+    }
     
     // Get API keys
     const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');

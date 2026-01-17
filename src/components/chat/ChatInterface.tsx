@@ -213,8 +213,9 @@ export function ChatInterface({
     setMessages([assistantMessage]);
 
     try {
+      const supabaseUrl = 'https://bcatupltfvgwelhzeznk.supabase.co';
       const response = await fetch(
-        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/chat-stream`,
+        `${supabaseUrl}/functions/v1/chat-stream`,
         {
           method: 'POST',
           headers: {
@@ -360,8 +361,9 @@ export function ChatInterface({
         .filter(({ role, content }) => role !== 'assistant' || content.trim() !== '')
         .map(({ role, content }) => ({ role, content }));
 
+      const supabaseUrl = 'https://bcatupltfvgwelhzeznk.supabase.co';
       const response = await fetch(
-        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/chat-stream`,
+        `${supabaseUrl}/functions/v1/chat-stream`,
         {
           method: 'POST',
           headers: {

@@ -149,16 +149,38 @@ const Users = () => {
       return;
     }
 
+    if (newUserData.password.length < 8) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter no mínimo 8 caracteres",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSaving(true);
     try {
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: newUserData.email,
-        password: newUserData.password,
-        user_metadata: { first_name: newUserData.firstName },
-        email_confirm: true
-      });
+      // Use edge function with service role key (admin API requires it)
+      const response = await fetch(
+        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/admin-users?action=create`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: JSON.stringify({
+            email: newUserData.email,
+            password: newUserData.password,
+            firstName: newUserData.firstName
+          })
+        }
+      );
 
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to create user');
+      }
 
       toast({
         title: "Usuário criado",
@@ -171,6 +193,47 @@ const Users = () => {
     } catch (error: any) {
       toast({
         title: "Erro ao criar usuário",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+    
+    setSaving(true);
+    try {
+      const response = await fetch(
+        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/admin-users?action=delete`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: JSON.stringify({ userId: selectedUser.id })
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to delete user');
+      }
+
+      toast({
+        title: "Usuário excluído",
+        description: `${selectedUser.first_name} foi removido com sucesso`
+      });
+
+      setDeleteDialogOpen(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir usuário",
         description: error.message,
         variant: "destructive"
       });
@@ -352,10 +415,11 @@ const Users = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={saving}>
               {t('common.cancel')}
             </Button>
-            <Button variant="destructive" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('common.delete')}
             </Button>
           </DialogFooter>
