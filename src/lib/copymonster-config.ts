@@ -18,29 +18,29 @@ export const XP_LEVELS: XPLevel[] = [
     level: 1,
     name: 'Novice',
     minXP: 0,
-    icon: '🥚',
-    benefits: ['Acesso aos 7 agentes básicos', '100 créditos iniciais']
+    icon: '',
+    benefits: ['performance.levels.novice.benefit1', 'performance.levels.novice.benefit2']
   },
   {
     level: 2,
     name: 'Junior',
     minXP: 100,
-    icon: '🐣',
-    benefits: ['Histórico estendido de conversas', '+50 créditos bônus', 'Badge de Junior']
+    icon: '',
+    benefits: ['performance.levels.junior.benefit1', 'performance.levels.junior.benefit2', 'performance.levels.junior.benefit3']
   },
   {
     level: 3,
     name: 'Pro',
     minXP: 500,
-    icon: '👹',
-    benefits: ['Acesso prioritário a novos agentes', '+100 créditos bônus', 'Análises avançadas', 'Badge de Pro']
+    icon: '',
+    benefits: ['performance.levels.pro.benefit1', 'performance.levels.pro.benefit2', 'performance.levels.pro.benefit3', 'performance.levels.pro.benefit4']
   },
   {
     level: 4,
     name: 'Legend',
     minXP: 2000,
-    icon: '👑',
-    benefits: ['Treinamento personalizado de agentes', '+200 créditos bônus', 'Suporte VIP', 'Badge de Legend']
+    icon: '',
+    benefits: ['performance.levels.legend.benefit1', 'performance.levels.legend.benefit2', 'performance.levels.legend.benefit3', 'performance.levels.legend.benefit4']
   }
 ];
 
