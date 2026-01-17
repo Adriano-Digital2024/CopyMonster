@@ -149,6 +149,41 @@ serve(async (req) => {
           }
         }
         break;
+
+      case 'invoice.payment_failed':
+        // Payment failed - downgrade user and notify
+        const failedInvoice = event.data.object;
+        const failedCustomerId = failedInvoice.customer;
+        const attemptCount = failedInvoice.attempt_count || 1;
+        
+        console.log(`[stripe-webhook] Payment failed for customer: ${failedCustomerId}, attempt: ${attemptCount}`);
+        
+        // Find user by customer ID
+        const { data: failedProfile, error: failedError } = await supabaseClient
+          .from('profiles')
+          .select('id, email, subscription_status')
+          .eq('stripe_customer_id', failedCustomerId)
+          .single();
+        
+        if (failedProfile && !failedError) {
+          // After 3 failed attempts, downgrade to free
+          if (attemptCount >= 3) {
+            await supabaseClient
+              .from('profiles')
+              .update({ 
+                subscription_status: 'free',
+                credits: 0, // No credits - payment failed
+                trial_expires_at: null // No trial after failed payment
+              })
+              .eq('id', failedProfile.id);
+            
+            console.log(`[stripe-webhook] User ${failedProfile.id} downgraded due to payment failure after ${attemptCount} attempts`);
+          } else {
+            // Log warning for first attempts
+            console.warn(`[stripe-webhook] Payment attempt ${attemptCount} failed for user ${failedProfile.id}. Stripe will retry.`);
+          }
+        }
+        break;
     }
     
     return new Response(
