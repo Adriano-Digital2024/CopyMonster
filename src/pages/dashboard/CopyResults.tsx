@@ -216,7 +216,7 @@ export default function CopyResults() {
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="secondary">{getAgentLabel(result.agent_slug)}</Badge>
                         <span className="text-sm text-muted-foreground">
-                          {new Date(result.created_at).toLocaleDateString(t('common:date.locale'))}
+                          {new Date(result.created_at).toLocaleDateString()}
                         </span>
                       </div>
                       <p className="text-sm whitespace-pre-wrap line-clamp-4">

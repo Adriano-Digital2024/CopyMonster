@@ -493,6 +493,19 @@ const resources = {
       insights: {
         title: 'AI Insights',
         subtitle: 'Discover trends and recommendations for your copy.',
+        empty: {
+          title: 'No insights yet',
+          description: 'Insights will appear here as you use the agents.',
+        },
+        category: {
+          trend: 'Trend',
+          recommendation: 'Recommendation',
+          alert: 'Alert',
+        },
+        toast: {
+          deleted: 'Insight deleted',
+        },
+        source: 'Source',
         impact: {
           high: 'High Impact',
           medium: 'Medium Impact',
@@ -1470,6 +1483,19 @@ const resources = {
       insights: {
         title: 'Insights de IA',
         subtitle: 'Descubra tendências e recomendações para sua copy.',
+        empty: {
+          title: 'Nenhum insight ainda',
+          description: 'Insights aparecerão aqui conforme você usar os agentes.',
+        },
+        category: {
+          trend: 'Tendência',
+          recommendation: 'Recomendação',
+          alert: 'Alerta',
+        },
+        toast: {
+          deleted: 'Insight excluído',
+        },
+        source: 'Fonte',
         impact: {
           high: 'Alto Impacto',
           medium: 'Médio Impacto',
@@ -2447,6 +2473,19 @@ const resources = {
       insights: {
         title: 'Insights de IA',
         subtitle: 'Descubre tendencias y recomendaciones para tu copy.',
+        empty: {
+          title: 'Sin insights aún',
+          description: 'Los insights aparecerán aquí a medida que uses los agentes.',
+        },
+        category: {
+          trend: 'Tendencia',
+          recommendation: 'Recomendación',
+          alert: 'Alerta',
+        },
+        toast: {
+          deleted: 'Insight eliminado',
+        },
+        source: 'Fuente',
         impact: {
           high: 'Alto Impacto',
           medium: 'Impacto Medio',
