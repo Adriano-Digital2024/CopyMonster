@@ -427,6 +427,23 @@ const resources = {
           description: 'Create your first marketing campaign to get started.',
         },
       },
+      trial: {
+        expired: {
+          title: 'Your Trial Period Has Expired',
+          description: 'Your 7-day free trial has ended. Upgrade to continue using all AI agents.',
+        },
+        noCredits: {
+          title: 'Credits Exhausted',
+          description: 'You have used all your available credits. Upgrade to continue creating content.',
+        },
+        upgrade: {
+          benefits: 'What you get with an upgrade:',
+          benefit1: 'Unlimited access to all AI agents',
+          benefit2: 'Monthly credits renewed automatically',
+          benefit3: 'Priority support and new features',
+          button: 'Choose a Plan',
+        },
+      },
       credits: {
         available: 'Credits Available',
         low: 'Your credits are running low!',
@@ -1445,6 +1462,23 @@ const resources = {
           description: 'Crie sua primeira campanha de marketing para começar.',
         },
       },
+      trial: {
+        expired: {
+          title: 'Seu Período de Teste Expirou',
+          description: 'Seu período de teste gratuito de 7 dias terminou. Faça upgrade para continuar usando todos os agentes de IA.',
+        },
+        noCredits: {
+          title: 'Créditos Esgotados',
+          description: 'Você usou todos os seus créditos disponíveis. Faça upgrade para continuar criando conteúdo.',
+        },
+        upgrade: {
+          benefits: 'O que você ganha com o upgrade:',
+          benefit1: 'Acesso ilimitado a todos os agentes de IA',
+          benefit2: 'Créditos mensais renovados automaticamente',
+          benefit3: 'Suporte prioritário e novas funcionalidades',
+          button: 'Escolher um Plano',
+        },
+      },
       credits: {
         available: 'Créditos Disponíveis',
         low: 'Seus créditos estão acabando!',
@@ -2461,6 +2495,23 @@ const resources = {
         empty: {
           title: 'Sin campañas aún',
           description: 'Crea tu primera campaña de marketing para comenzar.',
+        },
+      },
+      trial: {
+        expired: {
+          title: 'Tu Período de Prueba Ha Expirado',
+          description: 'Tu período de prueba gratuito de 7 días ha terminado. Actualiza para seguir usando todos los agentes de IA.',
+        },
+        noCredits: {
+          title: 'Créditos Agotados',
+          description: 'Has usado todos tus créditos disponibles. Actualiza para seguir creando contenido.',
+        },
+        upgrade: {
+          benefits: 'Lo que obtienes con la actualización:',
+          benefit1: 'Acceso ilimitado a todos los agentes de IA',
+          benefit2: 'Créditos mensuales renovados automáticamente',
+          benefit3: 'Soporte prioritario y nuevas funcionalidades',
+          button: 'Elegir un Plan',
         },
       },
       credits: {
