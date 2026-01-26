@@ -30,9 +30,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  // Check if user should be blocked from using agents
+  // Check if user should be blocked from using agents (admins never blocked)
   useEffect(() => {
     if (!isLoading && user) {
+      // Admins are NEVER blocked - they have unlimited access
+      if (user.isAdmin) {
+        setShowBlockingModal(false);
+        return;
+      }
+      
       // Only block on pages that use agents (not billing, settings, etc.)
       const agentPages = [
         '/dashboard/agents',

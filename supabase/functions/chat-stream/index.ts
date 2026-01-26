@@ -149,8 +149,22 @@ serve(async (req) => {
     const userId = authUser.id;
     console.log(`[chat-stream] User authenticated: ${userId}`);
 
-    // 2. RATE LIMITING
-    if (!checkRateLimit(userId)) {
+    // 2. CHECK IF USER IS ADMIN (BYPASS ALL LIMITS)
+    const { data: adminRole } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    const isAdmin = !!adminRole;
+    
+    if (isAdmin) {
+      console.log(`[chat-stream] ADMIN USER DETECTED: ${userId} - bypassing all limits`);
+    }
+
+    // 3. RATE LIMITING (skip for admins)
+    if (!isAdmin && !checkRateLimit(userId)) {
       console.warn(`[chat-stream] Rate limit exceeded for user: ${userId}`);
       return new Response(
         JSON.stringify({ error: 'Too many requests. Please wait a moment and try again.' }),
@@ -158,7 +172,7 @@ serve(async (req) => {
       );
     }
 
-    // 3. GET USER PROFILE AND VALIDATE CREDITS/TRIAL
+    // 4. GET USER PROFILE AND VALIDATE CREDITS/TRIAL (skip validation for admins)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('credits, subscription_status, trial_expires_at')
@@ -173,57 +187,64 @@ serve(async (req) => {
       );
     }
 
-    // Check if user can use the service
-    const now = new Date();
-    const trialExpired = profile.trial_expires_at && new Date(profile.trial_expires_at) < now;
-    const isFreeUser = profile.subscription_status === 'free';
-    const hasCredits = profile.credits > 0;
+    let newCredits = profile.credits;
 
-    // Free users with expired trial cannot use the service
-    if (isFreeUser && trialExpired) {
-      console.warn(`[chat-stream] Trial expired for user: ${userId}`);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Trial expired',
-          code: 'TRIAL_EXPIRED',
-          message: 'Your free trial has expired. Please upgrade to continue.'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
-      );
+    // ADMINS: Skip all credit/trial checks and credit deduction
+    if (!isAdmin) {
+      // Check if user can use the service
+      const now = new Date();
+      const trialExpired = profile.trial_expires_at && new Date(profile.trial_expires_at) < now;
+      const isFreeUser = profile.subscription_status === 'free';
+      const hasCredits = profile.credits > 0;
+
+      // Free users with expired trial cannot use the service
+      if (isFreeUser && trialExpired) {
+        console.warn(`[chat-stream] Trial expired for user: ${userId}`);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Trial expired',
+            code: 'TRIAL_EXPIRED',
+            message: 'Your free trial has expired. Please upgrade to continue.'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
+        );
+      }
+
+      // No credits available
+      if (!hasCredits) {
+        console.warn(`[chat-stream] No credits for user: ${userId}`);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Insufficient credits',
+            code: 'NO_CREDITS',
+            message: 'You have no credits remaining. Please upgrade your plan.'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
+        );
+      }
+
+      // 5. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING (only for non-admins)
+      const { data: updatedProfile, error: debitError } = await supabase
+        .from('profiles')
+        .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
+        .eq('id', userId)
+        .eq('credits', profile.credits) // Optimistic locking
+        .select('credits')
+        .single();
+
+      if (debitError || !updatedProfile) {
+        console.error('[chat-stream] Credit debit failed:', debitError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+        );
+      }
+
+      newCredits = updatedProfile.credits;
+      console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
+    } else {
+      console.log(`[chat-stream] Admin user - no credit deduction`);
     }
-
-    // No credits available
-    if (!hasCredits) {
-      console.warn(`[chat-stream] No credits for user: ${userId}`);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Insufficient credits',
-          code: 'NO_CREDITS',
-          message: 'You have no credits remaining. Please upgrade your plan.'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
-      );
-    }
-
-    // 4. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING
-    const { data: updatedProfile, error: debitError } = await supabase
-      .from('profiles')
-      .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
-      .eq('id', userId)
-      .eq('credits', profile.credits) // Optimistic locking
-      .select('credits')
-      .single();
-
-    if (debitError || !updatedProfile) {
-      console.error('[chat-stream] Credit debit failed:', debitError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
-      );
-    }
-
-    const newCredits = updatedProfile.credits;
-    console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
 
     // 5. PARSE REQUEST BODY
     const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
@@ -506,7 +527,7 @@ serve(async (req) => {
           model_used: modelName,
           input_tokens: 0, // Could estimate from message length
           output_tokens: 0, // Could estimate from response length
-          credits_consumed: 1,
+          credits_consumed: isAdmin ? 0 : 1, // Admins don't consume credits
         });
       } catch (e) {
         console.error('[chat-stream] Failed to log usage:', e);
