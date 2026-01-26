@@ -59,6 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const canUseAgents = React.useMemo(() => {
     if (!user) return false;
     
+    // ADMINS HAVE UNLIMITED ACCESS - bypass all checks
+    if (user.isAdmin) return true;
+    
     // Paid users can always use if they have credits
     if (user.subscription_status !== 'free') {
       return user.credits > 0;
