@@ -96,7 +96,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <img src={theme === 'dark' ? logoDark : logoLight} alt="CopyMonster" className="h-14" />
       </div>
       
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
         {menuItems.map((item, index) => (
           <Button 
             key={item.path} 
