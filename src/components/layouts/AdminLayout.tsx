@@ -92,7 +92,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <div className="mt-2 text-xs text-muted-foreground">Admin Panel</div>
       </div>
       
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
         <Button
           variant="ghost"
           className="w-full justify-start mb-4"
