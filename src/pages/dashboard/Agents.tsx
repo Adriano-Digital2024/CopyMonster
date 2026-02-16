@@ -39,6 +39,10 @@ const slugToTranslationKey: Record<string, string> = {
   'list-revival-monster': 'listRevival',
   'full-vsl-script-monster': 'fullVslScript',
   'whatsapp-sales-monster': 'whatsappSales',
+  'high-conversion-ads-monster': 'highConversionAds',
+  'strategic-stories-monster': 'strategicStories',
+  'reels-tiktok-monster': 'reelsTiktok',
+  'carousel-monster': 'carousel',
 };
 
 export default function Agents() {

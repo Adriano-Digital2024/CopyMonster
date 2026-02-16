@@ -131,6 +131,22 @@
       "whatsapp_sales_monster": {
         "title": "Sales Sequences Optimized for WhatsApp",
         "description": "I'll create persuasive message templates and sequences for WhatsApp sales. Tell me about your product and sales process."
+      },
+      "high_conversion_ads_monster": {
+        "title": "High-Converting Ads with PAS and AIDA Frameworks",
+        "description": "Tell me about your product, audience, and platform. I'll create ads with PAS and AIDA frameworks, value-formula headlines, and irresistible bullets that maximize clicks."
+      },
+      "strategic_stories_monster": {
+        "title": "Stories That Build Authority and Sell",
+        "description": "Tell me about your product and main message. I'll create story sequences that turn simple questions into authority and drive sales with subtle CTAs."
+      },
+      "reels_tiktok_monster": {
+        "title": "Reels & TikTok Scripts That Hook in the First 3 Seconds",
+        "description": "Tell me about your product and message. I'll create scripts with magnetic hooks and retention structures that keep leads watching until the end."
+      },
+      "carousel_monster": {
+        "title": "Persuasive Carousels with 3 to 12 Slides",
+        "description": "Tell me about your product and topic. I'll create a complete carousel with persuasive slide-by-slide structure, visual storytelling, and an irresistible CTA."
       }
     }
   },

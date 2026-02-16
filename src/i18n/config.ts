@@ -64,6 +64,10 @@ const resources = {
           listRevival: { name: 'List Revival Monster', description: 'Cold list reactivation with powerful re-engagement sequence.' },
           fullVslScript: { name: 'Full VSL Script Monster', description: 'Complete high-converting VSL script with professional structure.' },
           whatsappSales: { name: 'WhatsApp Sales Monster', description: 'Sales sequences optimized for WhatsApp with ready-to-use templates.' },
+          highConversionAds: { name: 'High-Conversion Ads Monster', description: 'PAS and AIDA frameworks applied automatically. Value-formula headlines and irresistible bullets that maximize clicks.' },
+          strategicStories: { name: 'Strategic Stories Monster', description: 'Turn simple questions into authority. Generates emotional connection with subtle CTAs that sell without being pushy.' },
+          reelsTiktok: { name: 'Reels & TikTok Monster', description: 'Narratives that hook in the first 3 seconds. Magnetic hooks and retention structure to prevent skipping.' },
+          carousel: { name: 'Carousel Monster', description: 'Copy for carousel posts with 3 to 12 slides. Persuasive slide-by-slide structure with visual storytelling.' },
         },
         categories: {
           copywriting: 'Copywriting Agents',
@@ -1099,6 +1103,10 @@ const resources = {
           listRevival: { name: 'List Revival Monster', description: 'Reativação de lista fria com sequência de reengajamento poderosa.' },
           fullVslScript: { name: 'Full VSL Script Monster', description: 'Script completo de VSL de alta conversão com estrutura profissional.' },
           whatsappSales: { name: 'WhatsApp Sales Monster', description: 'Sequências de vendas otimizadas para WhatsApp com templates prontos.' },
+          highConversionAds: { name: 'Anúncios de Alta Conversão Monster', description: 'Frameworks PAS e AIDA aplicados automaticamente. Headlines com fórmula de valor e bullets irresistíveis que maximizam o clique.' },
+          strategicStories: { name: 'Stories Estratégicos Monster', description: 'Transforme perguntas simples em autoridade. Gera conexão emocional e inclui CTAs sutis que direcionam para venda sem parecer chato.' },
+          reelsTiktok: { name: 'Reels & TikTok Monster', description: 'Narrativas que prendem nos primeiros 3s. Hook magnético e estrutura de retenção para evitar que o lead pule seu vídeo.' },
+          carousel: { name: 'Carrossel Monster', description: 'Copy para post carrossel de 3 a 12 slides. Estrutura persuasiva por slide com storytelling visual que educa e converte.' },
         },
         categories: {
           copywriting: 'Agentes de Copywriting',
@@ -2134,6 +2142,10 @@ const resources = {
           listRevival: { name: 'List Revival Monster', description: 'Reactivación de lista fría con secuencia de reenganche poderosa.' },
           fullVslScript: { name: 'Full VSL Script Monster', description: 'Script completo de VSL de alta conversión con estructura profesional.' },
           whatsappSales: { name: 'WhatsApp Sales Monster', description: 'Secuencias de ventas optimizadas para WhatsApp con plantillas listas.' },
+          highConversionAds: { name: 'Anuncios de Alta Conversión Monster', description: 'Frameworks PAS y AIDA aplicados automáticamente. Headlines con fórmula de valor y bullets irresistibles que maximizan el clic.' },
+          strategicStories: { name: 'Stories Estratégicos Monster', description: 'Transforma preguntas simples en autoridad. Genera conexión emocional e incluye CTAs sutiles que dirigen a la venta sin ser molesto.' },
+          reelsTiktok: { name: 'Reels & TikTok Monster', description: 'Narrativas que enganchan en los primeros 3s. Hook magnético y estructura de retención para evitar que el lead salte tu video.' },
+          carousel: { name: 'Carrusel Monster', description: 'Copy para post carrusel de 3 a 12 slides. Estructura persuasiva por slide con storytelling visual que educa y convierte.' },
         },
         categories: {
           copywriting: 'Agentes de Copywriting',
