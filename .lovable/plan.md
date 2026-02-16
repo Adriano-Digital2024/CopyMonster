@@ -1,24 +1,42 @@
 
 
-## Atualizar Imagem de Preview Social (Open Graph)
+## Estilizar Barras de Rolagem do Menu Lateral
 
-### O que será feito
+### Problema
+As barras de rolagem verticais nos menus laterais do Dashboard e do Admin usam o estilo nativo do navegador (cinza claro), quebrando a identidade visual do dark theme.
 
-Substituir a imagem de preview social (Open Graph / Twitter Card) que aparece quando o link do site é compartilhado em redes sociais.
+### Solucao
+Adicionar estilos CSS customizados para as scrollbars usando pseudo-elementos `::-webkit-scrollbar`, aplicados via uma classe utilitaria reutilizavel.
 
-### Alterações
+### Alteracoes
 
-| Arquivo | Ação |
+| Arquivo | Acao |
 |---------|------|
-| `public/og-image.jpg` | Copiar a imagem enviada para a pasta `public/` |
-| `index.html` | Atualizar as meta tags `og:image` e `twitter:image` de `https://lovable.dev/opengraph-image-p98pqg.png` para `/og-image.jpg` (URL relativa ao domínio do projeto) |
+| `src/index.css` | Adicionar classe `.custom-scrollbar` com estilos para `::-webkit-scrollbar`, `::-webkit-scrollbar-track` e `::-webkit-scrollbar-thumb` usando as cores do design system (border, muted) |
+| `src/components/layouts/DashboardLayout.tsx` | Adicionar classe `custom-scrollbar` ao `<nav>` (linha 99) |
+| `src/components/layouts/AdminLayout.tsx` | Adicionar classe `custom-scrollbar` ao `<nav>` do Sidebar |
 
-### Detalhes Técnicos
+### Detalhes Tecnicos
 
-As meta tags atuais apontam para uma imagem genérica do Lovable. Serão atualizadas para usar a nova imagem do CopyMonster:
+Nova classe CSS em `src/index.css` dentro de `@layer components`:
 
-- `<meta property="og:image">` -> URL completa da imagem no domínio do projeto
-- `<meta name="twitter:image">` -> mesma URL
+```css
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
+}
+```
 
-A imagem será salva na pasta `public/` pois meta tags no `index.html` referenciam arquivos estáticos diretamente (não passam pelo bundler do Vite).
+Tambem sera adicionado suporte para Firefox via `scrollbar-width: thin` e `scrollbar-color`.
+
+A barra ficara fina (6px), com cores que combinam com o dark theme, e transparente quando nao estiver em uso.
 
