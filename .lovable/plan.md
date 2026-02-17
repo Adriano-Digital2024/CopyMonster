@@ -1,96 +1,122 @@
+## Correcao do Sistema de Traducao - Textos Hardcoded e Inconsistencias
 
+### Problema Identificado
 
-## Criar 4 Novos Agentes Especializados
-
-### Novos Agentes
-
-| # | Nome | Slug | Categoria | Icone |
-|---|------|------|-----------|-------|
-| 1 | Anuncios de Alta Conversao Monster | `high-conversion-ads-monster` | copywriting | Megaphone |
-| 2 | Stories Estrategicos Monster | `strategic-stories-monster` | social | Newspaper |
-| 3 | Reels & TikTok Monster | `reels-tiktok-monster` | social | Clapperboard |
-| 4 | Carrossel Monster | `carousel-monster` | copywriting | FileText |
+Apos analise detalhada de todos os arquivos do dashboard, foram encontrados **textos hardcoded em portugues** que nao passam pelo sistema i18n, alem de datas formatadas com locale fixo `'pt-BR'`. Isso significa que quando o usuario troca para ingles ou espanhol, esses textos permanecem em portugues.
 
 ---
 
-### Etapa 1: Inserir Agentes no Banco de Dados (Supabase)
+### Areas com Falhas (Detalhamento)
 
-Inserir 4 registros na tabela `agents` com todos os 20+ campos configurados, seguindo o padrao existente:
+#### 1. Settings.tsx - Mensagens de senha hardcoded em portugues (4 toasts)
 
-- **high-conversion-ads-monster**: Frameworks PAS e AIDA automaticos, headlines com formula de valor, bullets irresistiveis. Foco em maximizar cliques.
-- **strategic-stories-monster**: Transforma perguntas simples em autoridade, conexao emocional, CTAs sutis que vendem sem parecer forcado.
-- **reels-tiktok-monster**: Hook magnetico nos primeiros 3 segundos, estrutura de retencao, narrativas que prendem e convertem.
-- **carousel-monster**: Copy para posts carrossel de 3 a 12 slides, estrutura persuasiva por slide, storytelling visual.
+- Linha 49: `"Senhas nao conferem"` / `"As senhas nao coincidem"`
+- Linha 58: `"Senha muito curta"` / `"A senha deve ter no minimo 8 caracteres"`
+- Linha 73: `"Senha alterada"` / `"Sua senha foi atualizada com sucesso"`
+- Linha 82: `"Erro ao alterar senha"`
 
-Cada agente recebe:
-- system_prompt completo em formato language-neutral (detecta idioma automatico)
-- quality_rules com regras de formatacao limpa (sem markdown, emojis, etc.)
-- output_structure profissional
-- model_id: `mistralai/mistral-large-latest`
-- Parametros: temperature 0.8, max_tokens 3000, top_p 0.9
-- sort_order sequencial apos os existentes
+**Correcao:** Substituir por `t('dashboard.settings.security.toast.passwordMismatch')`, etc. Adicionar chaves correspondentes nos 3 idiomas em `config.ts`.
+
+#### 2. Billing.tsx - Erros de checkout hardcoded em portugues (5 textos)
+
+- Linha 85: `'Plano nao encontrado'`
+- Linha 107: `'Resposta vazia do servidor'`
+- Linha 117: `'URL de checkout nao foi criada'`
+- Linha 124: `'Ocorreu um erro ao processar seu pagamento'`
+- Linha 126: `'Erro no checkout'`
+
+**Correcao:** Substituir por chaves `t('dashboard.billing.errors.*')`. Adicionar nos 3 idiomas.
+
+#### 3. Library.tsx - Datas com locale fixo `'pt-BR'` (linha 385)
+
+- `toLocaleDateString('pt-BR', {...})` deveria usar `toLocaleDateString()` sem locale fixo.
+
+**Correcao:** Usar `toLocaleDateString()` sem parametro, conforme padrao ja documentado.
+
+#### 4. Positioning.tsx - Titulo padrao e datas hardcoded em portugues (4 ocorrencias)
+
+- Linhas 134, 174, 199, 212: `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`
+
+**Correcao:** Usar `t('positioning.defaultTitle', { date: new Date().toLocaleDateString() })` e adicionar chaves: "Positioning" (en), "Posicionamento" (pt), "Posicionamiento" (es).
+
+#### 5. ExportDocumentModal.tsx - Label "Data:" hardcoded em portugues (2 ocorrencias)
+
+- Linhas 55 e 60: `Data: ${new Date().toLocaleDateString('pt-BR')}`
+
+**Correcao:** Substituir por label traduzido e remover locale fixo.
+
+#### 6. CopyResults.tsx - Labels de agentes hardcoded em ingles (8 textos)
+
+- Linhas 110-121: `getAgentLabel()` com nomes fixos como `'VSL Monster'`, `'Sales Page Monster'`, etc.
+
+**Correcao:** Usar o mapeamento `slugToTranslationKey` existente e buscar `t('agents.list.KEY.name')`.
+
+#### 7. Admin - Users.tsx e Analytics.tsx - Datas com locale fixo e textos PT
+
+- Users.tsx linha 254: `toLocaleDateString('pt-BR')`
+- Users.tsx linhas 152-155: Toast de senha hardcoded em portugues
+- Analytics.tsx linha 139: `toLocaleDateString('pt-BR', ...)`
+
+**Correcao:** Remover locale fixo de datas. Substituir toasts por chaves i18n. Antes de aplicar as correções, ajuste:
+
+1. DATAS: Não use toLocaleDateString() sem parâmetro (isso pega do navegador). 
+
+   Use o idioma ativo do app: toLocaleDateString(currentLanguage)
+
+2. VERIFICAÇÃO ADICIONAL: Busque em TODO o projeto por:
+
+   - 'pt-BR' (locale fixo)
+
+   - toasts ou mensagens em português sem t()
+
+   - textos entre aspas simples ou duplas em componentes React
+
+3. TESTE: Após correções, simule a troca de idioma EN → PT → ES 
+
+   e confirme que nenhum texto fica para trás
+
+4. CONFIRMAÇÃO: Me mostre se encontrou mais arquivos além dos 8 listados
 
 ---
 
-### Etapa 2: Atualizar Codigo do Frontend
+### Resumo de Alteracoes por Arquivo
 
-#### 2.1 Mapeamento de traducao (`slugToTranslationKey`)
 
-Adicionar nos 3 arquivos que possuem esse mapeamento:
+| Arquivo                                              | Tipo de Problema    | Itens                        |
+| ---------------------------------------------------- | ------------------- | ---------------------------- |
+| `src/pages/dashboard/Settings.tsx`                   | Toasts hardcoded PT | 4 mensagens                  |
+| `src/pages/dashboard/Billing.tsx`                    | Erros hardcoded PT  | 5 mensagens                  |
+| `src/pages/dashboard/CopyResults.tsx`                | Labels hardcoded EN | 8 nomes de agente            |
+| `src/pages/dashboard/Library.tsx`                    | Data locale fixo    | 1 ocorrencia                 |
+| `src/pages/dashboard/Positioning.tsx`                | Titulo + data PT    | 4 ocorrencias                |
+| `src/components/positioning/ExportDocumentModal.tsx` | Label + data PT     | 2 ocorrencias                |
+| `src/pages/admin/Users.tsx`                          | Data + toast PT     | 2 ocorrencias                |
+| `src/pages/admin/Analytics.tsx`                      | Data locale fixo    | 1 ocorrencia                 |
+| `src/i18n/config.ts`                                 | Novas chaves i18n   | ~15 novas chaves x 3 idiomas |
 
-| Arquivo | Novos mapeamentos |
-|---------|-------------------|
-| `src/pages/dashboard/Agents.tsx` | 4 novos slugs |
-| `src/components/positioning/AgentSelectionModal.tsx` | 4 novos slugs |
-| `src/pages/admin/AdminAgents.tsx` | Ja usa dados do DB diretamente (nenhuma alteracao) |
 
-Mapeamentos:
+---
+
+### Detalhes Tecnicos
+
+**Novas chaves de traducao a adicionar no `config.ts` (EN/PT/ES):**
+
+```text
+dashboard.settings.security.toast.passwordMismatch / passwordMismatchDesc
+dashboard.settings.security.toast.passwordTooShort / passwordTooShortDesc
+dashboard.settings.security.toast.passwordChanged / passwordChangedDesc
+dashboard.settings.security.toast.passwordError
+dashboard.billing.errors.planNotFound
+dashboard.billing.errors.emptyResponse
+dashboard.billing.errors.noCheckoutUrl
+dashboard.billing.errors.checkoutError
+dashboard.billing.errors.checkoutErrorDesc
+positioning.defaultTitle (com parametro {{date}})
+export.dateLabel
 ```
-'high-conversion-ads-monster': 'highConversionAds'
-'strategic-stories-monster': 'strategicStories'
-'reels-tiktok-monster': 'reelsTiktok'
-'carousel-monster': 'carousel'
-```
 
-#### 2.2 Icones
+**Abordagem para datas:** Todas as chamadas `toLocaleDateString('pt-BR')` serao alteradas para `toLocaleDateString()` (sem parametro), que usa automaticamente o locale do navegador do usuario.
 
-O `iconMap` nos componentes ja inclui todos os icones necessarios (Megaphone, Newspaper, Clapperboard, FileText). Nenhuma alteracao necessaria.
+**Abordagem para CopyResults agent labels:** Reutilizar o pattern `slugToTranslationKey` + `t('agents.list.KEY.name')` ja usado em Agents.tsx.
 
----
-
-### Etapa 3: Traducoes (i18n)
-
-Adicionar em todos os 3 idiomas (PT, EN, ES):
-
-#### Nomes e descricoes dos agentes (`agents.list.*`)
-#### Mensagens de boas-vindas (`chat.welcome.*`)
-
-**Portugues** (exemplo):
-- `agents.list.highConversionAds.name`: "Anuncios de Alta Conversao Monster"
-- `agents.list.highConversionAds.description`: "Frameworks PAS e AIDA aplicados automaticamente. Headlines com formula de valor e bullets irresistiveis que maximizam o clique."
-- `chat.welcome.high_conversion_ads_monster.title`: "Vamos Criar Anuncios que Convertem de Verdade"
-- `chat.welcome.high_conversion_ads_monster.description`: "Me conte sobre seu produto, publico e plataforma. Vou criar anuncios com frameworks PAS e AIDA que param o scroll e geram cliques."
-
-(Mesmo padrao para os outros 3 agentes, nos 3 idiomas)
-
----
-
-### Etapa 4: Painel Admin
-
-O painel admin (`AdminAgents.tsx`) ja busca agentes diretamente do banco e exibe automaticamente. Os novos agentes aparecerao sem alteracoes de codigo. A pagina de configuracao individual (`/admin/agents/:slug`) tambem ja funciona para qualquer agente do banco.
-
----
-
-### Resumo de Alteracoes
-
-| Componente | Acao |
-|------------|------|
-| Supabase `agents` table | INSERT 4 novos registros com prompts completos |
-| `src/pages/dashboard/Agents.tsx` | Adicionar 4 slugs ao `slugToTranslationKey` |
-| `src/components/positioning/AgentSelectionModal.tsx` | Adicionar 4 slugs ao `slugToTranslationKey` |
-| `src/i18n/locales/pt/common.json` | Adicionar nomes, descricoes e welcome messages |
-| `src/i18n/locales/en/common.json` | Adicionar nomes, descricoes e welcome messages |
-| `src/i18n/locales/es/common.json` | Adicionar nomes, descricoes e welcome messages |
-
-Nenhuma alteracao necessaria no admin, layouts, rotas ou edge functions - a arquitetura existente suporta novos agentes automaticamente.
-
+**Impacto:** Apenas arquivos listados serao modificados. Nenhuma rota, layout ou logica de negocio sera alterada. Todas as mudancas sao substituicoes de strings - risco minimo de quebra.
