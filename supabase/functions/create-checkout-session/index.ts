@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -12,22 +12,46 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, planId, userEmail, userId } = await req.json();
-    
-    console.log('=== Checkout Session Request ===');
-    console.log('priceId:', priceId);
-    console.log('planId:', planId);
-    console.log('userEmail:', userEmail);
-    console.log('userId:', userId);
-
-    if (!priceId || !userEmail || !userId) {
-      console.error('Missing required fields:', { priceId: !!priceId, userEmail: !!userEmail, userId: !!userId });
+    // 1. AUTHENTICATE USER VIA JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: priceId, userEmail, or userId' }),
-        {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          status: 400,
-        }
+        JSON.stringify({ error: 'Authentication required' }),
+        { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 401 }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 401 }
+      );
+    }
+
+    const userId = user.id;
+    const userEmail = user.email;
+
+    console.log('=== Checkout Session Request ===');
+    console.log('userId (from JWT):', userId);
+    console.log('userEmail (from JWT):', userEmail);
+
+    // 2. PARSE BODY - only accept priceId and planId
+    const { priceId, planId } = await req.json();
+
+    if (!priceId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required field: priceId' }),
+        { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 400 }
       );
     }
 
@@ -36,14 +60,10 @@ serve(async (req) => {
       console.error('STRIPE_SECRET_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'Stripe is not configured' }),
-        {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          status: 500,
-        }
+        { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 500 }
       );
     }
 
-    // Use the correct production domain as fallback
     const siteUrl = Deno.env.get('SITE_URL') || 'https://copymonster.me';
     console.log('Using SITE_URL:', siteUrl);
 
@@ -60,9 +80,9 @@ serve(async (req) => {
         'line_items[0][quantity]': '1',
         'success_url': `${siteUrl}/dashboard?payment=success`,
         'cancel_url': `${siteUrl}/dashboard/billing`,
-        'customer_email': userEmail,
+        'customer_email': userEmail!,
         'client_reference_id': userId,
-        'metadata[plan_id]': planId,
+        'metadata[plan_id]': planId || '',
         'metadata[user_id]': userId,
       }).toString(),
     });
@@ -73,21 +93,15 @@ serve(async (req) => {
       console.error('Stripe API error:', session);
       return new Response(
         JSON.stringify({ error: session.error?.message || 'Failed to create checkout session' }),
-        {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          status: 400,
-        }
+        { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 400 }
       );
     }
 
-    console.log('Checkout session created successfully:', session.id, 'url:', session.url);
+    console.log('Checkout session created successfully:', session.id);
 
     return new Response(
       JSON.stringify({ sessionId: session.id, url: session.url }),
-      {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        status: 200,
-      }
+      { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 200 }
     );
   } catch (error) {
     console.error('Error creating checkout session:', error);
@@ -95,10 +109,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-        status: 500,
-      }
+      { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 500 }
     );
   }
 });

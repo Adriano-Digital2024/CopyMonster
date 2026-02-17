@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
@@ -71,35 +72,39 @@ const App = () => (
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/cookie-policy" element={<CookiePolicy />} />
                 <Route path="/gdpr" element={<GDPR />} />
-                {/* Dashboard */}
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dashboard/agents" element={<Agents />} />
-                <Route path="/dashboard/agents/:slug" element={<AgentChat />} />
-                <Route path="/dashboard/chat" element={<Chat />} />
-                <Route path="/dashboard/billing" element={<Billing />} />
-                <Route path="/dashboard/performance" element={<Performance />} />
-                <Route path="/dashboard/settings" element={<Settings />} />
-                <Route path="/dashboard/positioning" element={<Positioning />} />
-                <Route path="/dashboard/campaigns" element={<Campaigns />} />
-                <Route path="/dashboard/copy-results" element={<CopyResults />} />
-                <Route path="/dashboard/headlines" element={<Headlines />} />
-                <Route path="/dashboard/insights" element={<Insights />} />
-                <Route path="/dashboard/library" element={<Library />} />
-                {/* Admin */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-                <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                <Route path="/admin/mappings" element={<AdminMappings />} />
-                <Route path="/admin/campaigns" element={<AdminCampaigns />} />
-                <Route path="/admin/copy-results" element={<AdminCopyResults />} />
-                <Route path="/admin/headlines" element={<AdminHeadlines />} />
-                <Route path="/admin/discounts" element={<AdminDiscounts />} />
-                <Route path="/admin/agents" element={<AdminAgents />} />
-                <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
-                <Route path="/admin/models" element={<AdminModels />} />
+                {/* Dashboard - Protected */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dashboard/agents" element={<Agents />} />
+                  <Route path="/dashboard/agents/:slug" element={<AgentChat />} />
+                  <Route path="/dashboard/chat" element={<Chat />} />
+                  <Route path="/dashboard/billing" element={<Billing />} />
+                  <Route path="/dashboard/performance" element={<Performance />} />
+                  <Route path="/dashboard/settings" element={<Settings />} />
+                  <Route path="/dashboard/positioning" element={<Positioning />} />
+                  <Route path="/dashboard/campaigns" element={<Campaigns />} />
+                  <Route path="/dashboard/copy-results" element={<CopyResults />} />
+                  <Route path="/dashboard/headlines" element={<Headlines />} />
+                  <Route path="/dashboard/insights" element={<Insights />} />
+                  <Route path="/dashboard/library" element={<Library />} />
+                </Route>
+                {/* Admin - Protected + Admin Required */}
+                <Route element={<ProtectedRoute requireAdmin />}>
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
+                  <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
+                  <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                  <Route path="/admin/mappings" element={<AdminMappings />} />
+                  <Route path="/admin/campaigns" element={<AdminCampaigns />} />
+                  <Route path="/admin/copy-results" element={<AdminCopyResults />} />
+                  <Route path="/admin/headlines" element={<AdminHeadlines />} />
+                  <Route path="/admin/discounts" element={<AdminDiscounts />} />
+                  <Route path="/admin/agents" element={<AdminAgents />} />
+                  <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
+                  <Route path="/admin/settings" element={<AdminSettings />} />
+                  <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
+                  <Route path="/admin/models" element={<AdminModels />} />
+                </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
