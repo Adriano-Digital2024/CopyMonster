@@ -463,7 +463,7 @@ serve(async (req) => {
       headers = {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://copymonster.app',
+        'HTTP-Referer': 'https://copymonster.me',
         'X-Title': 'CopyMonster',
       };
     }

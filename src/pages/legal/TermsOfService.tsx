@@ -119,7 +119,7 @@ export default function TermsOfService() {
                 For questions about these Terms, contact us at:
               </p>
               <p className="text-muted-foreground mt-2">
-                Email: legal@copymonster.app<br />
+                Email: legal@copymonster.me<br />
                 Address: São Paulo, Brazil
               </p>
             </section>

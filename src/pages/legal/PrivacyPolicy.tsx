@@ -113,7 +113,7 @@ export default function PrivacyPolicy() {
                 If you have questions about this Privacy Policy, please contact us at:
               </p>
               <p className="text-muted-foreground mt-2">
-                Email: privacy@copymonster.app<br />
+                Email: privacy@copymonster.me<br />
                 Address: São Paulo, Brazil
               </p>
             </section>
