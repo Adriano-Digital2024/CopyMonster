@@ -12,7 +12,8 @@ import {
   Clock,
   Calendar,
   MoreVertical,
-  Edit2
+  Edit2,
+  Pencil
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,8 @@ interface PositioningMapping {
   status: string;
   completed_blocks: number;
   conversation: any;
+  document: string | null;
+  is_edited: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -180,6 +183,35 @@ export default function Library() {
   const handleViewMapping = (mapping: PositioningMapping) => {
     setSelectedMapping(mapping);
     setIsExportModalOpen(true);
+  };
+
+  const handleSaveEditedDocument = async (content: string) => {
+    if (!selectedMapping) return;
+    try {
+      const { error } = await supabase
+        .from('positioning_mappings')
+        .update({ document: content, is_edited: true })
+        .eq('id', selectedMapping.id);
+
+      if (error) throw error;
+
+      setMappings(prev => prev.map(m =>
+        m.id === selectedMapping.id ? { ...m, document: content, is_edited: true } : m
+      ));
+      setSelectedMapping(prev => prev ? { ...prev, document: content, is_edited: true } : null);
+
+      toast({
+        title: t('common.success'),
+        description: t('positioning.toast.documentEdited'),
+      });
+    } catch (error) {
+      console.error('Error saving edited document:', error);
+      toast({
+        title: t('common.error'),
+        description: t('library.deleteError'),
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleContinueMapping = (mapping: PositioningMapping) => {
@@ -322,6 +354,12 @@ export default function Library() {
                               : t('library.statusInProgress', 'Em Progresso')
                             }
                           </Badge>
+                          {mapping.is_edited && (
+                            <Badge variant="outline" className="text-xs">
+                              <Pencil className="h-3 w-3 mr-1" />
+                              {t('positioning.editedBadge')}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -438,6 +476,9 @@ export default function Library() {
           onOpenChange={setIsExportModalOpen}
           messages={getMessagesFromConversation(selectedMapping.conversation)}
           title={selectedMapping.title}
+          documentContent={selectedMapping.document || undefined}
+          isEdited={selectedMapping.is_edited}
+          onSaveEdit={handleSaveEditedDocument}
         />
       )}
 
