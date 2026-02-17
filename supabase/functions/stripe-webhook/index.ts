@@ -6,7 +6,7 @@ import Stripe from 'https://esm.sh/stripe@14.4.0?target=deno&no-check';
 // CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 // Credit allocation per plan (sustainable with 300%+ margin)
@@ -61,6 +61,21 @@ serve(async (req) => {
     );
     
     console.log(`[stripe-webhook] Processing event: ${event.type}`);
+    
+    // IDEMPOTENCY CHECK: Skip already-processed events
+    const { data: existingEvent } = await supabaseClient
+      .from('webhook_events')
+      .select('event_id')
+      .eq('event_id', event.id)
+      .maybeSingle();
+
+    if (existingEvent) {
+      console.log(`[stripe-webhook] Event ${event.id} already processed, skipping`);
+      return new Response(
+        JSON.stringify({ received: true, message: 'Already processed' }),
+        { headers: { 'Content-Type': 'application/json', ...corsHeaders }, status: 200 }
+      );
+    }
     
     // Handle the event
     switch (event.type) {
@@ -186,6 +201,13 @@ serve(async (req) => {
         break;
     }
     
+    // Record event as processed
+    await supabaseClient
+      .from('webhook_events')
+      .insert({ event_id: event.id });
+
+    console.log(`[stripe-webhook] Event ${event.id} processed and recorded`);
+
     return new Response(
       JSON.stringify({ received: true }),
       {

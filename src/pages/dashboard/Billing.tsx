@@ -10,12 +10,7 @@ import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/integrations/supabase/client';
-
-// Load Stripe publishable key from environment variable for easier key rotation
-const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 // Price IDs mapping by language/currency
 const priceIdsByLanguage: Record<string, { starter: string; pro: string; legend: string }> = {
@@ -91,8 +86,6 @@ export default function Billing() {
         body: {
           priceId: plan.priceId,
           planId: plan.id,
-          userEmail: user.email,
-          userId: user.id
         }
       });
 
