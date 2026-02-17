@@ -52,7 +52,7 @@ export function ChatInterface({
   const [savedCopyIds, setSavedCopyIds] = useState<Set<string>>(new Set());
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation(['common', 'dashboard']);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -150,14 +150,14 @@ export function ChatInterface({
       // Credits depleted or trial expired
       if (errorData.code === 'TRIAL_EXPIRED') {
         toast({
-          title: t('common:trial.expired.title'),
-          description: t('common:trial.expired.description'),
+          title: t('trial.expired.title'),
+          description: t('trial.expired.description'),
           variant: 'destructive'
         });
       } else {
         toast({
-          title: t('common:chat.insufficientCreditsTitle'),
-          description: t('common:chat.insufficientCreditsDesc'),
+          title: t('chat.insufficientCreditsTitle'),
+          description: t('chat.insufficientCreditsDesc'),
           variant: 'destructive'
         });
       }
@@ -167,8 +167,8 @@ export function ChatInterface({
     
     if (response.status === 429) {
       toast({
-        title: t('common:chat.rateLimitTitle'),
-        description: t('common:chat.rateLimitDesc'),
+        title: t('chat.rateLimitTitle'),
+        description: t('chat.rateLimitDesc'),
         variant: 'destructive'
       });
       return true;
@@ -194,8 +194,8 @@ export function ChatInterface({
   const handleAutoStart = useCallback(async () => {
     if (!user || user.credits <= 0) {
       toast({
-        title: t('common:chat.insufficientCreditsTitle'),
-        description: t('common:chat.insufficientCreditsDesc'),
+        title: t('chat.insufficientCreditsTitle'),
+        description: t('chat.insufficientCreditsDesc'),
         variant: 'destructive'
       });
       return;
@@ -296,8 +296,8 @@ export function ChatInterface({
       }
 
       toast({
-        title: t('common:chat.creditUsedTitle'),
-        description: t('common:chat.creditUsedDesc', { credits: user.credits - 1 })
+        title: t('chat.creditUsedTitle'),
+        description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
       });
 
     } catch (error: any) {
@@ -328,8 +328,8 @@ export function ChatInterface({
     
     if (!user || user.credits <= 0) {
       toast({
-        title: t('common:chat.insufficientCreditsTitle'),
-        description: t('common:chat.insufficientCreditsDesc'),
+        title: t('chat.insufficientCreditsTitle'),
+        description: t('chat.insufficientCreditsDesc'),
         variant: 'destructive'
       });
       return;
@@ -444,13 +444,13 @@ export function ChatInterface({
       }
       
       toast({
-        title: t('common:chat.creditUsedTitle'),
-        description: t('common:chat.creditUsedDesc', { credits: user.credits - 1 })
+        title: t('chat.creditUsedTitle'),
+        description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
       });
 
     } catch (error: any) {
       console.error('Chat error:', error);
-      const errorMessage = t('common:chat.errorMessage', { error: error.message });
+      const errorMessage = t('chat.errorMessage', { error: error.message });
       setMessages(prev =>
         prev.map(msg =>
           msg.id === assistantMessageId
@@ -459,8 +459,8 @@ export function ChatInterface({
         )
       );
       toast({
-        title: t('common:chat.errorTitle'),
-        description: t('common:chat.errorDesc'),
+        title: t('chat.errorTitle'),
+        description: t('chat.errorDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -479,8 +479,8 @@ export function ChatInterface({
     URL.revokeObjectURL(url);
     
     toast({
-      title: t('common:chat.exportSuccessTitle'),
-      description: t('common:chat.exportSuccessDesc')
+      title: t('chat.exportSuccessTitle'),
+      description: t('chat.exportSuccessDesc')
     });
   };
 
@@ -489,8 +489,8 @@ export function ChatInterface({
     setHasAutoStarted(false);
     setSavedCopyIds(new Set());
     toast({
-      title: t('common:chat.clearSuccessTitle'),
-      description: t('common:chat.clearSuccessDesc')
+      title: t('chat.clearSuccessTitle'),
+      description: t('chat.clearSuccessDesc')
     });
   };
 
@@ -519,7 +519,7 @@ export function ChatInterface({
                   variant="ghost"
                   size="sm"
                   onClick={handleSave}
-                  title={t('common:chat.saveMapping')}
+                  title={t('chat.saveMapping')}
                   className="text-primary"
                 >
                   <Save className="h-4 w-4" />
@@ -529,7 +529,7 @@ export function ChatInterface({
                 variant="ghost"
                 size="sm"
                 onClick={handleExport}
-                title={t('common:chat.exportConversation')}
+                title={t('chat.exportConversation')}
               >
                 <Download className="h-4 w-4" />
               </Button>
@@ -537,7 +537,7 @@ export function ChatInterface({
                 variant="ghost"
                 size="sm"
                 onClick={handleClear}
-                title={t('common:chat.clearHistory')}
+                title={t('chat.clearHistory')}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -553,16 +553,16 @@ export function ChatInterface({
             {autoStart ? (
               <>
                 <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                <p className="text-lg font-medium mb-2">{t('common:chat.startingGuide')}</p>
-                <p className="text-sm">{t('common:chat.preparingQuestions')}</p>
+                <p className="text-lg font-medium mb-2">{t('chat.startingGuide')}</p>
+                <p className="text-sm">{t('chat.preparingQuestions')}</p>
               </>
             ) : (
               <>
                 <p className="text-lg font-medium mb-2">
-                  {t(`common:chat.welcome.${agentSlug?.replace(/-/g, '_')}.title`, { defaultValue: t('common:chat.startConversation', { agentName }) })}
+                  {t(`chat.welcome.${agentSlug?.replace(/-/g, '_')}.title`, { defaultValue: t('chat.startConversation', { agentName }) })}
                 </p>
                 <p className="text-sm max-w-md">
-                  {t(`common:chat.welcome.${agentSlug?.replace(/-/g, '_')}.description`, { defaultValue: t('common:chat.startConversationDesc') })}
+                  {t(`chat.welcome.${agentSlug?.replace(/-/g, '_')}.description`, { defaultValue: t('chat.startConversationDesc') })}
                 </p>
               </>
             )}
@@ -615,7 +615,7 @@ export function ChatInterface({
                 handleSend();
               }
             }}
-            placeholder={t('common:chat.inputPlaceholder')}
+            placeholder={t('chat.inputPlaceholder')}
             className="min-h-[60px] max-h-[200px]"
             disabled={isLoading}
           />
@@ -633,7 +633,7 @@ export function ChatInterface({
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          {t('common:chat.creditsAvailable', { credits: user?.credits ?? 0 })}
+          {t('chat.creditsAvailable', { credits: user?.credits ?? 0 })}
         </p>
       </div>
     </div>
