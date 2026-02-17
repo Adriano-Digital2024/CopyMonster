@@ -186,6 +186,26 @@ All colors MUST be HSL.
     padding: 0 0.5rem;
   }
 
+  /* Chat Markdown Prose Overrides */
+  .chat-markdown p {
+    margin: 0.25em 0;
+  }
+  .chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4 {
+    margin: 0.5em 0 0.25em;
+    font-size: 1em;
+    font-weight: 700;
+  }
+  .chat-markdown ul, .chat-markdown ol {
+    margin: 0.25em 0;
+    padding-left: 1.25em;
+  }
+  .chat-markdown li {
+    margin: 0.1em 0;
+  }
+  .chat-markdown strong {
+    color: inherit;
+  }
+
   /* Custom Scrollbar */
   .custom-scrollbar {
     scrollbar-width: thin;
