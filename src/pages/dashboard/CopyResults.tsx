@@ -106,18 +106,37 @@ export default function CopyResults() {
 
   const uniqueAgents = [...new Set(copyResults.map(c => c.agent_slug))];
 
+  const slugToTranslationKey: Record<string, string> = {
+    'brand-positioning-monster': 'positioner',
+    'vsl-monster': 'vsl',
+    'sales-page-monster': 'sales',
+    'launch-monster': 'launch',
+    'email-monster': 'email',
+    'ads-monster': 'ads',
+    'headline-monster': 'headline',
+    'short-monster': 'short',
+    'internal-launch-monster': 'internalLaunch',
+    'flash-launch-monster': 'flashLaunch',
+    'evergreen-funnel-monster': 'evergreenFunnel',
+    'webinar-campaign-monster': 'webinarCampaign',
+    'cart-recovery-monster': 'cartRecovery',
+    'lead-nurture-monster': 'leadNurture',
+    'upsell-cross-monster': 'upsellCross',
+    'list-revival-monster': 'listRevival',
+    'full-vsl-script-monster': 'fullVslScript',
+    'whatsapp-sales-monster': 'whatsappSales',
+    'high-conversion-ads-monster': 'highConversionAds',
+    'strategic-stories-monster': 'strategicStories',
+    'reels-tiktok-monster': 'reelsTiktok',
+    'carousel-monster': 'carousel',
+  };
+
   const getAgentLabel = (slug: string) => {
-    const labels: Record<string, string> = {
-      vsl_monster: 'VSL Monster',
-      sales_page_monster: 'Sales Page Monster',
-      email_monster: 'Email Monster',
-      ads_monster: 'Ads Monster',
-      headline_monster: 'Headline Monster',
-      short_monster: 'Short Monster',
-      launch_monster: 'Launch Monster',
-      brand_positioning_monster: 'Brand Positioning Monster',
-    };
-    return labels[slug] || slug;
+    const tKey = slugToTranslationKey[slug];
+    if (tKey) {
+      return t(`agents.list.${tKey}.name`);
+    }
+    return slug;
   };
 
   const stats = [

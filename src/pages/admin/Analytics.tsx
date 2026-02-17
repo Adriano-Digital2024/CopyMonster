@@ -37,7 +37,7 @@ interface AnalyticsData {
 }
 
 const Analytics = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticsData>({
@@ -122,7 +122,7 @@ const Analytics = () => {
       });
     } catch (error: any) {
       toast({
-        title: "Erro ao carregar analytics",
+        title: t('admin.analytics.loadError', 'Error loading analytics'),
         description: error.message,
         variant: "destructive"
       });
@@ -136,7 +136,7 @@ const Analytics = () => {
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      const dateStr = date.toLocaleDateString(i18n.language, { day: '2-digit', month: '2-digit' });
       const usersUntilDate = profiles.filter(p => 
         new Date(p.created_at) <= date
       ).length;
@@ -147,7 +147,7 @@ const Analytics = () => {
 
   const generateCreditsUsage = () => {
     return Array.from({ length: 30 }, (_, i) => ({
-      day: `Dia ${i + 1}`,
+      day: `${t('admin.analytics.day', 'Day')} ${i + 1}`,
       credits: Math.floor(Math.random() * 500) + 100
     }));
   };
@@ -316,7 +316,7 @@ const Analytics = () => {
             <CardContent>
               <div className="space-y-4">
                 {data.topAgents.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">Nenhum agente ativo</p>
+                  <p className="text-muted-foreground text-center py-4">{t('admin.analytics.noActiveAgents', 'No active agents')}</p>
                 ) : (
                   data.topAgents.map((agent) => (
                     <div key={agent.name} className="flex items-center justify-between">
@@ -340,7 +340,7 @@ const Analytics = () => {
             <CardContent>
               <div className="space-y-4">
                 {data.topUsers.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">Nenhum usuário encontrado</p>
+                  <p className="text-muted-foreground text-center py-4">{t('admin.analytics.noUsersFound', 'No users found')}</p>
                 ) : (
                   data.topUsers.map((user) => (
                     <div key={user.email} className="flex items-center justify-between">

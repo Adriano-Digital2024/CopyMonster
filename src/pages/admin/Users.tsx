@@ -49,7 +49,7 @@ interface UserProfile {
 }
 
 const Users = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +82,7 @@ const Users = () => {
       setUsers(data || []);
     } catch (error: any) {
       toast({
-        title: "Erro ao carregar usuários",
+        title: t('admin.users.errors.loadError', 'Error loading users'),
         description: error.message,
         variant: "destructive"
       });
@@ -117,15 +117,15 @@ const Users = () => {
       if (error) throw error;
 
       toast({
-        title: "Créditos atualizados",
-        description: `${selectedUser.first_name} agora tem ${newCredits} créditos`
+        title: t('admin.users.errors.creditsUpdated', 'Credits updated'),
+        description: t('admin.users.errors.creditsUpdatedDesc', { name: selectedUser.first_name, credits: newCredits, defaultValue: `${selectedUser.first_name} now has ${newCredits} credits` }),
       });
 
       setEditDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: "Erro ao atualizar créditos",
+        title: t('admin.users.errors.creditsError', 'Error updating credits'),
         description: error.message,
         variant: "destructive"
       });
@@ -142,8 +142,8 @@ const Users = () => {
   const handleAddUser = async () => {
     if (!newUserData.email || !newUserData.firstName || !newUserData.password) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Preencha todos os campos",
+        title: t('admin.users.errors.requiredFields', 'Required fields'),
+        description: t('admin.users.errors.fillAllFields', 'Please fill in all fields'),
         variant: "destructive"
       });
       return;
@@ -151,8 +151,8 @@ const Users = () => {
 
     if (newUserData.password.length < 8) {
       toast({
-        title: "Senha muito curta",
-        description: "A senha deve ter no mínimo 8 caracteres",
+        title: t('admin.users.errors.passwordTooShort', 'Password too short'),
+        description: t('admin.users.errors.passwordMinLength', 'Password must be at least 8 characters'),
         variant: "destructive"
       });
       return;
@@ -183,8 +183,8 @@ const Users = () => {
       }
 
       toast({
-        title: "Usuário criado",
-        description: `${newUserData.firstName} foi adicionado com sucesso`
+        title: t('admin.users.errors.userCreated', 'User created'),
+        description: t('admin.users.errors.userCreatedDesc', { name: newUserData.firstName, defaultValue: `${newUserData.firstName} was added successfully` }),
       });
 
       setAddUserDialogOpen(false);
@@ -192,7 +192,7 @@ const Users = () => {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: "Erro ao criar usuário",
+        title: t('admin.users.errors.createError', 'Error creating user'),
         description: error.message,
         variant: "destructive"
       });
@@ -224,8 +224,8 @@ const Users = () => {
       }
 
       toast({
-        title: "Usuário excluído",
-        description: `${selectedUser.first_name} foi removido com sucesso`
+        title: t('admin.users.errors.userDeleted', 'User deleted'),
+        description: t('admin.users.errors.userDeletedDesc', { name: selectedUser.first_name, defaultValue: `${selectedUser.first_name} was removed successfully` }),
       });
 
       setDeleteDialogOpen(false);
@@ -233,7 +233,7 @@ const Users = () => {
       fetchUsers();
     } catch (error: any) {
       toast({
-        title: "Erro ao excluir usuário",
+        title: t('admin.users.errors.deleteError', 'Error deleting user'),
         description: error.message,
         variant: "destructive"
       });
@@ -251,7 +251,7 @@ const Users = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleDateString(i18n.language);
   };
 
   if (loading) {
@@ -325,7 +325,7 @@ const Users = () => {
                   {filteredUsers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        Nenhum usuário encontrado
+                        {t('admin.users.errors.noUsersFound', 'No users found')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -432,12 +432,12 @@ const Users = () => {
           <DialogHeader>
             <DialogTitle>{t('admin.users.addUser')}</DialogTitle>
             <DialogDescription>
-              Criar um novo usuário no sistema
+              {t('admin.users.errors.addUserDesc', 'Create a new user in the system')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="new-firstname">Nome</Label>
+              <Label htmlFor="new-firstname">{t('admin.users.name')}</Label>
               <Input
                 id="new-firstname"
                 placeholder="João Silva"
@@ -446,7 +446,7 @@ const Users = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-email">Email</Label>
+              <Label htmlFor="new-email">{t('admin.users.email')}</Label>
               <Input
                 id="new-email"
                 type="email"
@@ -456,11 +456,11 @@ const Users = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">Senha Temporária</Label>
+              <Label htmlFor="new-password">{t('admin.users.errors.tempPassword', 'Temporary Password')}</Label>
               <Input
                 id="new-password"
                 type="password"
-                placeholder="Mínimo 8 caracteres"
+                placeholder={t('admin.users.errors.passwordMinLength', 'At least 8 characters')}
                 value={newUserData.password}
                 onChange={(e) => setNewUserData({...newUserData, password: e.target.value})}
               />
@@ -472,7 +472,7 @@ const Users = () => {
             </Button>
             <Button onClick={handleAddUser} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Criar Usuário
+              {t('admin.users.addUser')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -46,8 +46,8 @@ export default function Settings() {
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Senhas não conferem",
-        description: "As senhas não coincidem",
+        title: t('dashboard.settings.toast.passwordMismatch'),
+        description: t('dashboard.settings.toast.passwordMismatchDesc'),
         variant: "destructive"
       });
       return;
@@ -55,8 +55,8 @@ export default function Settings() {
 
     if (newPassword.length < 8) {
       toast({
-        title: "Senha muito curta",
-        description: "A senha deve ter no mínimo 8 caracteres",
+        title: t('dashboard.settings.toast.passwordTooShort'),
+        description: t('dashboard.settings.toast.passwordTooShortDesc'),
         variant: "destructive"
       });
       return;
@@ -70,8 +70,8 @@ export default function Settings() {
       if (error) throw error;
 
       toast({
-        title: "Senha alterada",
-        description: "Sua senha foi atualizada com sucesso"
+        title: t('dashboard.settings.toast.passwordChanged'),
+        description: t('dashboard.settings.toast.passwordChangedDesc')
       });
 
       setCurrentPassword('');
@@ -79,7 +79,7 @@ export default function Settings() {
       setConfirmPassword('');
     } catch (error: any) {
       toast({
-        title: "Erro ao alterar senha",
+        title: t('dashboard.settings.toast.passwordError'),
         description: error.message,
         variant: "destructive"
       });

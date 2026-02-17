@@ -82,7 +82,7 @@ export default function Billing() {
     try {
       const plan = plans.find(p => p.id === planId);
       if (!plan) {
-        throw new Error('Plano não encontrado');
+        throw new Error(t('dashboard.billing.errors.planNotFound'));
       }
 
       console.log('Initiating checkout for plan:', plan.id, 'priceId:', plan.priceId);
@@ -100,11 +100,11 @@ export default function Billing() {
 
       if (functionError) {
         console.error('Function error:', functionError);
-        throw new Error(functionError.message || 'Erro ao criar sessão de checkout');
+        throw new Error(functionError.message || t('dashboard.billing.errors.createCheckoutError'));
       }
 
       if (!data) {
-        throw new Error('Resposta vazia do servidor');
+        throw new Error(t('dashboard.billing.errors.emptyResponse'));
       }
 
       if (data.error) {
@@ -114,16 +114,16 @@ export default function Billing() {
 
       if (!data.url) {
         console.error('No checkout URL in response:', data);
-        throw new Error('URL de checkout não foi criada');
+        throw new Error(t('dashboard.billing.errors.noCheckoutUrl'));
       }
 
       console.log('Redirecting browser to Stripe checkout URL:', data.url);
       window.location.href = data.url as string;
     } catch (error) {
       console.error('Erro no checkout:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao processar seu pagamento';
+      const errorMessage = error instanceof Error ? error.message : t('dashboard.billing.errors.checkoutErrorDesc');
       toast({
-        title: 'Erro no checkout',
+        title: t('dashboard.billing.errors.checkoutError'),
         description: errorMessage,
         variant: 'destructive'
       });

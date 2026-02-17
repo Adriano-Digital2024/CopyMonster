@@ -52,12 +52,12 @@ function generateCleanDocument(messages: Message[], title: string): string {
   if (lastAssistantMessage.includes('MAPEAMENTO ESTRATÉGICO') || 
       lastAssistantMessage.includes('STRATEGIC MAPPING') ||
       lastAssistantMessage.includes('MAPEO ESTRATÉGICO')) {
-    return `${title}\n${'='.repeat(title.length)}\n\nData: ${new Date().toLocaleDateString('pt-BR')}\n\n---\n\n${lastAssistantMessage}`;
+    return `${title}\n${'='.repeat(title.length)}\n\n${new Date().toLocaleDateString()}\n\n---\n\n${lastAssistantMessage}`;
   }
 
   // Otherwise, compile from all messages
   let document = `${title}\n${'='.repeat(title.length)}\n\n`;
-  document += `Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+  document += `${new Date().toLocaleDateString()}\n\n`;
   document += '---\n\n';
 
   // Interleave Q&A format

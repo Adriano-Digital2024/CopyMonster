@@ -64,7 +64,7 @@ interface PositioningMapping {
 }
 
 export default function Library() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -382,7 +382,7 @@ export default function Library() {
                   {/* Date */}
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Calendar className="h-3.5 w-3.5" />
-                    {new Date(mapping.updated_at).toLocaleDateString('pt-BR', {
+                    {new Date(mapping.updated_at).toLocaleDateString(i18n.language, {
                       day: '2-digit',
                       month: 'short',
                       year: 'numeric'
