@@ -1,87 +1,46 @@
 
+## Renderizar Markdown nas respostas dos agentes
 
-## Editar Copy Gerada - Plano Ajustado
+### Problema
+Linha 588 de `ChatInterface.tsx` renderiza o conteudo como texto puro:
+```
+<p className="text-sm whitespace-pre-wrap">{message.content}</p>
+```
+Isso faz com que `**negrito**`, `*italico*`, listas e titulos aparecam como caracteres literais.
 
-### Banco de Dados
+### Solucao
 
-**Migracao SQL (2 colunas):**
-- `copy_results`: adicionar `is_edited boolean DEFAULT false`
-- `positioning_mappings`: adicionar `document text` + `is_edited boolean DEFAULT false`
-  - Coluna `document` armazena o texto final (substituido ao editar, sem coluna separada)
+**1. Instalar `react-markdown`** como dependencia do projeto.
 
----
+**2. Modificar `src/components/chat/ChatInterface.tsx`:**
+- Importar `ReactMarkdown` de `react-markdown`
+- Substituir a linha 588 de:
+  ```
+  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+  ```
+  por:
+  ```
+  <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+    <ReactMarkdown>{message.content}</ReactMarkdown>
+  </div>
+  ```
+  Nota: usa `<div>` em vez de `<p>` porque ReactMarkdown gera elementos de bloco (`<p>`, `<ul>`, `<h1>`, etc.) que nao podem ficar dentro de `<p>`.
 
-### CopyResults.tsx - Botao Editar + Modal
+**3. Adicionar estilos em `src/index.css`** para ajustar a tipografia do markdown dentro do chat:
+- Remover margens excessivas dos paragrafos dentro do bubble
+- Ajustar tamanho de titulos para ficarem proporcionais ao chat
+- Garantir que listas tenham indentacao adequada
 
-**Novos estados:** `editingResult`, `editContent`
+### Detalhes tecnicos
 
-**Botao Pencil:** posicionado entre Copy e Trash2 (ao lado do Copiar, nao entre Copiar e Excluir). Ordem final dos botoes: Star | Copy | Pencil | Trash2
+- `prose prose-sm dark:prose-invert` sao classes do Tailwind Typography (ja incluido via Tailwind) que aplicam estilos automaticos para conteudo HTML gerado por markdown
+- `max-w-none` remove o limite de largura padrao do prose
+- Apenas mensagens do assistente se beneficiam do markdown, mas aplicar em ambas nao causa problemas (mensagens do usuario raramente contem markdown)
+- Nenhuma alteracao de rota, layout, i18n ou banco de dados
 
-**Modal de edicao:**
-- Dialog com Textarea preenchida com conteudo atual
-- Contador de caracteres: `X/2000` abaixo do textarea
-- Aviso visual (texto vermelho) se ultrapassar 2000
-- Botao Cancelar com confirmacao: se texto foi alterado e usuario clica Cancelar, exibe AlertDialog "Descartar alteracoes?" (Sim/Nao)
-- Botao Salvar faz UPDATE no supabase (`content` + `is_edited: true`)
-
-**Badge "Editado":** exibido ao lado do badge do agente quando `is_edited === true`
-
----
-
-### ExportDocumentModal.tsx - Edicao do Documento
-
-**Novas props:**
-- `onSaveEdit?: (content: string) => void`
-- `isEdited?: boolean`
-
-**Comportamento interno:**
-- Estado `isEditing` e `editableContent`
-- Botao Pencil ao lado de Copiar (antes de Baixar)
-- Ao clicar: troca `<pre>` por `<Textarea>` com contador `X/2000`
-- Botoes Salvar/Cancelar substituem Copiar/Baixar no modo edicao
-- Cancelar com alteracoes nao salvas: AlertDialog de confirmacao
-- Ao salvar: chama `onSaveEdit(editableContent)`
-
----
-
-### Library.tsx - Integracao
-
-- Tipo `PositioningMapping` recebe `document?: string` e `is_edited?: boolean`
-- No `handleViewMapping`: se `mapping.document` existe, usa-lo como conteudo; senao, gera via `getMessagesFromConversation`
-- `onSaveEdit` faz UPDATE em `positioning_mappings` com `document = content` e `is_edited = true`
-- Badge "Editado" no card quando `is_edited === true`
-
----
-
-### i18n/config.ts - Novas chaves (3 idiomas)
-
-| Chave | EN | PT | ES |
-|-------|-----|-----|-----|
-| copyResults.edit | Edit | Editar | Editar |
-| copyResults.editTitle | Edit Copy | Editar Copy | Editar Copy |
-| copyResults.editDesc | Edit the generated content | Edite o conteudo gerado | Edita el contenido generado |
-| copyResults.toast.edited | Copy updated | Copy atualizada | Copy actualizada |
-| copyResults.editedBadge | Edited | Editado | Editado |
-| copyResults.charCount | {{count}}/{{max}} characters | {{count}}/{{max}} caracteres | {{count}}/{{max}} caracteres |
-| copyResults.charLimitWarning | Character limit exceeded | Limite de caracteres excedido | Limite de caracteres excedido |
-| copyResults.discardChanges | Discard changes? | Descartar alteracoes? | Descartar cambios? |
-| copyResults.discardChangesDesc | Unsaved changes will be lost | As alteracoes nao salvas serao perdidas | Los cambios no guardados se perderan |
-| copyResults.discard | Discard | Descartar | Descartar |
-| positioning.editDocument | Edit Document | Editar Documento | Editar Documento |
-| positioning.toast.documentEdited | Document updated | Documento atualizado | Documento actualizado |
-| positioning.editedBadge | Edited | Editado | Editado |
-| common.save | Save | Salvar | Guardar |
-
----
-
-### Resumo de Arquivos
-
+### Arquivos modificados
 | Arquivo | Alteracao |
 |---------|-----------|
-| Migracao SQL | 3 colunas novas (2 tabelas) |
-| `src/i18n/config.ts` | ~14 chaves x 3 idiomas |
-| `src/pages/dashboard/CopyResults.tsx` | Modal edicao + Pencil + badge + confirmacao |
-| `src/components/positioning/ExportDocumentModal.tsx` | Modo edicao inline + confirmacao |
-| `src/pages/dashboard/Library.tsx` | onSaveEdit handler + badge + tipo |
-| `src/integrations/supabase/types.ts` | Tipos atualizados |
-
+| `package.json` | Adicionar `react-markdown` |
+| `src/components/chat/ChatInterface.tsx` | Import + trocar `<p>` por `<ReactMarkdown>` |
+| `src/index.css` | Estilos opcionais para prose dentro do chat |
