@@ -1,46 +1,84 @@
 
-## Renderizar Markdown nas respostas dos agentes
 
-### Problema
-Linha 588 de `ChatInterface.tsx` renderiza o conteudo como texto puro:
+## Correcao dos 4 Problemas Criticos de Seguranca
+
+### 1. Idempotencia Stripe - Tabela webhook_events
+
+**Migracao SQL:**
+- Criar tabela `webhook_events` com colunas: `id` (serial PK), `event_id` (varchar unique not null), `processed_at` (timestamptz default now)
+- RLS habilitado sem politicas publicas (apenas service role acessa via webhook)
+
+**`supabase/functions/stripe-webhook/index.ts`:**
+- Apos verificar a assinatura do webhook e antes do `switch(event.type)`, consultar `webhook_events` pelo `event.id`
+- Se ja existe: retornar `200 OK` com `{ received: true, message: "Already processed" }`
+- Se nao existe: processar normalmente e inserir `event_id` na tabela apos sucesso
+
+---
+
+### 2. Autenticacao JWT no create-checkout-session
+
+**`supabase/functions/create-checkout-session/index.ts` - reescrita:**
+- Remover aceitacao de `userId` e `userEmail` do body
+- Extrair token do header `Authorization`
+- Criar cliente Supabase com `SUPABASE_URL` + `SUPABASE_ANON_KEY`
+- Chamar `supabase.auth.getUser(token)` para verificar JWT
+- Usar `user.id` e `user.email` verificados do JWT
+- Aceitar apenas `priceId` e `planId` do body
+- Rejeitar com 401 se nao houver token valido
+
+**`src/pages/dashboard/Billing.tsx`:**
+- Remover `userEmail` e `userId` do body da chamada `supabase.functions.invoke`
+- Enviar apenas `{ priceId, planId }` (o SDK ja envia o JWT automaticamente no header)
+- Remover import de `loadStripe` e variavel `stripePromise` (dead code)
+
+---
+
+### 3. CORS Headers Atualizados
+
+Atualizar o objeto `corsHeaders` em todas as 4 edge functions para incluir os headers do cliente Supabase:
+
+```text
+Funcoes afetadas:
+- supabase/functions/chat-stream/index.ts (linha 4-7)
+- supabase/functions/create-checkout-session/index.ts (linha 4-7)
+- supabase/functions/stripe-webhook/index.ts (linha 8-10)
+- supabase/functions/agent-test/index.ts (linha 4-7)
+- supabase/functions/admin-users/index.ts (linha 4-7)
 ```
-<p className="text-sm whitespace-pre-wrap">{message.content}</p>
+
+Novo valor padrao:
+```text
+'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version'
 ```
-Isso faz com que `**negrito**`, `*italico*`, listas e titulos aparecam como caracteres literais.
 
-### Solucao
+---
 
-**1. Instalar `react-markdown`** como dependencia do projeto.
+### 4. ProtectedRoute Wrapper Centralizado
 
-**2. Modificar `src/components/chat/ChatInterface.tsx`:**
-- Importar `ReactMarkdown` de `react-markdown`
-- Substituir a linha 588 de:
-  ```
-  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-  ```
-  por:
-  ```
-  <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
-    <ReactMarkdown>{message.content}</ReactMarkdown>
-  </div>
-  ```
-  Nota: usa `<div>` em vez de `<p>` porque ReactMarkdown gera elementos de bloco (`<p>`, `<ul>`, `<h1>`, etc.) que nao podem ficar dentro de `<p>`.
+**Novo arquivo: `src/components/ProtectedRoute.tsx`**
+- Importar `useAuth` do AuthContext
+- Se `isLoading`: renderizar spinner centralizado (evita flash de conteudo)
+- Se `!user`: redirecionar para `/auth` com `<Navigate>`
+- Se autenticado: renderizar `<Outlet />` para rotas filhas
+- Prop opcional `requireAdmin` para rotas `/admin/*` que verifica `user.isAdmin`
 
-**3. Adicionar estilos em `src/index.css`** para ajustar a tipografia do markdown dentro do chat:
-- Remover margens excessivas dos paragrafos dentro do bubble
-- Ajustar tamanho de titulos para ficarem proporcionais ao chat
-- Garantir que listas tenham indentacao adequada
+**`src/App.tsx` - Reestruturar rotas:**
+- Agrupar rotas `/dashboard/*` dentro de `<Route element={<ProtectedRoute />}>`
+- Agrupar rotas `/admin/*` dentro de `<Route element={<ProtectedRoute requireAdmin />}>`
+- Rotas publicas (`/`, `/start`, `/auth`, `/reset-password`, `/update-password`, legais) ficam fora
 
-### Detalhes tecnicos
+---
 
-- `prose prose-sm dark:prose-invert` sao classes do Tailwind Typography (ja incluido via Tailwind) que aplicam estilos automaticos para conteudo HTML gerado por markdown
-- `max-w-none` remove o limite de largura padrao do prose
-- Apenas mensagens do assistente se beneficiam do markdown, mas aplicar em ambas nao causa problemas (mensagens do usuario raramente contem markdown)
-- Nenhuma alteracao de rota, layout, i18n ou banco de dados
+### Resumo de Arquivos
 
-### Arquivos modificados
 | Arquivo | Alteracao |
 |---------|-----------|
-| `package.json` | Adicionar `react-markdown` |
-| `src/components/chat/ChatInterface.tsx` | Import + trocar `<p>` por `<ReactMarkdown>` |
-| `src/index.css` | Estilos opcionais para prose dentro do chat |
+| Migracao SQL | Criar tabela `webhook_events` |
+| `supabase/functions/stripe-webhook/index.ts` | Idempotencia com checagem pre-processamento |
+| `supabase/functions/create-checkout-session/index.ts` | JWT auth via getUser, remover body userId/email |
+| `supabase/functions/chat-stream/index.ts` | CORS headers atualizados |
+| `supabase/functions/agent-test/index.ts` | CORS headers atualizados |
+| `supabase/functions/admin-users/index.ts` | CORS headers atualizados |
+| `src/pages/dashboard/Billing.tsx` | Remover userId/email do body + dead code |
+| `src/components/ProtectedRoute.tsx` | Novo componente |
+| `src/App.tsx` | Rotas protegidas com wrapper |
