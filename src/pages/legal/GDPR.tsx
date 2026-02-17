@@ -29,7 +29,7 @@ export default function GDPR() {
               </p>
               <p className="text-muted-foreground mt-2">
                 Company: CopyMonster<br />
-                Email: gdpr@copymonster.app<br />
+                Email: gdpr@copymonster.me<br />
                 Address: São Paulo, Brazil
               </p>
             </section>
@@ -95,7 +95,7 @@ export default function GDPR() {
                 To exercise any of these rights, you can:
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                <li>Email us at gdpr@copymonster.app</li>
+                <li>Email us at gdpr@copymonster.me</li>
                 <li>Use the data management features in your account settings</li>
                 <li>Submit a formal request through our website</li>
               </ul>
@@ -151,7 +151,7 @@ export default function GDPR() {
                 For any GDPR-related inquiries or to exercise your rights:
               </p>
               <p className="text-muted-foreground mt-2">
-                Email: gdpr@copymonster.app<br />
+                Email: gdpr@copymonster.me<br />
                 Subject: GDPR Request - [Your Request Type]
               </p>
             </section>
