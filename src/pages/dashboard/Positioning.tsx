@@ -35,7 +35,7 @@ const AGENT_CONFIG = {
 export default function Positioning() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -131,7 +131,7 @@ export default function Positioning() {
     
     try {
       const completedBlocks = countCompletedBlocks(messages);
-      const autoTitle = `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`;
+      const autoTitle = `${t('positioning.title')} ${new Date().toLocaleDateString(i18n.language)}`;
       
       // Prepare conversation data
       const conversationData = messages.map(m => ({
@@ -171,7 +171,7 @@ export default function Positioning() {
   };
 
   const handleSave = useCallback((msgs: Message[]) => {
-    setMappingTitle(`Posicionamento ${new Date().toLocaleDateString('pt-BR')}`);
+    setMappingTitle(`${t('positioning.title')} ${new Date().toLocaleDateString(i18n.language)}`);
     setIsSaveDialogOpen(true);
   }, []);
 
@@ -196,7 +196,7 @@ export default function Positioning() {
         const { error } = await supabase
           .from('positioning_mappings')
           .update({
-            title: mappingTitle || `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`,
+            title: mappingTitle || `${t('positioning.title')} ${new Date().toLocaleDateString(i18n.language)}`,
             status: isCompleted ? 'completed' : 'in_progress',
             conversation: conversationData,
             completed_blocks: completedBlocks,
@@ -209,7 +209,7 @@ export default function Positioning() {
           .from('positioning_mappings')
           .insert({
             user_id: user.id,
-            title: mappingTitle || `Posicionamento ${new Date().toLocaleDateString('pt-BR')}`,
+            title: mappingTitle || `${t('positioning.title')} ${new Date().toLocaleDateString(i18n.language)}`,
             status: isCompleted ? 'completed' : 'in_progress',
             conversation: conversationData,
             completed_blocks: completedBlocks,
@@ -387,7 +387,7 @@ export default function Positioning() {
         open={isExportModalOpen}
         onOpenChange={setIsExportModalOpen}
         messages={messages}
-        title={mappingTitle || 'Mapeamento Estratégico'}
+        title={mappingTitle || t('positioning.exportDocument', 'Strategic Mapping')}
       />
     </DashboardLayout>
   );
