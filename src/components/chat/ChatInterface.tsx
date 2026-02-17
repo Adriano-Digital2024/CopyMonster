@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Send, Download, Trash2, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -585,7 +586,9 @@ export function ChatInterface({
                       : 'bg-muted'
                   )}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div className="text-sm prose prose-sm dark:prose-invert max-w-none chat-markdown">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
                   <p className="text-xs opacity-70 mt-2">
                     {message.timestamp.toLocaleTimeString()}
                   </p>
