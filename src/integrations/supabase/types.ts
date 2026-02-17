@@ -308,6 +308,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_edited: boolean
           is_favorite: boolean
           rating: number | null
           user_id: string
@@ -318,6 +319,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_edited?: boolean
           is_favorite?: boolean
           rating?: number | null
           user_id: string
@@ -328,6 +330,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_edited?: boolean
           is_favorite?: boolean
           rating?: number | null
           user_id?: string
@@ -589,7 +592,9 @@ export type Database = {
           completed_blocks: number
           conversation: Json
           created_at: string
+          document: string | null
           id: string
+          is_edited: boolean
           status: string
           title: string
           updated_at: string
@@ -611,7 +616,9 @@ export type Database = {
           completed_blocks?: number
           conversation?: Json
           created_at?: string
+          document?: string | null
           id?: string
+          is_edited?: boolean
           status?: string
           title?: string
           updated_at?: string
@@ -633,7 +640,9 @@ export type Database = {
           completed_blocks?: number
           conversation?: Json
           created_at?: string
+          document?: string | null
           id?: string
+          is_edited?: boolean
           status?: string
           title?: string
           updated_at?: string

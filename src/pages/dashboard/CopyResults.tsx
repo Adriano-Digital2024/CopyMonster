@@ -1,9 +1,28 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, FileText, Star, Copy, Trash2 } from 'lucide-react';
+import { TrendingUp, FileText, Star, Copy, Trash2, Pencil } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,11 +30,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
+const MAX_CHARS = 2000;
+
 interface CopyResult {
   id: string;
   agent_slug: string;
   content: string;
   is_favorite: boolean;
+  is_edited: boolean;
   rating: number | null;
   created_at: string;
   campaign_id: string | null;
@@ -28,6 +50,9 @@ export default function CopyResults() {
   const [copyResults, setCopyResults] = useState<CopyResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [editingResult, setEditingResult] = useState<CopyResult | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [showDiscardAlert, setShowDiscardAlert] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -43,7 +68,7 @@ export default function CopyResults() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCopyResults(data || []);
+      setCopyResults((data as CopyResult[]) || []);
     } catch (error) {
       console.error('Error loading copy results:', error);
     } finally {
@@ -96,6 +121,49 @@ export default function CopyResults() {
     toast({
       title: t('copyResults.toast.copied'),
     });
+  };
+
+  const handleEditOpen = (result: CopyResult) => {
+    setEditingResult(result);
+    setEditContent(result.content);
+  };
+
+  const handleEditCancel = () => {
+    if (editingResult && editContent !== editingResult.content) {
+      setShowDiscardAlert(true);
+    } else {
+      setEditingResult(null);
+      setEditContent('');
+    }
+  };
+
+  const handleDiscardConfirm = () => {
+    setShowDiscardAlert(false);
+    setEditingResult(null);
+    setEditContent('');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingResult) return;
+
+    try {
+      const { error } = await supabase
+        .from('copy_results')
+        .update({ content: editContent, is_edited: true })
+        .eq('id', editingResult.id);
+
+      if (error) throw error;
+
+      setCopyResults(copyResults.map(c =>
+        c.id === editingResult.id ? { ...c, content: editContent, is_edited: true } : c
+      ));
+
+      toast({ title: t('copyResults.toast.edited') });
+      setEditingResult(null);
+      setEditContent('');
+    } catch (error) {
+      console.error('Error saving edit:', error);
+    }
   };
 
   const filteredResults = copyResults.filter(result => {
@@ -234,6 +302,12 @@ export default function CopyResults() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="secondary">{getAgentLabel(result.agent_slug)}</Badge>
+                        {result.is_edited && (
+                          <Badge variant="outline" className="text-xs">
+                            <Pencil className="h-3 w-3 mr-1" />
+                            {t('copyResults.editedBadge')}
+                          </Badge>
+                        )}
                         <span className="text-sm text-muted-foreground">
                           {new Date(result.created_at).toLocaleDateString()}
                         </span>
@@ -262,6 +336,13 @@ export default function CopyResults() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditOpen(result)}
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => deleteCopyResult(result.id)}
                       >
                         <Trash2 className="h-5 w-5 text-destructive" />
@@ -274,6 +355,55 @@ export default function CopyResults() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      <Dialog open={!!editingResult} onOpenChange={(open) => { if (!open) handleEditCancel(); }}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('copyResults.editTitle')}</DialogTitle>
+            <DialogDescription>{t('copyResults.editDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="min-h-[300px] resize-y"
+            />
+            <div className="flex items-center justify-between text-xs">
+              <span className={editContent.length > MAX_CHARS ? 'text-destructive font-medium' : 'text-muted-foreground'}>
+                {t('copyResults.charCount', { count: editContent.length, max: MAX_CHARS })}
+              </span>
+              {editContent.length > MAX_CHARS && (
+                <span className="text-destructive">{t('copyResults.charLimitWarning')}</span>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleEditCancel}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              {t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Discard Confirmation */}
+      <AlertDialog open={showDiscardAlert} onOpenChange={setShowDiscardAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('copyResults.discardChanges')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('copyResults.discardChangesDesc')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDiscardConfirm}>
+              {t('copyResults.discard')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
