@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { AgentSelectionModal } from '@/components/positioning/AgentSelectionModal';
 import { ExportDocumentModal } from '@/components/positioning/ExportDocumentModal';
+import { useDnaGuard } from '@/hooks/useDnaGuard';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,6 +72,7 @@ export default function Library() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { dnaCount, dnaLimit, canCreateMore } = useDnaGuard();
   
   const [mappings, setMappings] = useState<PositioningMapping[]>([]);
   const [loading, setLoading] = useState(true);
@@ -243,7 +245,7 @@ export default function Library() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <BookOpen className="h-8 w-8 text-primary" />
               {t('library.title', 'Minha Biblioteca')}
@@ -252,10 +254,20 @@ export default function Library() {
               {t('library.subtitle', 'Seus posicionamentos estratégicos de marca')}
             </p>
           </div>
-          <Button onClick={() => navigate('/dashboard/positioning')} className="gap-2">
-            <Plus className="h-4 w-4" />
-            {t('library.newPositioning', 'Novo Posicionamento')}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="text-sm">
+              {t('dna.counter', { used: dnaCount, limit: dnaLimit, defaultValue: `${dnaCount}/${dnaLimit} projetos DNA` })}
+            </Badge>
+            <Button 
+              onClick={() => navigate('/dashboard/positioning')} 
+              className="gap-2"
+              disabled={!canCreateMore}
+              title={!canCreateMore ? t('dna.limit.reached.title') : ''}
+            >
+              <Plus className="h-4 w-4" />
+              {t('library.newPositioning', 'Novo Posicionamento')}
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}

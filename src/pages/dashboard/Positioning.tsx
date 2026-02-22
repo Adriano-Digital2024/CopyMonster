@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useDnaGuard } from '@/hooks/useDnaGuard';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ export default function Positioning() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { canCreateMore, dnaCount, dnaLimit, isLoading: dnaLoading } = useDnaGuard();
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
@@ -48,6 +50,7 @@ export default function Positioning() {
   const [isFlowComplete, setIsFlowComplete] = useState(false);
   const [savedMappingId, setSavedMappingId] = useState<string | null>(null);
   const [showCompletionPanel, setShowCompletionPanel] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Check for mapping to continue from library
   useEffect(() => {
@@ -55,8 +58,11 @@ export default function Positioning() {
     if (continueId && user) {
       localStorage.removeItem('continue_mapping_id');
       loadExistingMapping(continueId);
+    } else if (!continueId && !dnaLoading && !canCreateMore && !savedMappingId) {
+      // User is starting a new DNA but has hit the limit
+      setShowLimitModal(true);
     }
-  }, [user]);
+  }, [user, dnaLoading, canCreateMore, savedMappingId]);
 
   const loadExistingMapping = async (mappingId: string) => {
     try {
@@ -370,6 +376,26 @@ export default function Positioning() {
               ) : (
                 t('positioning.confirmSave')
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DNA Limit Modal */}
+      <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('dna.limit.reached.title')}</DialogTitle>
+            <DialogDescription>
+              {t('dna.limit.reached.message', { count: dnaCount, limit: dnaLimit, plan: user?.subscription_status || 'free' })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => { setShowLimitModal(false); navigate('/dashboard/library'); }}>
+              {t('dna.limit.reached.stay')}
+            </Button>
+            <Button onClick={() => navigate('/dashboard/billing')}>
+              {t('dna.limit.reached.upgrade')}
             </Button>
           </DialogFooter>
         </DialogContent>
