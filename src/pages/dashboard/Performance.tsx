@@ -28,7 +28,6 @@ export default function Performance() {
     positionings: 0,
     campaigns: 0,
     copyResults: 0,
-    headlines: 0,
   });
 
   useEffect(() => {
@@ -39,18 +38,16 @@ export default function Performance() {
 
   const loadRealStats = async () => {
     try {
-      const [positioningsRes, campaignsRes, copyResultsRes, headlinesRes] = await Promise.all([
+      const [positioningsRes, campaignsRes, copyResultsRes] = await Promise.all([
         supabase.from('positioning_mappings').select('id', { count: 'exact', head: true }),
         supabase.from('campaigns').select('id', { count: 'exact', head: true }),
         supabase.from('copy_results').select('id', { count: 'exact', head: true }),
-        supabase.from('headlines').select('id', { count: 'exact', head: true }),
       ]);
 
       setRealStats({
         positionings: positioningsRes.count || 0,
         campaigns: campaignsRes.count || 0,
         copyResults: copyResultsRes.count || 0,
-        headlines: headlinesRes.count || 0,
       });
     } catch (error) {
       console.error('Error loading stats:', error);

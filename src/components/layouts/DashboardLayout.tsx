@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Users, CreditCard, Trophy, Settings, LogOut, Menu, Loader2, Target, Rocket, FileText, Newspaper, Lightbulb, Book } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Trophy, Settings, LogOut, Menu, Loader2, Target, Rocket, FileText, Book } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -77,8 +77,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: Users, label: t('dashboard.menu.agents'), path: '/dashboard/agents' },
     { icon: Rocket, label: t('dashboard.menu.campaigns'), path: '/dashboard/campaigns' },
     { icon: FileText, label: t('dashboard.menu.copyResults'), path: '/dashboard/copy-results' },
-    { icon: Newspaper, label: t('dashboard.menu.headlines'), path: '/dashboard/headlines' },
-    { icon: Lightbulb, label: t('dashboard.menu.insights'), path: '/dashboard/insights' },
     { icon: Book, label: t('dashboard.menu.library'), path: '/dashboard/library' },
     { icon: Trophy, label: t('dashboard.menu.performance'), path: '/dashboard/performance' },
     { icon: CreditCard, label: t('dashboard.menu.billing'), path: '/dashboard/billing' },
