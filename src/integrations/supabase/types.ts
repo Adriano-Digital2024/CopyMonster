@@ -311,6 +311,7 @@ export type Database = {
           is_edited: boolean
           is_favorite: boolean
           rating: number | null
+          title: string | null
           user_id: string
         }
         Insert: {
@@ -322,6 +323,7 @@ export type Database = {
           is_edited?: boolean
           is_favorite?: boolean
           rating?: number | null
+          title?: string | null
           user_id: string
         }
         Update: {
@@ -333,6 +335,7 @@ export type Database = {
           is_edited?: boolean
           is_favorite?: boolean
           rating?: number | null
+          title?: string | null
           user_id?: string
         }
         Relationships: [

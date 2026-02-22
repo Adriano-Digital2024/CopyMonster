@@ -1,0 +1,1 @@
+ALTER TABLE public.copy_results ADD COLUMN title text DEFAULT NULL;

@@ -2,14 +2,24 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Send, Download, Trash2, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 // Constants for localStorage fallback
 const PENDING_COPYS_KEY = 'pending_copys';
@@ -51,6 +61,9 @@ export function ChatInterface({
   const [isLoading, setIsLoading] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
   const [savedCopyIds, setSavedCopyIds] = useState<Set<string>>(new Set());
+  const [showNamingDialog, setShowNamingDialog] = useState(false);
+  const [copyTitle, setCopyTitle] = useState('');
+  const [lastSavedCopyId, setLastSavedCopyId] = useState<string | null>(null);
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -72,9 +85,11 @@ export function ChatInterface({
     };
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('copy_results')
-        .insert(copyData);
+        .insert(copyData)
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Error saving copy result:', error);
@@ -82,6 +97,12 @@ export function ChatInterface({
         const pendingCopys = JSON.parse(localStorage.getItem(PENDING_COPYS_KEY) || '[]');
         pendingCopys.push({ ...copyData, created_at: new Date().toISOString(), id: messageId });
         localStorage.setItem(PENDING_COPYS_KEY, JSON.stringify(pendingCopys));
+      } else if (data) {
+        // Show naming dialog
+        const suggestion = `${agentName} - ${format(new Date(), 'dd/MM/yyyy')}`;
+        setCopyTitle(suggestion);
+        setLastSavedCopyId(data.id);
+        setShowNamingDialog(true);
       }
     } catch (err) {
       console.error('Error saving copy result:', err);
@@ -501,6 +522,27 @@ export function ChatInterface({
     }
   }, [messages, onSave]);
 
+  const handleSaveCopyTitle = async () => {
+    if (!copyTitle.trim() || !lastSavedCopyId) return;
+
+    try {
+      const { error } = await supabase
+        .from('copy_results')
+        .update({ title: copyTitle.trim() })
+        .eq('id', lastSavedCopyId);
+
+      if (error) {
+        console.error('Error saving copy title:', error);
+      }
+    } catch (err) {
+      console.error('Error saving copy title:', err);
+    }
+
+    setShowNamingDialog(false);
+    setCopyTitle('');
+    setLastSavedCopyId(null);
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -639,6 +681,43 @@ export function ChatInterface({
           {t('chat.creditsAvailable', { credits: user?.credits ?? 0 })}
         </p>
       </div>
+
+      {/* Copy Naming Dialog */}
+      <Dialog open={showNamingDialog} onOpenChange={(open) => {
+        if (!open) {
+          setShowNamingDialog(false);
+          setCopyTitle('');
+          setLastSavedCopyId(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('copyResults.copyName')}</DialogTitle>
+            <DialogDescription>{t('copyResults.nameRequired')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              value={copyTitle}
+              onChange={(e) => setCopyTitle(e.target.value)}
+              placeholder={t('copyResults.copyNamePlaceholder')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSaveCopyTitle();
+                }
+              }}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('copyResults.copyNameSuggestion')}: {`${agentName} - ${format(new Date(), 'dd/MM/yyyy')}`}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSaveCopyTitle} disabled={!copyTitle.trim()}>
+              {t('copyResults.saveName')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

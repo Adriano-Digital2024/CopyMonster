@@ -27,8 +27,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/components/chat/ChatInterface';
 import { cn } from '@/lib/utils';
 
-const MAX_CHARS = 2000;
-
 interface ExportDocumentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -214,21 +212,11 @@ export function ExportDocumentModal({
             )}
             
             {isEditing ? (
-              <div className="space-y-2">
-                <Textarea
+              <Textarea
                   value={editableContent}
                   onChange={(e) => setEditableContent(e.target.value)}
-                  className="min-h-[400px] resize-y font-sans text-sm leading-relaxed"
+                  className="min-h-[400px] resize-y font-sans text-sm leading-relaxed [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full"
                 />
-                <div className="flex items-center justify-between text-xs">
-                  <span className={editableContent.length > MAX_CHARS ? 'text-destructive font-medium' : 'text-muted-foreground'}>
-                    {t('copyResults.charCount', { count: editableContent.length, max: MAX_CHARS })}
-                  </span>
-                  {editableContent.length > MAX_CHARS && (
-                    <span className="text-destructive">{t('copyResults.charLimitWarning')}</span>
-                  )}
-                </div>
-              </div>
             ) : (
               <ScrollArea className="h-[400px] rounded-xl border bg-muted/20 p-6">
                 <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground/90">
