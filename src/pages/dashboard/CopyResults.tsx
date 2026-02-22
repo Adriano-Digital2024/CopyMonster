@@ -30,12 +30,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 
-const MAX_CHARS = 2000;
-
 interface CopyResult {
   id: string;
   agent_slug: string;
   content: string;
+  title: string | null;
   is_favorite: boolean;
   is_edited: boolean;
   rating: number | null;
@@ -300,8 +299,11 @@ export default function CopyResults() {
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
+                      <h3 className="font-semibold text-base mb-1">
+                        {result.title || getAgentLabel(result.agent_slug)}
+                      </h3>
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="secondary">{getAgentLabel(result.agent_slug)}</Badge>
+                        <Badge variant="secondary" className="text-xs">{getAgentLabel(result.agent_slug)}</Badge>
                         {result.is_edited && (
                           <Badge variant="outline" className="text-xs">
                             <Pencil className="h-3 w-3 mr-1" />
@@ -367,16 +369,8 @@ export default function CopyResults() {
             <Textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="min-h-[300px] resize-y"
+              className="min-h-[300px] resize-y [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full"
             />
-            <div className="flex items-center justify-between text-xs">
-              <span className={editContent.length > MAX_CHARS ? 'text-destructive font-medium' : 'text-muted-foreground'}>
-                {t('copyResults.charCount', { count: editContent.length, max: MAX_CHARS })}
-              </span>
-              {editContent.length > MAX_CHARS && (
-                <span className="text-destructive">{t('copyResults.charLimitWarning')}</span>
-              )}
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleEditCancel}>

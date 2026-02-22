@@ -30,6 +30,7 @@ interface CopyResult {
   id: string;
   agent_slug: string;
   content: string;
+  title: string | null;
   is_favorite: boolean;
   rating: number | null;
   created_at: string;
@@ -185,6 +186,9 @@ const AdminCopyResults = () => {
                         </div>
                       </TableCell>
                       <TableCell className="max-w-[300px]">
+                        {result.title && (
+                          <p className="font-medium text-sm truncate">{result.title}</p>
+                        )}
                         <p className="truncate text-sm text-muted-foreground">
                           {result.content.substring(0, 100)}...
                         </p>
