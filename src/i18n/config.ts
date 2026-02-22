@@ -663,7 +663,14 @@ const resources = {
           addUser: 'Add User',
           searchPlaceholder: 'Search by name or email...',
           filterByPlan: 'Filter by plan',
+          filterByRole: 'Filter by role',
           allPlans: 'All Plans',
+          allRoles: 'All Roles',
+          noRole: 'No Role',
+          internalRoleLabel: 'Internal Role',
+          internalRoleUpdated: 'Role updated',
+          internalRoleUpdatedDesc: 'Internal role has been updated successfully.',
+          internalRoleError: 'Error updating role',
           name: 'Name',
           email: 'Email',
           plan: 'Plan',
@@ -677,6 +684,18 @@ const resources = {
           newCredits: 'New Credit Amount',
           deleteTitle: 'Are you sure?',
           deleteDescription: 'This will permanently delete the user {{name}}. This action cannot be undone.',
+          roles: {
+            board: 'Board/Executive',
+            product: 'Product/Technology',
+            marketing: 'Marketing',
+            sales: 'Sales',
+            customerSuccess: 'Customer Success',
+            support: 'Technical Support',
+            finance: 'Internal Finance',
+            legal: 'Legal/Compliance',
+            operations: 'Operations',
+            data: 'Data/BI',
+          },
         },
         analytics: {
           title: 'Analytics',
@@ -986,7 +1005,8 @@ const resources = {
               f1: "1,000 credits/month",
               f2: "Access to all 22 agents",
               f3: "Positioning Diagnosis (Brand DNA)",
-              f4: "Community Support"
+              f4: "Community Support",
+              f5: "1 DNA (1 Brand Positioning Monster Project)"
             },
             cta: "Immediate Access"
           },
@@ -1001,7 +1021,8 @@ const resources = {
               f2: "Everything in Starter plan",
               f3: "Performance Analytics of your texts",
               f4: "Exclusive Framework Library",
-              f5: "Priority email support"
+              f5: "Priority email support",
+              f6: "Up to 10 DNAs (10 Brand Positioning Monster Projects)"
             },
             cta: "Immediate Access"
           },
@@ -1015,7 +1036,8 @@ const resources = {
               f2: "Everything in Pro plan",
               f3: "Agent Training (Coming soon - Create your own logic)",
               f4: "Early access to new features (Beta Testing)",
-              f5: "VIP WhatsApp Support (Talk directly with the team)"
+              f5: "VIP WhatsApp Support (Talk directly with the team)",
+              f6: "Up to 50 DNAs (50 Brand Positioning Monster Projects)"
             },
             cta: "Immediate Access"
           }
@@ -1704,7 +1726,14 @@ const resources = {
           addUser: 'Adicionar Usuário',
           searchPlaceholder: 'Buscar por nome ou email...',
           filterByPlan: 'Filtrar por plano',
+          filterByRole: 'Filtrar por função',
           allPlans: 'Todos os Planos',
+          allRoles: 'Todas as Funções',
+          noRole: 'Sem Função',
+          internalRoleLabel: 'Função Interna',
+          internalRoleUpdated: 'Função atualizada',
+          internalRoleUpdatedDesc: 'A função interna foi atualizada com sucesso.',
+          internalRoleError: 'Erro ao atualizar função',
           name: 'Nome',
           email: 'Email',
           plan: 'Plano',
@@ -1718,6 +1747,18 @@ const resources = {
           newCredits: 'Nova Quantidade de Créditos',
           deleteTitle: 'Você tem certeza?',
           deleteDescription: 'Isso excluirá permanentemente o usuário {{name}}. Esta ação não pode ser desfeita.',
+          roles: {
+            board: 'Diretoria',
+            product: 'Produto/Tecnologia',
+            marketing: 'Marketing',
+            sales: 'Vendas',
+            customerSuccess: 'Customer Success',
+            support: 'Suporte Técnico',
+            finance: 'Financeiro Interno',
+            legal: 'Jurídico/Compliance',
+            operations: 'Operações',
+            data: 'Dados/BI',
+          },
         },
         analytics: {
           title: 'Analytics',
@@ -2027,7 +2068,8 @@ const resources = {
               f1: "1.000 créditos/mês",
               f2: "Acesso a todos os 22 agentes",
               f3: "Diagnóstico de Posicionamento (O DNA da Marca)",
-              f4: "Suporte via comunidade"
+              f4: "Suporte via comunidade",
+              f5: "1 DNA (1 Projeto) Brand Positioning Monster"
             },
             cta: "Acesso Imediato"
           },
@@ -2042,7 +2084,8 @@ const resources = {
               f2: "Tudo do plano Starter",
               f3: "Análises de Performance dos seus textos",
               f4: "Biblioteca de Frameworks Exclusivos",
-              f5: "Suporte prioritário via email"
+              f5: "Suporte prioritário via email",
+              f6: "Até 10 DNAs (10 Projetos) Brand Positioning Monster"
             },
             cta: "Acesso Imediato"
           },
@@ -2056,7 +2099,8 @@ const resources = {
               f2: "Tudo do plano Pro",
               f3: "Treinamento de Agentes (Em breve - Crie sua própria lógica)",
               f4: "Acesso antecipado a novos recursos (Beta Testing)",
-              f5: "Suporte VIP via WhatsApp (Fale direto com a equipe)"
+              f5: "Suporte VIP via WhatsApp (Fale direto com a equipe)",
+              f6: "Até 50 DNAs (50 Projetos) Brand Positioning Monster"
             },
             cta: "Acesso Imediato"
           }
@@ -2745,7 +2789,14 @@ const resources = {
           addUser: 'Añadir Usuario',
           searchPlaceholder: 'Buscar por nombre o email...',
           filterByPlan: 'Filtrar por plan',
+          filterByRole: 'Filtrar por función',
           allPlans: 'Todos los Planes',
+          allRoles: 'Todas las Funciones',
+          noRole: 'Sin Función',
+          internalRoleLabel: 'Función Interna',
+          internalRoleUpdated: 'Función actualizada',
+          internalRoleUpdatedDesc: 'La función interna se actualizó con éxito.',
+          internalRoleError: 'Error al actualizar función',
           name: 'Nombre',
           email: 'Email',
           plan: 'Plan',
@@ -2759,6 +2810,18 @@ const resources = {
           newCredits: 'Nueva Cantidad de Créditos',
           deleteTitle: '¿Estás seguro?',
           deleteDescription: 'Esto eliminará permanentemente al usuario {{name}}. Esta acción no se puede deshacer.',
+          roles: {
+            board: 'Directiva',
+            product: 'Producto/Tecnología',
+            marketing: 'Marketing',
+            sales: 'Ventas',
+            customerSuccess: 'Customer Success',
+            support: 'Soporte Técnico',
+            finance: 'Finanzas Internas',
+            legal: 'Legal/Compliance',
+            operations: 'Operaciones',
+            data: 'Datos/BI',
+          },
         },
         analytics: {
           title: 'Analíticas',
@@ -3068,7 +3131,8 @@ const resources = {
               f1: "1,000 créditos/mes",
               f2: "Acceso a los 22 agentes",
               f3: "Diagnóstico de Posicionamiento (El ADN de la Marca)",
-              f4: "Soporte vía comunidad"
+              f4: "Soporte vía comunidad",
+              f5: "1 DNA (1 Proyecto Brand Positioning Monster)"
             },
             cta: "Acceso Inmediato"
           },
@@ -3083,7 +3147,8 @@ const resources = {
               f2: "Todo del plan Starter",
               f3: "Análisis de Performance de tus textos",
               f4: "Biblioteca de Frameworks Exclusivos",
-              f5: "Soporte prioritario vía email"
+              f5: "Soporte prioritario vía email",
+              f6: "Hasta 10 DNAs (10 Proyectos Brand Positioning Monster)"
             },
             cta: "Acceso Inmediato"
           },
@@ -3097,7 +3162,8 @@ const resources = {
               f2: "Todo del plan Pro",
               f3: "Entrenamiento de Agentes (Próximamente - Crea tu propia lógica)",
               f4: "Acceso anticipado a nuevas funciones (Beta Testing)",
-              f5: "Soporte VIP vía WhatsApp (Habla directo con el equipo)"
+              f5: "Soporte VIP vía WhatsApp (Habla directo con el equipo)",
+              f6: "Hasta 50 DNAs (50 Proyectos Brand Positioning Monster)"
             },
             cta: "Acceso Inmediato"
           }

@@ -567,7 +567,8 @@ const PricingSection = () => {
         t('start.pricing.starter.features.f1'),
         t('start.pricing.starter.features.f2'),
         t('start.pricing.starter.features.f3'),
-        t('start.pricing.starter.features.f4')
+        t('start.pricing.starter.features.f4'),
+        t('start.pricing.starter.features.f5')
       ],
       cta: t('start.pricing.starter.cta'),
       popular: false,
@@ -585,7 +586,8 @@ const PricingSection = () => {
         t('start.pricing.pro.features.f2'),
         t('start.pricing.pro.features.f3'),
         t('start.pricing.pro.features.f4'),
-        t('start.pricing.pro.features.f5')
+        t('start.pricing.pro.features.f5'),
+        t('start.pricing.pro.features.f6')
       ],
       cta: t('start.pricing.pro.cta'),
       popular: true,
@@ -602,7 +604,8 @@ const PricingSection = () => {
         t('start.pricing.legend.features.f2'),
         t('start.pricing.legend.features.f3'),
         t('start.pricing.legend.features.f4'),
-        t('start.pricing.legend.features.f5')
+        t('start.pricing.legend.features.f5'),
+        t('start.pricing.legend.features.f6')
       ],
       cta: t('start.pricing.legend.cta'),
       popular: false,

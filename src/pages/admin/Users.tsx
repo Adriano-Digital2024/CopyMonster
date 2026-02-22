@@ -46,7 +46,21 @@ interface UserProfile {
   subscription_status: string;
   credits: number;
   created_at: string;
+  internal_role: string | null;
 }
+
+const INTERNAL_ROLES = [
+  'board',
+  'product',
+  'marketing',
+  'sales',
+  'customerSuccess',
+  'support',
+  'finance',
+  'legal',
+  'operations',
+  'data',
+] as const;
 
 const Users = () => {
   const { t, i18n } = useTranslation();
@@ -55,6 +69,7 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
+  const [filterRole, setFilterRole] = useState<string>('all');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
@@ -75,11 +90,11 @@ const Users = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, email, subscription_status, credits, created_at')
+        .select('id, first_name, email, subscription_status, credits, created_at, internal_role')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      setUsers((data as any[]) || []);
     } catch (error: any) {
       toast({
         title: t('admin.users.errors.loadError', 'Error loading users'),
@@ -95,7 +110,9 @@ const Users = () => {
     const matchesSearch = user.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPlan = filterPlan === 'all' || user.subscription_status === filterPlan;
-    return matchesSearch && matchesPlan;
+    const matchesRole = filterRole === 'all' || 
+                        (filterRole === 'none' ? !user.internal_role : user.internal_role === filterRole);
+    return matchesSearch && matchesPlan && matchesRole;
   });
 
   const handleEditCredits = (user: UserProfile) => {
@@ -160,7 +177,6 @@ const Users = () => {
 
     setSaving(true);
     try {
-      // Use edge function with service role key (admin API requires it)
       const response = await fetch(
         `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/admin-users?action=create`,
         {
@@ -242,6 +258,31 @@ const Users = () => {
     }
   };
 
+  const handleInternalRoleChange = async (userId: string, role: string) => {
+    const newRole = role === 'none' ? null : role;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ internal_role: newRole } as any)
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, internal_role: newRole } : u));
+
+      toast({
+        title: t('admin.users.internalRoleUpdated', 'Role updated'),
+        description: t('admin.users.internalRoleUpdatedDesc', 'Internal role has been updated successfully.'),
+      });
+    } catch (error: any) {
+      toast({
+        title: t('admin.users.internalRoleError', 'Error updating role'),
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const getPlanBadgeVariant = (plan: string) => {
     switch (plan) {
       case 'legend': return 'default';
@@ -307,6 +348,20 @@ const Users = () => {
                   <SelectItem value="legend">Legend</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={filterRole} onValueChange={setFilterRole}>
+                <SelectTrigger className="w-full md:w-[220px]">
+                  <SelectValue placeholder={t('admin.users.filterByRole', 'Filter by role')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('admin.users.allRoles', 'All Roles')}</SelectItem>
+                  <SelectItem value="none">{t('admin.users.noRole', 'No Role')}</SelectItem>
+                  {INTERNAL_ROLES.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {t(`admin.users.roles.${role}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="rounded-md border">
@@ -316,6 +371,7 @@ const Users = () => {
                     <TableHead>{t('admin.users.name')}</TableHead>
                     <TableHead>{t('admin.users.email')}</TableHead>
                     <TableHead>{t('admin.users.plan')}</TableHead>
+                    <TableHead>{t('admin.users.internalRoleLabel', 'Internal Role')}</TableHead>
                     <TableHead>{t('admin.users.credits')}</TableHead>
                     <TableHead>{t('admin.users.joined')}</TableHead>
                     <TableHead className="text-right">{t('admin.users.actions')}</TableHead>
@@ -324,7 +380,7 @@ const Users = () => {
                 <TableBody>
                   {filteredUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                         {t('admin.users.errors.noUsersFound', 'No users found')}
                       </TableCell>
                     </TableRow>
@@ -337,6 +393,24 @@ const Users = () => {
                           <Badge variant={getPlanBadgeVariant(user.subscription_status)}>
                             {user.subscription_status.toUpperCase()}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={user.internal_role || 'none'}
+                            onValueChange={(value) => handleInternalRoleChange(user.id, value)}
+                          >
+                            <SelectTrigger className="w-[180px] h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">{t('admin.users.noRole', 'No Role')}</SelectItem>
+                              {INTERNAL_ROLES.map((role) => (
+                                <SelectItem key={role} value={role}>
+                                  {t(`admin.users.roles.${role}`)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell>{user.credits}</TableCell>
                         <TableCell>{formatDate(user.created_at)}</TableCell>

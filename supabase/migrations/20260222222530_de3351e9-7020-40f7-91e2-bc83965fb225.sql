@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN internal_role text DEFAULT NULL;
