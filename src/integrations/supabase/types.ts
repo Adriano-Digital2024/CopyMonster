@@ -660,6 +660,7 @@ export type Database = {
           email: string
           first_name: string
           id: string
+          internal_role: string | null
           level: number
           phone: string | null
           preferred_language: string | null
@@ -675,6 +676,7 @@ export type Database = {
           email: string
           first_name: string
           id: string
+          internal_role?: string | null
           level?: number
           phone?: string | null
           preferred_language?: string | null
@@ -690,6 +692,7 @@ export type Database = {
           email?: string
           first_name?: string
           id?: string
+          internal_role?: string | null
           level?: number
           phone?: string | null
           preferred_language?: string | null
