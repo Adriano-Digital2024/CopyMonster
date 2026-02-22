@@ -24,8 +24,6 @@ import Settings from "./pages/dashboard/Settings";
 import Positioning from "./pages/dashboard/Positioning";
 import Campaigns from "./pages/dashboard/Campaigns";
 import CopyResults from "./pages/dashboard/CopyResults";
-import Headlines from "./pages/dashboard/Headlines";
-import Insights from "./pages/dashboard/Insights";
 import Library from "./pages/dashboard/Library";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/Users";
@@ -40,7 +38,6 @@ import AdminSubscriptions from "./pages/admin/Subscriptions";
 import AdminMappings from "./pages/admin/PositioningMappings";
 import AdminCampaigns from "./pages/admin/AdminCampaigns";
 import AdminCopyResults from "./pages/admin/AdminCopyResults";
-import AdminHeadlines from "./pages/admin/AdminHeadlines";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
 import CookiePolicy from "./pages/legal/CookiePolicy";
@@ -84,8 +81,6 @@ const App = () => (
                   <Route path="/dashboard/positioning" element={<Positioning />} />
                   <Route path="/dashboard/campaigns" element={<Campaigns />} />
                   <Route path="/dashboard/copy-results" element={<CopyResults />} />
-                  <Route path="/dashboard/headlines" element={<Headlines />} />
-                  <Route path="/dashboard/insights" element={<Insights />} />
                   <Route path="/dashboard/library" element={<Library />} />
                 </Route>
                 {/* Admin - Protected + Admin Required */}
@@ -97,7 +92,7 @@ const App = () => (
                   <Route path="/admin/mappings" element={<AdminMappings />} />
                   <Route path="/admin/campaigns" element={<AdminCampaigns />} />
                   <Route path="/admin/copy-results" element={<AdminCopyResults />} />
-                  <Route path="/admin/headlines" element={<AdminHeadlines />} />
+                  
                   <Route path="/admin/discounts" element={<AdminDiscounts />} />
                   <Route path="/admin/agents" element={<AdminAgents />} />
                   <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />

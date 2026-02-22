@@ -251,8 +251,6 @@ const resources = {
           positioning: 'Positioning',
           campaigns: 'Campaigns',
           copyResults: 'Copy Results',
-          headlines: 'Headlines',
-          insights: 'Insights',
           library: 'Library',
           billing: 'Billing',
           performance: 'Performance',
@@ -572,60 +570,6 @@ const resources = {
           },
         },
         counter: '{{used}}/{{limit}} DNA projects',
-      },
-      headlines: {
-        title: 'Headline Bank',
-        subtitle: 'Save and manage your best headlines.',
-        searchPlaceholder: 'Search headlines...',
-        filter: {
-          all: 'All Categories',
-        },
-        category: {
-          salesPage: 'Sales Page',
-          email: 'Email',
-          ads: 'Ads',
-        },
-        empty: {
-          title: 'No headlines saved',
-          searchDesc: 'No headlines match your search.',
-          defaultDesc: 'Generate headlines with our agents to save them here.',
-        },
-        score: 'Score',
-        copyButton: 'Copy',
-        toast: {
-          copiedTitle: 'Copied!',
-          copiedDesc: 'Headline copied to clipboard.',
-        },
-      },
-      insights: {
-        title: 'AI Insights',
-        subtitle: 'Discover trends and recommendations for your copy.',
-        empty: {
-          title: 'No insights yet',
-          description: 'Insights will appear here as you use the agents.',
-        },
-        category: {
-          trend: 'Trend',
-          recommendation: 'Recommendation',
-          alert: 'Alert',
-        },
-        toast: {
-          deleted: 'Insight deleted',
-        },
-        source: 'Source',
-        impact: {
-          high: 'High Impact',
-          medium: 'Medium Impact',
-          low: 'Low Impact',
-        },
-        mock: {
-          title1: 'Trend: Use of "You" in headlines increases CTR by 15%',
-          desc1: 'Our analysis shows that headlines that directly address the reader have a significantly higher click-through rate. Try reformulating your recent headlines.',
-          title2: 'Recommendation: Your VSLs are 20% longer than average',
-          desc2: 'Consider shortening your video sales letters to maintain audience retention. The ideal length for your niche is between 8-12 minutes.',
-          title3: 'Alert: Low conversion on "Campaign X" ads',
-          desc3: 'The ads for "Campaign X" are showing a conversion rate below 1%. We recommend testing new copy with the Ads Monster.',
-        },
       },
       frameworkLibrary: {
         title: 'Framework Library',
@@ -1348,8 +1292,6 @@ const resources = {
           positioning: 'Posicionamento',
           campaigns: 'Campanhas',
           copyResults: 'Resultados de Copy',
-          headlines: 'Headlines',
-          insights: 'Insights',
           library: 'Biblioteca',
           billing: 'Faturamento',
           performance: 'Performance',
@@ -1669,60 +1611,6 @@ const resources = {
           },
         },
         counter: '{{used}}/{{limit}} projetos DNA',
-      },
-      headlines: {
-        title: 'Banco de Headlines',
-        subtitle: 'Salve e gerencie suas melhores headlines.',
-        searchPlaceholder: 'Buscar headlines...',
-        filter: {
-          all: 'Todas as Categorias',
-        },
-        category: {
-          salesPage: 'Página de Vendas',
-          email: 'Email',
-          ads: 'Anúncios',
-        },
-        empty: {
-          title: 'Nenhuma headline salva',
-          searchDesc: 'Nenhuma headline corresponde à sua busca.',
-          defaultDesc: 'Gere headlines com nossos agentes para salvá-las aqui.',
-        },
-        score: 'Pontuação',
-        copyButton: 'Copiar',
-        toast: {
-          copiedTitle: 'Copiado!',
-          copiedDesc: 'Headline copiada para a área de transferência.',
-        },
-      },
-      insights: {
-        title: 'Insights de IA',
-        subtitle: 'Descubra tendências e recomendações para sua copy.',
-        empty: {
-          title: 'Nenhum insight ainda',
-          description: 'Insights aparecerão aqui conforme você usar os agentes.',
-        },
-        category: {
-          trend: 'Tendência',
-          recommendation: 'Recomendação',
-          alert: 'Alerta',
-        },
-        toast: {
-          deleted: 'Insight excluído',
-        },
-        source: 'Fonte',
-        impact: {
-          high: 'Alto Impacto',
-          medium: 'Médio Impacto',
-          low: 'Baixo Impacto',
-        },
-        mock: {
-          title1: 'Tendência: Uso de "Você" em headlines aumenta o CTR em 15%',
-          desc1: 'Nossa análise mostra que headlines que se dirigem diretamente ao leitor têm uma taxa de cliques significativamente maior. Tente reformular suas headlines recentes.',
-          title2: 'Recomendação: Seus VSLs são 20% mais longos que a média',
-          desc2: 'Considere encurtar suas cartas de vendas em vídeo para manter a retenção da audiência. A duração ideal para o seu nicho é entre 8-12 minutos.',
-          title3: 'Alerta: Baixa conversão nos anúncios da "Campanha X"',
-          desc3: 'Os anúncios da "Campanha X" estão apresentando uma taxa de conversão abaixo de 1%. Recomendamos testar novas copies com o Ads Monster.',
-        },
       },
       frameworkLibrary: {
         title: 'Biblioteca de Frameworks',
@@ -2445,8 +2333,6 @@ const resources = {
           positioning: 'Posicionamiento',
           campaigns: 'Campañas',
           copyResults: 'Resultados de Copy',
-          headlines: 'Titulares',
-          insights: 'Insights',
           library: 'Biblioteca',
           billing: 'Facturación',
           performance: 'Rendimiento',
@@ -2766,60 +2652,6 @@ const resources = {
           },
         },
         counter: '{{used}}/{{limit}} proyectos ADN',
-      },
-      headlines: {
-        title: 'Banco de Titulares',
-        subtitle: 'Guarda y gestiona tus mejores titulares.',
-        searchPlaceholder: 'Buscar titulares...',
-        filter: {
-          all: 'Todas las Categorías',
-        },
-        category: {
-          salesPage: 'Página de Ventas',
-          email: 'Email',
-          ads: 'Anuncios',
-        },
-        empty: {
-          title: 'No hay titulares guardados',
-          searchDesc: 'Ningún titular coincide con tu búsqueda.',
-          defaultDesc: 'Genera titulares con nuestros agentes para guardarlos aquí.',
-        },
-        score: 'Puntuación',
-        copyButton: 'Copiar',
-        toast: {
-          copiedTitle: '¡Copiado!',
-          copiedDesc: 'Titular copiado al portapapeles.',
-        },
-      },
-      insights: {
-        title: 'Insights de IA',
-        subtitle: 'Descubre tendencias y recomendaciones para tu copy.',
-        empty: {
-          title: 'Sin insights aún',
-          description: 'Los insights aparecerán aquí a medida que uses los agentes.',
-        },
-        category: {
-          trend: 'Tendencia',
-          recommendation: 'Recomendación',
-          alert: 'Alerta',
-        },
-        toast: {
-          deleted: 'Insight eliminado',
-        },
-        source: 'Fuente',
-        impact: {
-          high: 'Alto Impacto',
-          medium: 'Impacto Medio',
-          low: 'Bajo Impacto',
-        },
-        mock: {
-          title1: 'Tendencia: El uso de "Tú" en los titulares aumenta el CTR en un 15%',
-          desc1: 'Nuestro análisis muestra que los titulares que se dirigen directamente al lector tienen una tasa de clics significativamente mayor. Intenta reformular tus titulares recientes.',
-          title2: 'Recomendación: Tus VSLs son un 20% más largos que el promedio',
-          desc2: 'Considera acortar tus cartas de ventas en video para mantener la retención de la audiencia. La duración ideal para tu nicho es de entre 8-12 minutos.',
-          title3: 'Alerta: Baja conversión en los anuncios de la "Campaña X"',
-          desc3: 'Los anuncios de la "Campaña X" muestran una tasa de conversión inferior al 1%. Recomendamos probar nuevas copys con el Ads Monster.',
-        },
       },
       frameworkLibrary: {
         title: 'Biblioteca de Frameworks',

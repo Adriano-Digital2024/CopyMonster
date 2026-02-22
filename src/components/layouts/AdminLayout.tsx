@@ -17,8 +17,7 @@ import {
   CreditCard,
   Target,
   Megaphone,
-  FileText,
-  Type
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -68,7 +67,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { icon: Target, label: 'Mapeamentos', path: '/admin/mappings' },
     { icon: Megaphone, label: 'Campanhas', path: '/admin/campaigns' },
     { icon: FileText, label: 'Copy Results', path: '/admin/copy-results' },
-    { icon: Type, label: 'Headlines', path: '/admin/headlines' },
     { icon: Percent, label: t('admin.menu.discounts'), path: '/admin/discounts' },
     { icon: Bot, label: t('admin.menu.agents'), path: '/admin/agents' },
     { icon: BookOpen, label: t('admin.knowledgeBase.title'), path: '/admin/knowledge-base' },
