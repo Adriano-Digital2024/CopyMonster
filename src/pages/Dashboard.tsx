@@ -22,6 +22,8 @@ import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useNavigate } from 'react-router-dom';
 import { getXPProgress } from '@/lib/copymonster-config';
 import { useAgents } from '@/hooks/useAgents';
+import { useDnaGuard } from '@/hooks/useDnaGuard';
+import { useToast } from '@/hooks/use-toast';
 
 const iconMap: Record<string, LucideIcon> = {
   Target,
@@ -49,7 +51,9 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { agents, loading: agentsLoading } = useAgents();
+  const { hasDna } = useDnaGuard();
 
   if (!user) {
     return null; 
@@ -134,7 +138,18 @@ const Dashboard = () => {
                 <Card 
                   key={index} 
                   className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => navigate(agent.route)}
+                  onClick={() => {
+                    if (!hasDna && agent.route !== '/dashboard/positioning') {
+                      toast({
+                        title: t('dna.required.title'),
+                        description: t('dna.required.message'),
+                        variant: 'destructive',
+                      });
+                      navigate('/dashboard/positioning');
+                      return;
+                    }
+                    navigate(agent.route);
+                  }}
                 >
                   <CardHeader>
                     <div className="flex items-center gap-3">

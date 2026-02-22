@@ -249,6 +249,47 @@ serve(async (req) => {
     // 5. PARSE REQUEST BODY
     const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
 
+    // 6. DNA VALIDATION - Block copy generation without DNA (except for the DNA agent itself)
+    if (agent_slug && agent_slug !== 'brand-positioning-monster') {
+      // Check if user has at least one completed DNA
+      const { data: completedDna, error: dnaError } = await supabase
+        .from('positioning_mappings')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('status', 'completed')
+        .limit(1);
+
+      if (dnaError) {
+        console.error('[chat-stream] DNA check error:', dnaError);
+      }
+
+      const hasCompletedDna = completedDna && completedDna.length > 0;
+
+      if (!hasCompletedDna) {
+        console.warn(`[chat-stream] DNA_REQUIRED: User ${userId} has no completed DNA`);
+        // Refund credit
+        if (!isAdmin) {
+          await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+        }
+        return new Response(
+          JSON.stringify({ error: 'Business DNA required. Create your brand positioning first.', code: 'DNA_REQUIRED' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        );
+      }
+
+      if (!positioning_mapping_id) {
+        console.warn(`[chat-stream] DNA_SELECTION_REQUIRED: User ${userId} did not select a DNA project`);
+        // Refund credit
+        if (!isAdmin) {
+          await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+        }
+        return new Response(
+          JSON.stringify({ error: 'Please select a DNA project to use.', code: 'DNA_SELECTION_REQUIRED' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+    }
+
     // INPUT VALIDATION - Prevent abuse and control costs
     const MAX_MESSAGES = 50;
     const MAX_CONTENT_LENGTH = 10000; // 10k chars per message

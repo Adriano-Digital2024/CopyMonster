@@ -5,20 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useAgents } from '@/hooks/useAgents';
-import { Loader2, Target, Film, FileText, Rocket, Mail, Megaphone, Newspaper, Clapperboard, type LucideIcon } from 'lucide-react';
+import { useDnaGuard } from '@/hooks/useDnaGuard';
+import { Loader2, Target, Film, FileText, Rocket, Mail, Megaphone, Newspaper, Clapperboard, ShieldAlert, type LucideIcon } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const iconMap: Record<string, LucideIcon> = {
-  Target,
-  Film,
-  FileText,
-  Rocket,
-  Mail,
-  Megaphone,
-  Newspaper,
-  Clapperboard
+  Target, Film, FileText, Rocket, Mail, Megaphone, Newspaper, Clapperboard
 };
 
-// Map agent slugs to translation keys
 const slugToTranslationKey: Record<string, string> = {
   'brand-positioning-monster': 'positioner',
   'vsl-monster': 'vsl',
@@ -28,7 +22,6 @@ const slugToTranslationKey: Record<string, string> = {
   'ads-monster': 'ads',
   'headline-monster': 'headline',
   'short-monster': 'short',
-  // Campaign agents
   'internal-launch-monster': 'internalLaunch',
   'flash-launch-monster': 'flashLaunch',
   'evergreen-funnel-monster': 'evergreenFunnel',
@@ -48,24 +41,18 @@ const slugToTranslationKey: Record<string, string> = {
 export default function Agents() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const { agents, loading } = useAgents();
+  const { hasDna, isLoading: dnaLoading } = useDnaGuard();
 
-  // Filter only active and public agents, exclude the entry agent (brand-positioning-monster)
   const activeAgents = agents.filter(
     agent => agent.is_active && agent.is_public && agent.slug !== 'brand-positioning-monster'
   );
 
-  // Separate copywriting agents from campaign agents
-  const copywritingAgents = activeAgents.filter(agent => 
-    !agent.category?.includes('campaign')
-  );
-  const campaignAgents = activeAgents.filter(agent => 
-    agent.category?.includes('campaign')
-  );
+  const copywritingAgents = activeAgents.filter(agent => !agent.category?.includes('campaign'));
+  const campaignAgents = activeAgents.filter(agent => agent.category?.includes('campaign'));
 
-  const getAgentIcon = (iconName: string): LucideIcon => {
-    return iconMap[iconName] || Target;
-  };
+  const getAgentIcon = (iconName: string): LucideIcon => iconMap[iconName] || Target;
 
   const getAgentBadge = (agent: any) => {
     if (agent.is_featured) return t('agents.badge.popular');
@@ -73,7 +60,6 @@ export default function Agents() {
     return null;
   };
 
-  // Get translated name and description for an agent
   const getAgentTranslation = (agent: any) => {
     const key = slugToTranslationKey[agent.slug];
     if (key) {
@@ -87,7 +73,20 @@ export default function Agents() {
     return { name: agent.name, description: agent.description };
   };
 
-  if (loading) {
+  const handleAgentClick = (agentSlug: string) => {
+    if (!hasDna) {
+      toast({
+        title: t('dna.required.title'),
+        description: t('dna.required.message'),
+        variant: 'destructive',
+      });
+      navigate('/dashboard/positioning');
+      return;
+    }
+    navigate(`/dashboard/agents/${agentSlug}`);
+  };
+
+  if (loading || dnaLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
@@ -105,41 +104,21 @@ export default function Agents() {
     return (
       <Card 
         key={agent.id}
-        className="p-6 hover:shadow-lg transition-shadow cursor-pointer group"
-        onClick={() => navigate(`/dashboard/agents/${agent.slug}`)}
+        className={`p-6 hover:shadow-lg transition-shadow cursor-pointer group ${!hasDna ? 'opacity-60' : ''}`}
+        onClick={() => handleAgentClick(agent.slug)}
       >
         <div className="space-y-4">
           <div className="flex items-start justify-between">
-            <div 
-              className="p-3 rounded-lg"
-              style={{ backgroundColor: `${agent.color}20` }}
-            >
-              <Icon 
-                className="h-8 w-8" 
-                style={{ color: agent.color }}
-              />
+            <div className="p-3 rounded-lg" style={{ backgroundColor: `${agent.color}20` }}>
+              <Icon className="h-8 w-8" style={{ color: agent.color }} />
             </div>
-            {badge && (
-              <Badge variant="secondary">{badge}</Badge>
-            )}
+            {badge && <Badge variant="secondary">{badge}</Badge>}
           </div>
-
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-              {name}
-            </h3>
-            <p className="text-sm text-muted-foreground line-clamp-3">
-              {description}
-            </p>
+            <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">{name}</h3>
+            <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
           </div>
-
-          <Button 
-            className="w-full"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/dashboard/agents/${agent.slug}`);
-            }}
-          >
+          <Button className="w-full" onClick={(e) => { e.stopPropagation(); handleAgentClick(agent.slug); }}>
             {t('agents.page.launchAgent')}
           </Button>
         </div>
@@ -152,12 +131,28 @@ export default function Agents() {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">{t('agents.page.title')}</h1>
-          <p className="text-muted-foreground">
-            {t('agents.page.subtitle')}
-          </p>
+          <p className="text-muted-foreground">{t('agents.page.subtitle')}</p>
         </div>
 
-        {/* Copywriting Agents */}
+        {/* DNA Required Banner */}
+        {!hasDna && (
+          <Card className="p-6 border-primary/30 bg-primary/5">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-full bg-primary/10">
+                <ShieldAlert className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="text-lg font-semibold">{t('dna.required.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t('dna.required.message')}</p>
+                <Button onClick={() => navigate('/dashboard/positioning')} className="gap-2 mt-2">
+                  <Target className="h-4 w-4" />
+                  {t('dna.required.cta')}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {copywritingAgents.length > 0 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold">{t('agents.categories.copywriting', 'Agentes de Copywriting')}</h2>
@@ -167,7 +162,6 @@ export default function Agents() {
           </div>
         )}
 
-        {/* Campaign Agents */}
         {campaignAgents.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">

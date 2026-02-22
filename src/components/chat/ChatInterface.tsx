@@ -169,7 +169,6 @@ export function ChatInterface({
   // Handle API errors
   const handleApiError = (response: Response, errorData: any) => {
     if (response.status === 402) {
-      // Credits depleted or trial expired
       if (errorData.code === 'TRIAL_EXPIRED') {
         toast({
           title: t('trial.expired.title'),
@@ -184,6 +183,25 @@ export function ChatInterface({
         });
       }
       navigate('/dashboard/billing');
+      return true;
+    }
+    
+    if (response.status === 403 && errorData.code === 'DNA_REQUIRED') {
+      toast({
+        title: t('dna.required.title'),
+        description: t('dna.required.message'),
+        variant: 'destructive'
+      });
+      navigate('/dashboard/positioning');
+      return true;
+    }
+
+    if (response.status === 400 && errorData.code === 'DNA_SELECTION_REQUIRED') {
+      toast({
+        title: t('dna.selector.title'),
+        description: t('dna.selector.description'),
+        variant: 'destructive'
+      });
       return true;
     }
     

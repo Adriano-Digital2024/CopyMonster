@@ -96,6 +96,7 @@ const resources = {
           badge: '',
           features: [
             '1,000 credits/month',
+            '1 Brand DNA project',
             'Access to all 8 agents',
             'Positioning Diagnosis',
             'Community Support',
@@ -110,6 +111,7 @@ const resources = {
           badge: 'Most Popular',
           features: [
             '5,000 credits/month',
+            'Up to 10 Brand DNA projects',
             'Everything in Starter plan',
             'Performance Analytics',
             'Framework Library',
@@ -125,6 +127,7 @@ const resources = {
           badge: '',
           features: [
             '15,000 credits/month',
+            'Up to 50 Brand DNA projects',
             'Everything in Pro plan',
             'Agent Training (soon)',
             'Early access to new features',
@@ -545,6 +548,30 @@ const resources = {
         },
         editDocument: 'Edit Document',
         editedBadge: 'Edited',
+      },
+      dna: {
+        required: {
+          title: 'Business DNA Required',
+          message: "CopyMonster noticed you haven't created your business DNA yet. Create it now so your copies achieve superior, world-class performance.",
+          cta: 'Create DNA Now',
+        },
+        selector: {
+          title: 'Select DNA Project',
+          description: 'Choose which brand positioning to use for this copy.',
+          label: 'DNA Project',
+          placeholder: 'Select a project...',
+          confirm: 'Confirm',
+        },
+        contextLoaded: 'DNA context loaded',
+        limit: {
+          reached: {
+            title: 'Project Limit Reached',
+            message: 'You have reached the limit of {{count}}/{{limit}} DNA projects on your {{plan}} plan. Upgrade to create more projects.',
+            upgrade: 'View Plans',
+            stay: 'Stay on current plan',
+          },
+        },
+        counter: '{{used}}/{{limit}} DNA projects',
       },
       headlines: {
         title: 'Headline Bank',
@@ -1166,6 +1193,7 @@ const resources = {
           badge: '',
           features: [
             '1.000 créditos/mês',
+            '1 projeto de DNA de Marca',
             'Acesso a todos os 8 agentes',
             'Diagnóstico de Posicionamento',
             'Suporte via comunidade',
@@ -1180,6 +1208,7 @@ const resources = {
           badge: 'Mais Popular',
           features: [
             '5.000 créditos/mês',
+            'Até 10 projetos de DNA de Marca',
             'Tudo do plano Starter',
             'Análises de Performance',
             'Biblioteca de Frameworks',
@@ -1195,6 +1224,7 @@ const resources = {
           badge: '',
           features: [
             '15.000 créditos/mês',
+            'Até 50 projetos de DNA de Marca',
             'Tudo do plano Pro',
             'Treinamento de Agentes (em breve)',
             'Acesso antecipado a novos recursos',
@@ -1615,6 +1645,30 @@ const resources = {
         },
         editDocument: 'Editar Documento',
         editedBadge: 'Editado',
+      },
+      dna: {
+        required: {
+          title: 'DNA do Negócio Necessário',
+          message: 'O CopyMonster identificou que você ainda não criou o DNA do seu negócio. Crie agora para que suas copys tenham um desempenho de classe superior.',
+          cta: 'Criar DNA Agora',
+        },
+        selector: {
+          title: 'Selecione o Projeto DNA',
+          description: 'Escolha qual posicionamento de marca usar para esta copy.',
+          label: 'Projeto DNA',
+          placeholder: 'Selecione um projeto...',
+          confirm: 'Confirmar',
+        },
+        contextLoaded: 'Contexto DNA carregado',
+        limit: {
+          reached: {
+            title: 'Limite de Projetos Atingido',
+            message: 'Você atingiu o limite de {{count}}/{{limit}} projetos DNA do seu plano {{plan}}. Faça upgrade para criar mais projetos.',
+            upgrade: 'Ver Planos',
+            stay: 'Continuar no plano atual',
+          },
+        },
+        counter: '{{used}}/{{limit}} projetos DNA',
       },
       headlines: {
         title: 'Banco de Headlines',
@@ -2236,6 +2290,7 @@ const resources = {
           badge: '',
           features: [
             '1,000 créditos/mes',
+            '1 proyecto de ADN de Marca',
             'Acceso a los 8 agentes',
             'Diagnóstico de Posicionamiento',
             'Soporte Comunitario',
@@ -2250,6 +2305,7 @@ const resources = {
           badge: 'Más Popular',
           features: [
             '5,000 créditos/mes',
+            'Hasta 10 proyectos de ADN de Marca',
             'Todo en el plan Starter',
             'Análisis de Rendimiento',
             'Biblioteca de Frameworks',
@@ -2265,6 +2321,7 @@ const resources = {
           badge: '',
           features: [
             '15,000 créditos/mes',
+            'Hasta 50 proyectos de ADN de Marca',
             'Todo en el plan Pro',
             'Entrenamiento de Agentes (pronto)',
             'Acceso anticipado a nuevas funciones',
@@ -2685,6 +2742,30 @@ const resources = {
         },
         editDocument: 'Editar Documento',
         editedBadge: 'Editado',
+      },
+      dna: {
+        required: {
+          title: 'ADN de Negocio Necesario',
+          message: 'CopyMonster notó que aún no has creado el ADN de tu negocio. Créalo ahora para que tus copys tengan un rendimiento de clase superior.',
+          cta: 'Crear ADN Ahora',
+        },
+        selector: {
+          title: 'Selecciona el Proyecto ADN',
+          description: 'Elige qué posicionamiento de marca usar para esta copy.',
+          label: 'Proyecto ADN',
+          placeholder: 'Selecciona un proyecto...',
+          confirm: 'Confirmar',
+        },
+        contextLoaded: 'Contexto ADN cargado',
+        limit: {
+          reached: {
+            title: 'Límite de Proyectos Alcanzado',
+            message: 'Has alcanzado el límite de {{count}}/{{limit}} proyectos ADN de tu plan {{plan}}. Actualiza para crear más proyectos.',
+            upgrade: 'Ver Planes',
+            stay: 'Continuar en el plan actual',
+          },
+        },
+        counter: '{{used}}/{{limit}} proyectos ADN',
       },
       headlines: {
         title: 'Banco de Titulares',
