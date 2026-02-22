@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 import { useTheme } from '@/components/ThemeProvider';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -150,6 +150,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-64">
+                <SheetTitle className="sr-only">Admin Menu</SheetTitle>
                 <Sidebar />
               </SheetContent>
             </Sheet>
