@@ -1,73 +1,119 @@
 
-## Remocao Completa de Headlines e Insights
 
-### Relatorio de Dependencias Encontradas
+## Plano de Implementacao - 2 Tarefas
 
-**Headlines** - presente em 6 arquivos + 1 tabela DB:
-| Local | Tipo | Pode remover? |
-|-------|------|---------------|
-| `src/pages/dashboard/Headlines.tsx` | Pagina completa | Sim - exclusiva |
-| `src/pages/admin/AdminHeadlines.tsx` | Pagina admin | Sim - exclusiva |
-| `src/App.tsx` | Import + Rota | Sim - remover import e rota |
-| `src/components/layouts/DashboardLayout.tsx` | Item menu lateral | Sim - remover item |
-| `src/components/layouts/AdminLayout.tsx` | Item menu admin | Sim - remover item |
-| `src/pages/dashboard/Performance.tsx` | Contagem headlines | Sim - variavel existe mas NAO e exibida na UI |
-| `src/i18n/config.ts` | Traducoes (3 idiomas) | Sim - remover bloco `headlines` |
-| Tabela `headlines` (Supabase) | Tabela + RLS | NAO remover agora - manter no banco |
+---
 
-**Insights** - presente em 3 arquivos + 1 tabela DB:
-| Local | Tipo | Pode remover? |
-|-------|------|---------------|
-| `src/pages/dashboard/Insights.tsx` | Pagina completa | Sim - exclusiva |
-| `src/App.tsx` | Import + Rota | Sim - remover import e rota |
-| `src/components/layouts/DashboardLayout.tsx` | Item menu lateral | Sim - remover item |
-| `src/i18n/config.ts` | Traducoes (3 idiomas) | Sim - remover bloco `insights` |
-| Tabela `insights` (Supabase) | Tabela + RLS | NAO remover agora - manter no banco |
+### TAREFA 1: Gestao de Funcoes Internas (Colaboradores) em /admin/users
 
-**NAO existe admin panel para Insights** - apenas Headlines tem pagina admin.
+#### Analise Tecnica
 
-### O que NAO sera tocado
-- Tabelas `headlines` e `insights` no banco permanecem (remocao de tabelas e uma operacao destrutiva separada)
-- Nenhuma outra funcionalidade e afetada
-- `copy_results` continua funcionando normalmente (sem dependencia)
-- Nenhum edge function usa essas tabelas
+**Melhor modelagem de banco:**
+Adicionar uma coluna `internal_role` do tipo `text` (nullable, default NULL) na tabela `profiles`. Justificativa:
+- E uma classificacao organizacional simples (1 funcao por usuario)
+- Nao requer tabela relacional - nao existe historico, multiplas funcoes nem hierarquia
+- Reaproveita a tabela `profiles` que ja e usada no admin Users
+- A RLS existente (admins podem ver/editar todos os perfis) ja cobre esta coluna sem alteracoes
 
-### Ordem de Execucao
+**Impacto tecnico:** Baixo. Uma coluna nova nullable nao quebra nada existente.
 
-**Passo 1: `src/App.tsx`**
-- Remover import de `Headlines` (linha 27)
-- Remover import de `Insights` (linha 28)
-- Remover import de `AdminHeadlines` (linha 43)
-- Remover rota `/dashboard/headlines` (linha 87)
-- Remover rota `/dashboard/insights` (linha 88)
-- Remover rota `/admin/headlines` (linha 100)
+#### Arquivos Afetados
 
-**Passo 2: `src/components/layouts/DashboardLayout.tsx`**
-- Remover item de menu `headlines` (linha 80)
-- Remover item de menu `insights` (linha 81)
-- Remover imports de icones `Newspaper` e `Lightbulb` que ficarem sem uso
+| Arquivo | Alteracao |
+|---------|-----------|
+| Migracao SQL | Adicionar coluna `internal_role` text nullable em `profiles` |
+| `src/pages/admin/Users.tsx` | Adicionar dropdown de funcao interna + coluna na tabela + logica de salvar |
+| `src/i18n/config.ts` | Adicionar traducoes para funcoes internas (EN/PT/ES) |
 
-**Passo 3: `src/components/layouts/AdminLayout.tsx`**
-- Remover item de menu `Headlines` (linha 71)
-- Remover import do icone `Type` se ficar sem uso
+#### Detalhes de Implementacao
 
-**Passo 4: `src/pages/dashboard/Performance.tsx`**
-- Remover `headlines` do estado `realStats` (linha 31)
-- Remover query de contagem de headlines do `Promise.all` (linha 46)
-- Remover atribuicao `headlines` no `setRealStats` (linha 53)
+**1. Migracao SQL:**
+```text
+ALTER TABLE profiles ADD COLUMN internal_role text DEFAULT NULL;
+```
 
-**Passo 5: `src/i18n/config.ts`**
-- Remover chave `headlines` do menu do dashboard nos 3 idiomas (EN, PT, ES)
-- Remover chave `insights` do menu do dashboard nos 3 idiomas
-- Remover bloco completo `headlines: { title, subtitle, ... }` nos 3 idiomas
-- Remover bloco completo `insights: { title, subtitle, ... }` nos 3 idiomas
+**2. Users.tsx - Mudancas:**
+- Adicionar `internal_role` ao `UserProfile` interface e ao `fetchUsers` select
+- Adicionar nova coluna "Funcao Interna" na tabela de usuarios (entre "Plano" e "Creditos")
+- Adicionar dropdown inline na celula da tabela para selecionar/alterar funcao
+- Ao trocar funcao, salvar via `supabase.from('profiles').update({ internal_role })` com toast de confirmacao
+- Adicionar filtro por funcao interna (novo Select ao lado do filtro de plano)
 
-**Passo 6: Deletar arquivos**
-- Deletar `src/pages/dashboard/Headlines.tsx`
-- Deletar `src/pages/dashboard/Insights.tsx`
-- Deletar `src/pages/admin/AdminHeadlines.tsx`
+**3. Traducoes (i18n) - 10 funcoes nos 3 idiomas:**
 
-### Riscos
-- **Zero risco estrutural** - nenhuma outra pagina ou componente depende dessas funcionalidades
-- As tabelas permanecem no banco para eventual uso futuro ou migracao de dados
-- Performance.tsx busca headlines mas nunca exibe o dado - remocao limpa o codigo sem impacto visual
+EN:
+- Board/Executive, Product/Technology, Marketing, Sales, Customer Success, Technical Support, Internal Finance, Legal/Compliance, Operations, Data/BI
+
+PT:
+- Diretoria, Produto/Tecnologia, Marketing, Vendas, Customer Success, Suporte Tecnico, Financeiro Interno, Juridico/Compliance, Operacoes, Dados/BI
+
+ES:
+- Directiva, Producto/Tecnologia, Marketing, Ventas, Customer Success, Soporte Tecnico, Finanzas Internas, Legal/Compliance, Operaciones, Datos/BI
+
+Chaves i18n: `admin.users.internalRole`, `admin.users.internalRoleLabel`, `admin.users.allRoles`, `admin.users.noRole` + uma chave por funcao sob `admin.users.roles.*`
+
+**Riscos:** Zero. Coluna nullable nao impacta login, permissoes, RLS ou qualquer fluxo existente.
+
+---
+
+### TAREFA 2: Atualizacao dos Cards de Planos com Limites de DNA
+
+#### Analise do Estado Atual
+
+Existem 3 locais com cards de planos, usando 2 estruturas i18n diferentes:
+
+| Pagina | Chave i18n usada | Ja tem DNA? |
+|--------|------------------|-------------|
+| `/` (Index - Pricing component) | `pricing.*.features` (array) | SIM - ja adicionado |
+| `/dashboard/billing` (Billing) | `pricing.*.features` (array) | SIM - ja adicionado |
+| `/start` (Start - PricingSection) | `start.pricing.*.features.f1-f5` (objeto) | NAO - falta adicionar |
+
+A pagina `/` e `/dashboard/billing` ja mostram os limites de DNA (ex: "1 Brand DNA project", "Ate 10 projetos de DNA de Marca"). Foram adicionados na implementacao anterior do DNA Guard.
+
+A pagina `/start` usa uma estrutura diferente (`start.pricing.*.features.f1, f2...`) e NAO inclui informacao de DNA.
+
+#### Arquivos Afetados
+
+| Arquivo | Alteracao |
+|---------|-----------|
+| `src/i18n/config.ts` | Adicionar feature de DNA nos `start.pricing` (EN/PT/ES) |
+
+#### Detalhes de Implementacao
+
+Adicionar uma nova feature (f5 para Starter, f6 para Pro, f6 para Legend ou reordenar) com as informacoes de DNA:
+
+**EN `start.pricing`:**
+- Starter: adicionar `f5: "1 DNA (1 Brand Positioning Monster Project)"`
+- Pro: adicionar `f6: "Up to 10 DNAs (10 Brand Positioning Monster Projects)"`
+- Legend: adicionar `f6: "Up to 50 DNAs (50 Brand Positioning Monster Projects)"`
+
+**PT `start.pricing`:**
+- Starter: adicionar `f5: "1 DNA (1 Projeto) Brand Positioning Monster"`
+- Pro: adicionar `f6: "Ate 10 DNAs (10 Projetos) Brand Positioning Monster"`
+- Legend: adicionar `f6: "Ate 50 DNAs (50 Projetos) Brand Positioning Monster"`
+
+**ES `start.pricing`:**
+- Starter: adicionar `f5: "1 DNA (1 Proyecto Brand Positioning Monster)"`
+- Pro: adicionar `f6: "Hasta 10 DNAs (10 Proyectos Brand Positioning Monster)"`
+- Legend: adicionar `f6: "Hasta 50 DNAs (50 Proyectos Brand Positioning Monster)"`
+
+**Start.tsx:** Tambem precisa adicionar `t('start.pricing.*.features.f5')` e `f6` nas arrays de features dos planos (linhas 567-606).
+
+**Riscos:** Zero. Apenas adiciona texto informativo.
+
+---
+
+### Ordem Segura de Execucao
+
+1. Migracao SQL (coluna `internal_role`)
+2. Atualizar `src/i18n/config.ts` (traducoes de funcoes internas + features DNA do start.pricing)
+3. Atualizar `src/pages/admin/Users.tsx` (dropdown + coluna + filtro)
+4. Atualizar `src/pages/Start.tsx` (adicionar features f5/f6 nos arrays de planos)
+
+### Validacao de Limites
+
+Os limites exibidos nos cards (1/10/50) correspondem exatamente aos limites enforced pelo `useDnaGuard.ts`:
+```text
+free -> 1, starter -> 1, pro -> 10, legend -> 50
+```
+
