@@ -60,6 +60,19 @@ function detectLanguage(text: string): 'pt-BR' | 'en' | 'es' | 'unknown' {
 
 // Language-aware system prompt rules
 function getUniversalLanguageRules(language: string): string {
+  const formattingRules = `
+
+# FORMATTING RULES (MANDATORY - NEVER VIOLATE)
+- NEVER use ** (double asterisks) for bold text
+- NEVER use * (single asterisk) for italic text
+- NEVER use ## or ### for headers
+- NEVER use excessive emojis (maximum 1 per section, only if essential)
+- Use simple numbered titles: "1. Title", "2. Title"
+- Use plain text paragraphs, clean and professional
+- Use bullet points with "-" when listing items
+- NO markdown formatting artifacts in your output
+- Your output must look clean and professional as plain text`;
+
   const rules: Record<string, string> = {
     'pt-BR': `# REGRA DE IDIOMA OBRIGATÓRIA
 Você DEVE responder INTEIRAMENTE em Português do Brasil.
@@ -72,7 +85,7 @@ Você DEVE responder INTEIRAMENTE em Português do Brasil.
 - Use gatilhos comportamentais e ressonância emocional
 - Evite escrita genérica ou superficial
 - Todas as saídas devem soar como um copywriter premium de alto nível
-- Sempre entregue CLAREZA + EMOÇÃO + ESTRUTURA`,
+- Sempre entregue CLAREZA + EMOÇÃO + ESTRUTURA${formattingRules}`,
 
     'es': `# REGLA DE IDIOMA OBLIGATORIA
 DEBE responder COMPLETAMENTE en Español.
@@ -85,7 +98,7 @@ DEBE responder COMPLETAMENTE en Español.
 - Use disparadores conductuales y resonancia emocional
 - Evite escritura genérica o superficial
 - Todos los outputs deben sonar como un copywriter premium de primer nivel
-- Siempre entregue CLARIDAD + EMOCIÓN + ESTRUCTURA`,
+- Siempre entregue CLARIDAD + EMOCIÓN + ESTRUCTURA${formattingRules}`,
 
     'en': `# MANDATORY LANGUAGE RULE
 You MUST respond ENTIRELY in English.
@@ -98,7 +111,7 @@ You MUST respond ENTIRELY in English.
 - Use behavioral triggers and emotional resonance
 - Avoid generic or superficial writing
 - All outputs must sound like a premium top-tier copywriter
-- Always deliver CLARITY + EMOTION + STRUCTURE`
+- Always deliver CLARITY + EMOTION + STRUCTURE${formattingRules}`
   };
   
   return rules[language] || rules['en'];
@@ -418,7 +431,7 @@ serve(async (req) => {
         if (agent.few_shot_examples && Array.isArray(agent.few_shot_examples) && agent.few_shot_examples.length > 0) {
           parts.push(`\n\n# REFERENCE EXAMPLES`);
           agent.few_shot_examples.forEach((example: any, index: number) => {
-            parts.push(`\n## Example ${index + 1}\n**Input:** ${example.input}\n**Output:** ${example.output}`);
+            parts.push(`\n## Example ${index + 1}\nInput: ${example.input}\nOutput: ${example.output}`);
           });
         }
 
