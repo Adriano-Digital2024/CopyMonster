@@ -73,6 +73,8 @@ export function ChatInterface({
   // Auto-save copy result to database
   const saveCopyResult = useCallback(async (content: string, messageId: string) => {
     if (!user || !content.trim() || !agentSlug || savedCopyIds.has(messageId)) return;
+    // Brand Positioning Monster has its own save system in Positioning.tsx
+    if (agentSlug === 'brand-positioning-monster') return;
     
     // Mark as saved to prevent duplicates
     setSavedCopyIds(prev => new Set(prev).add(messageId));
