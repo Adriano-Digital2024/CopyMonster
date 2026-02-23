@@ -424,7 +424,30 @@ serve(async (req) => {
         }
 
         if (agent.output_structure) {
-          parts.push(`\n\nOUTPUT STRUCTURE:\nYou MUST follow this structure:\n${agent.output_structure}`);
+          // Sanitize output_structure: replace shorthand labels (H1, D1, etc.) with clean descriptive labels
+          let cleanStructure = agent.output_structure
+            .replace(/\bH1[:\s]/g, 'Headline 1: ')
+            .replace(/\bH2[:\s]/g, 'Headline 2: ')
+            .replace(/\bH3[:\s]/g, 'Headline 3: ')
+            .replace(/\bH4[:\s]/g, 'Headline 4: ')
+            .replace(/\bH5[:\s]/g, 'Headline 5: ')
+            .replace(/\bH6[:\s]/g, 'Headline 6: ')
+            .replace(/\bH7[:\s]/g, 'Headline 7: ')
+            .replace(/\bH8[:\s]/g, 'Headline 8: ')
+            .replace(/\bH9[:\s]/g, 'Headline 9: ')
+            .replace(/\bH10[:\s]/g, 'Headline 10: ')
+            .replace(/\bH11[:\s]/g, 'Headline 11: ')
+            .replace(/\bH12[:\s]/g, 'Headline 12: ')
+            .replace(/\bH13[:\s]/g, 'Headline 13: ')
+            .replace(/\bH14[:\s]/g, 'Headline 14: ')
+            .replace(/\bH15[:\s]/g, 'Headline 15: ')
+            .replace(/\bD1[:\s]/g, 'Description 1: ')
+            .replace(/\bD2[:\s]/g, 'Description 2: ')
+            .replace(/\bD3[:\s]/g, 'Description 3: ')
+            .replace(/\bD4[:\s]/g, 'Description 4: ')
+            .replace(/#{1,6}\s/g, '') // Remove any markdown headers
+            .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1'); // Remove bold/italic markers
+          parts.push(`\n\nOUTPUT STRUCTURE:\nYou MUST follow this structure:\n${cleanStructure}`);
         }
 
         parts.push(`\n\nSETTINGS:\n- Tone: ${agent.tone || 'professional'}\n- Word limits: ${agent.min_words || 100}-${agent.max_words || 2000} words`);
