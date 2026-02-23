@@ -62,10 +62,12 @@ function detectLanguage(text: string): 'pt-BR' | 'en' | 'es' | 'unknown' {
 function getUniversalLanguageRules(language: string): string {
   const formattingRules = `
 
-# FORMATTING RULES (MANDATORY - NEVER VIOLATE)
+FORMATTING RULES (MANDATORY - NEVER VIOLATE):
 - NEVER use ** (double asterisks) for bold text
 - NEVER use * (single asterisk) for italic text
-- NEVER use ## or ### for headers
+- NEVER use ## or ### or # for headers
+- NEVER use labels like H1, H2, H3, H4, H5, D1, D2, D3, D4 in your output
+- Use full descriptive labels instead: Headline 1, Headline 2, Description 1, Description 2
 - NEVER use excessive emojis (maximum 1 per section, only if essential)
 - Use simple numbered titles: "1. Title", "2. Title"
 - Use plain text paragraphs, clean and professional
@@ -74,39 +76,39 @@ function getUniversalLanguageRules(language: string): string {
 - Your output must look clean and professional as plain text`;
 
   const rules: Record<string, string> = {
-    'pt-BR': `# REGRA DE IDIOMA OBRIGATÓRIA
-Você DEVE responder INTEIRAMENTE em Português do Brasil.
+    'pt-BR': `REGRA DE IDIOMA OBRIGATORIA:
+Voce DEVE responder INTEIRAMENTE em Portugues do Brasil.
 - NUNCA misture idiomas na sua resposta
-- Todos os títulos, seções, cabeçalhos e conteúdo devem estar em Português
-- Esta regra substitui qualquer outra configuração de idioma
+- Todos os titulos, secoes, cabecalhos e conteudo devem estar em Portugues
+- Esta regra substitui qualquer outra configuracao de idioma
 
-# PADRÕES UNIVERSAIS DE QUALIDADE
+PADROES UNIVERSAIS DE QUALIDADE:
 - O copy deve ser psicologicamente persuasivo
-- Use gatilhos comportamentais e ressonância emocional
-- Evite escrita genérica ou superficial
-- Todas as saídas devem soar como um copywriter premium de alto nível
-- Sempre entregue CLAREZA + EMOÇÃO + ESTRUTURA${formattingRules}`,
+- Use gatilhos comportamentais e ressonancia emocional
+- Evite escrita generica ou superficial
+- Todas as saidas devem soar como um copywriter premium de alto nivel
+- Sempre entregue CLAREZA + EMOCAO + ESTRUTURA${formattingRules}`,
 
-    'es': `# REGLA DE IDIOMA OBLIGATORIA
-DEBE responder COMPLETAMENTE en Español.
+    'es': `REGLA DE IDIOMA OBLIGATORIA:
+DEBE responder COMPLETAMENTE en Espanol.
 - NUNCA mezcle idiomas en su respuesta
-- Todos los títulos, secciones, encabezados y contenido deben estar en Español
-- Esta regla anula cualquier otra configuración de idioma
+- Todos los titulos, secciones, encabezados y contenido deben estar en Espanol
+- Esta regla anula cualquier otra configuracion de idioma
 
-# ESTÁNDARES UNIVERSALES DE CALIDAD
-- El copy debe ser psicológicamente persuasivo
+ESTANDARES UNIVERSALES DE CALIDAD:
+- El copy debe ser psicologicamente persuasivo
 - Use disparadores conductuales y resonancia emocional
-- Evite escritura genérica o superficial
+- Evite escritura generica o superficial
 - Todos los outputs deben sonar como un copywriter premium de primer nivel
-- Siempre entregue CLARIDAD + EMOCIÓN + ESTRUCTURA${formattingRules}`,
+- Siempre entregue CLARIDAD + EMOCION + ESTRUCTURA${formattingRules}`,
 
-    'en': `# MANDATORY LANGUAGE RULE
+    'en': `MANDATORY LANGUAGE RULE:
 You MUST respond ENTIRELY in English.
 - NEVER mix languages in your response
 - ALL titles, sections, headers, and content must be in English
 - This rule overrides any other language configuration
 
-# UNIVERSAL QUALITY STANDARDS
+UNIVERSAL QUALITY STANDARDS:
 - Copy must be psychologically persuasive
 - Use behavioral triggers and emotional resonance
 - Avoid generic or superficial writing
@@ -120,9 +122,9 @@ You MUST respond ENTIRELY in English.
 // Auto-start instructions by language
 function getAutoStartInstruction(language: string): string {
   const instructions: Record<string, string> = {
-    'pt-BR': '\n\n# INSTRUÇÃO ESPECIAL\nEsta é a primeira mensagem da conversa. Você DEVE iniciar com sua mensagem de boas-vindas e a primeira pergunta do fluxo guiado imediatamente.',
-    'es': '\n\n# INSTRUCCIÓN ESPECIAL\nEste es el primer mensaje de la conversación. DEBE comenzar con su mensaje de bienvenida y la primera pregunta del flujo guiado inmediatamente.',
-    'en': '\n\n# SPECIAL INSTRUCTION\nThis is the first message of the conversation. You MUST start with your welcome message and the first question of the guided flow immediately.'
+    'pt-BR': '\n\nINSTRUCAO ESPECIAL:\nEsta e a primeira mensagem da conversa. Voce DEVE iniciar com sua mensagem de boas-vindas e a primeira pergunta do fluxo guiado imediatamente.',
+    'es': '\n\nINSTRUCCION ESPECIAL:\nEste es el primer mensaje de la conversacion. DEBE comenzar con su mensaje de bienvenida y la primera pregunta del flujo guiado inmediatamente.',
+    'en': '\n\nSPECIAL INSTRUCTION:\nThis is the first message of the conversation. You MUST start with your welcome message and the first question of the guided flow immediately.'
   };
   return instructions[language] || instructions['en'];
 }
@@ -399,44 +401,44 @@ serve(async (req) => {
         // Start with universal language rules for the detected language
         parts.push(universalRules);
 
-        parts.push(`\n\n# IDENTITY\nYou are ${agent.name} from CopyMonster.`);
+        parts.push(`\n\nIDENTITY:\nYou are ${agent.name} from CopyMonster.`);
 
         if (agent.role_definition) {
-          parts.push(`\n\n# ROLE\n${agent.role_definition}`);
+          parts.push(`\n\nROLE:\n${agent.role_definition}`);
         }
 
         if (agent.persona_name && agent.persona_backstory) {
-          parts.push(`\n\n# PERSONA\nName: ${agent.persona_name}\n${agent.persona_backstory}`);
+          parts.push(`\n\nPERSONA:\nName: ${agent.persona_name}\n${agent.persona_backstory}`);
         }
 
         if (agent.core_function) {
-          parts.push(`\n\n# CORE FUNCTION\n${agent.core_function}`);
+          parts.push(`\n\nCORE FUNCTION:\n${agent.core_function}`);
         }
 
         if (agent.quality_rules) {
-          parts.push(`\n\n# QUALITY RULES\n${agent.quality_rules}`);
+          parts.push(`\n\nQUALITY RULES:\n${agent.quality_rules}`);
         }
 
         if (agent.expected_inputs) {
-          parts.push(`\n\n# EXPECTED INPUTS\n${agent.expected_inputs}`);
+          parts.push(`\n\nEXPECTED INPUTS:\n${agent.expected_inputs}`);
         }
 
         if (agent.output_structure) {
-          parts.push(`\n\n# MANDATORY OUTPUT STRUCTURE\nYou MUST follow this structure:\n${agent.output_structure}`);
+          parts.push(`\n\nOUTPUT STRUCTURE:\nYou MUST follow this structure:\n${agent.output_structure}`);
         }
 
-        parts.push(`\n\n# SETTINGS\n- Tone: ${agent.tone || 'professional'}\n- Word limits: ${agent.min_words || 100}-${agent.max_words || 2000} words`);
+        parts.push(`\n\nSETTINGS:\n- Tone: ${agent.tone || 'professional'}\n- Word limits: ${agent.min_words || 100}-${agent.max_words || 2000} words`);
 
         // Add few-shot examples if available
         if (agent.few_shot_examples && Array.isArray(agent.few_shot_examples) && agent.few_shot_examples.length > 0) {
-          parts.push(`\n\n# REFERENCE EXAMPLES`);
+          parts.push(`\n\nREFERENCE EXAMPLES:`);
           agent.few_shot_examples.forEach((example: any, index: number) => {
-            parts.push(`\n## Example ${index + 1}\nInput: ${example.input}\nOutput: ${example.output}`);
+            parts.push(`\nExample ${index + 1}:\nInput: ${example.input}\nOutput: ${example.output}`);
           });
         }
 
         if (agent.system_prompt) {
-          parts.push(`\n\n# ADDITIONAL INSTRUCTIONS\n${agent.system_prompt}`);
+          parts.push(`\n\nADDITIONAL INSTRUCTIONS:\n${agent.system_prompt}`);
         }
 
         finalSystemPrompt = parts.join('');
@@ -463,19 +465,19 @@ serve(async (req) => {
 
       if (!mappingError && mapping) {
         const contextParts = [];
-        contextParts.push('\n\n# POSITIONING CONTEXT (User\'s Brand DNA)');
-        if (mapping.block_1_audience) contextParts.push(`\n## Target Audience\n${mapping.block_1_audience}`);
-        if (mapping.block_2_pain_points) contextParts.push(`\n## Pain Points\n${mapping.block_2_pain_points}`);
-        if (mapping.block_3_solution) contextParts.push(`\n## Solution\n${mapping.block_3_solution}`);
-        if (mapping.block_4_differentiators) contextParts.push(`\n## Differentiators\n${mapping.block_4_differentiators}`);
-        if (mapping.block_5_awareness_stage) contextParts.push(`\n## Awareness Stage\n${mapping.block_5_awareness_stage}`);
-        if (mapping.block_6_urgency) contextParts.push(`\n## Urgency\n${mapping.block_6_urgency}`);
-        if (mapping.block_7_social_proof) contextParts.push(`\n## Social Proof\n${mapping.block_7_social_proof}`);
-        if (mapping.block_8_objections) contextParts.push(`\n## Objections\n${mapping.block_8_objections}`);
-        if (mapping.block_9_emotional_connection) contextParts.push(`\n## Emotional Connection\n${mapping.block_9_emotional_connection}`);
-        if (mapping.block_10_transformation) contextParts.push(`\n## Transformation\n${mapping.block_10_transformation}`);
-        if (mapping.block_11_voice) contextParts.push(`\n## Brand Voice\n${mapping.block_11_voice}`);
-        if (mapping.block_12_promises) contextParts.push(`\n## Promises\n${mapping.block_12_promises}`);
+        contextParts.push('\n\nPOSITIONING CONTEXT (User\'s Brand DNA):');
+        if (mapping.block_1_audience) contextParts.push(`\nTarget Audience:\n${mapping.block_1_audience}`);
+        if (mapping.block_2_pain_points) contextParts.push(`\nPain Points:\n${mapping.block_2_pain_points}`);
+        if (mapping.block_3_solution) contextParts.push(`\nSolution:\n${mapping.block_3_solution}`);
+        if (mapping.block_4_differentiators) contextParts.push(`\nDifferentiators:\n${mapping.block_4_differentiators}`);
+        if (mapping.block_5_awareness_stage) contextParts.push(`\nAwareness Stage:\n${mapping.block_5_awareness_stage}`);
+        if (mapping.block_6_urgency) contextParts.push(`\nUrgency:\n${mapping.block_6_urgency}`);
+        if (mapping.block_7_social_proof) contextParts.push(`\nSocial Proof:\n${mapping.block_7_social_proof}`);
+        if (mapping.block_8_objections) contextParts.push(`\nObjections:\n${mapping.block_8_objections}`);
+        if (mapping.block_9_emotional_connection) contextParts.push(`\nEmotional Connection:\n${mapping.block_9_emotional_connection}`);
+        if (mapping.block_10_transformation) contextParts.push(`\nTransformation:\n${mapping.block_10_transformation}`);
+        if (mapping.block_11_voice) contextParts.push(`\nBrand Voice:\n${mapping.block_11_voice}`);
+        if (mapping.block_12_promises) contextParts.push(`\nPromises:\n${mapping.block_12_promises}`);
         
         finalSystemPrompt += contextParts.join('');
         console.log(`[chat-stream] Positioning context injected from mapping: ${positioning_mapping_id}`);
