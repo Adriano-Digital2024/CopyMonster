@@ -1,51 +1,75 @@
 
 
-## Correcao: Salvar Copy Completa Apenas Uma Vez no Final
+## Limpeza Total de Formatacao - Entrega Premium Classe Superior
 
 ---
 
-### Problema Atual
+### Problema Identificado
 
-O botao "Salvar" aparece em CADA mensagem individual do assistente. Isso causa:
-- Confusao: o usuario nao sabe qual mensagem salvar
-- Fragmentacao: se clicar em uma mensagem, salva apenas aquele trecho, nao a copy completa
-- UX ruim: multiplos botoes de salvar poluem a interface
+Duas fontes de poluicao na entrega dos agentes:
 
-### Solucao
+1. **Google Ads agent** - O campo `output_structure` no banco de dados usa labels como `H1:`, `H2:`, `D1:` que o LLM reproduz literalmente na saida
+2. **Edge Function (chat-stream)** - O codigo que monta o system prompt usa headers markdown (`#`, `##`) internamente para separar secoes. O LLM ve esses simbolos e replica o estilo na resposta ao usuario
 
-Remover os botoes de salvar individuais por mensagem e implementar um UNICO botao "Salvar Copy Completa" no header do chat que:
+---
 
-1. So aparece quando existe pelo menos 1 mensagem do assistente
-2. So aparece para agentes que NAO sao `brand-positioning-monster`
-3. Ao clicar, concatena TODO o conteudo das mensagens do assistente em um unico texto
-4. Salva como UM unico registro na tabela `copy_results`
-5. Abre o dialog de nomeacao UMA unica vez
-6. Apos salvo, o botao muda para indicador "Salvo" para evitar duplicatas
+### Correcoes
 
-### Alteracoes Tecnicas
+**1. Atualizar output_structure do Google Ads no banco de dados**
 
-**Arquivo:** `src/components/chat/ChatInterface.tsx`
+Substituir os labels `H1:`, `H2:`, `D1:` por labels limpos e profissionais:
 
-1. **Remover** os botoes de salvar individuais dentro do loop de mensagens (linhas 648-661)
-2. **Adicionar** um botao "Salvar Copy" no header do chat (ao lado dos botoes Export e Clear), visivel apenas quando:
-   - `agentSlug !== 'brand-positioning-monster'`
-   - Existe conteudo do assistente
-   - A copy ainda nao foi salva nesta sessao
-3. **Modificar** `saveCopyResult` para concatenar TODAS as mensagens do assistente em um unico conteudo antes de salvar
-4. **Adicionar** estado `isCopySaved` (boolean) para controlar se a sessao ja foi salva - substituindo o `savedCopyIds` (Set por mensagem)
+| Antes | Depois |
+|-------|--------|
+| `H1: (max 30 characters)` | `Headline 1: (max 30 characters)` |
+| `H2: (max 30 characters)` | `Headline 2: (max 30 characters)` |
+| `D1: (max 90 characters)` | `Description 1: (max 90 characters)` |
 
-**Fluxo resultante:**
-```text
-Usuario interage com agente -> Varias mensagens sao trocadas
--> Ao terminar, usuario clica "Salvar Copy" no header
--> Dialog de nomeacao aparece UMA vez
--> Copy completa (todas as respostas concatenadas) e salva
--> Botao muda para "Salvo"
-```
+Isso elimina a aparencia de "codigo HTML" na entrega.
+
+**2. Remover todos os marcadores markdown do prompt construction no edge function**
+
+No arquivo `supabase/functions/chat-stream/index.ts`, substituir TODOS os headers `#` e `##` por labels em texto simples com separadores limpos:
+
+| Antes (codigo) | Depois (codigo) |
+|-----------------|-----------------|
+| `# IDENTITY` | `IDENTITY:` |
+| `# ROLE` | `ROLE:` |
+| `# PERSONA` | `PERSONA:` |
+| `# CORE FUNCTION` | `CORE FUNCTION:` |
+| `# QUALITY RULES` | `QUALITY RULES:` |
+| `# EXPECTED INPUTS` | `EXPECTED INPUTS:` |
+| `# MANDATORY OUTPUT STRUCTURE` | `OUTPUT STRUCTURE:` |
+| `# SETTINGS` | `SETTINGS:` |
+| `# REFERENCE EXAMPLES` | `REFERENCE EXAMPLES:` |
+| `## Example 1` | `Example 1:` |
+| `# ADDITIONAL INSTRUCTIONS` | `ADDITIONAL INSTRUCTIONS:` |
+| `## Target Audience` | `Target Audience:` |
+| `## Pain Points` | `Pain Points:` |
+| (todos os `##` do DNA context) | (sem `##`, apenas label com `:`) |
+
+Tambem atualizar os headers no `getUniversalLanguageRules`:
+| Antes | Depois |
+|-------|--------|
+| `# REGRA DE IDIOMA OBRIGATORIA` | `REGRA DE IDIOMA OBRIGATORIA:` |
+| `# FORMATTING RULES (MANDATORY)` | `FORMATTING RULES (MANDATORY):` |
+
+**3. Reforcar regra de formatacao no prompt universal**
+
+Adicionar instrucao explicita contra labels tipo H1/H2/D1:
+- "NEVER use labels like H1, H2, H3, D1, D2 in your output"
+- "Use full descriptive labels: Headline 1, Headline 2, Description 1"
+
+---
+
+### Arquivos Alterados
+
+1. `supabase/functions/chat-stream/index.ts` - Remover todos os `#` e `##` do prompt construction + reforcar regras
+2. Banco de dados: UPDATE no `output_structure` do agente `google-ads`
 
 ### Riscos
 
-- Zero risco funcional - nenhuma logica de backend e alterada
-- O agente de posicionamento continua usando seu sistema proprio de salvamento
-- O conteudo salvo sera mais completo (toda a conversa vs fragmento individual)
+- Zero risco funcional - apenas mudanca de formatacao no system prompt (o LLM nao precisa de markdown para entender secoes)
+- O LLM interpreta labels em texto simples tao bem quanto headers markdown
+- Deploy do edge function necessario apos alteracao
 
