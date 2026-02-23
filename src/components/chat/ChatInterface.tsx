@@ -60,7 +60,7 @@ export function ChatInterface({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
-  const [savedCopyIds, setSavedCopyIds] = useState<Set<string>>(new Set());
+  const [isCopySaved, setIsCopySaved] = useState(false);
   const [showNamingDialog, setShowNamingDialog] = useState(false);
   const [copyTitle, setCopyTitle] = useState('');
   const [lastSavedCopyId, setLastSavedCopyId] = useState<string | null>(null);
@@ -70,19 +70,22 @@ export function ChatInterface({
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-save copy result to database
-  const saveCopyResult = useCallback(async (content: string, messageId: string) => {
-    if (!user || !content.trim() || !agentSlug || savedCopyIds.has(messageId)) return;
-    // Brand Positioning Monster has its own save system in Positioning.tsx
+  // Save complete copy (all assistant messages concatenated)
+  const saveCompleteCopy = useCallback(async () => {
+    if (!user || !agentSlug || isCopySaved) return;
     if (agentSlug === 'brand-positioning-monster') return;
+
+    const assistantMessages = messages.filter(m => m.role === 'assistant' && m.content.trim());
+    if (assistantMessages.length === 0) return;
+
+    const fullContent = assistantMessages.map(m => m.content.trim()).join('\n\n---\n\n');
     
-    // Mark as saved to prevent duplicates
-    setSavedCopyIds(prev => new Set(prev).add(messageId));
-    
+    setIsCopySaved(true);
+
     const copyData = {
       user_id: user.id,
       agent_slug: agentSlug,
-      content: content.trim(),
+      content: fullContent,
       is_favorite: false
     };
 
@@ -95,12 +98,11 @@ export function ChatInterface({
 
       if (error) {
         console.error('Error saving copy result:', error);
-        // Fallback: save to localStorage
+        setIsCopySaved(false);
         const pendingCopys = JSON.parse(localStorage.getItem(PENDING_COPYS_KEY) || '[]');
-        pendingCopys.push({ ...copyData, created_at: new Date().toISOString(), id: messageId });
+        pendingCopys.push({ ...copyData, created_at: new Date().toISOString(), id: Date.now().toString() });
         localStorage.setItem(PENDING_COPYS_KEY, JSON.stringify(pendingCopys));
       } else if (data) {
-        // Show naming dialog
         const suggestion = `${agentName} - ${format(new Date(), 'dd/MM/yyyy')}`;
         setCopyTitle(suggestion);
         setLastSavedCopyId(data.id);
@@ -108,12 +110,9 @@ export function ChatInterface({
       }
     } catch (err) {
       console.error('Error saving copy result:', err);
-      // Fallback: save to localStorage
-      const pendingCopys = JSON.parse(localStorage.getItem(PENDING_COPYS_KEY) || '[]');
-      pendingCopys.push({ ...copyData, created_at: new Date().toISOString(), id: messageId });
-      localStorage.setItem(PENDING_COPYS_KEY, JSON.stringify(pendingCopys));
+      setIsCopySaved(false);
     }
-  }, [user, agentSlug, savedCopyIds]);
+  }, [user, agentSlug, isCopySaved, messages, agentName]);
 
   // Sync pending copys from localStorage on mount
   useEffect(() => {
@@ -350,7 +349,7 @@ export function ChatInterface({
     } finally {
       setIsLoading(false);
     }
-  }, [user, toast, t, systemPrompt, agentSlug, positioningMappingId, saveCopyResult]);
+  }, [user, toast, t, systemPrompt, agentSlug, positioningMappingId]);
 
   // Auto-start effect for guided agents (placed after handleAutoStart declaration)
   useEffect(() => {
@@ -519,7 +518,7 @@ export function ChatInterface({
   const handleClear = () => {
     setMessages([]);
     setHasAutoStarted(false);
-    setSavedCopyIds(new Set());
+    setIsCopySaved(false);
     toast({
       title: t('chat.clearSuccessTitle'),
       description: t('chat.clearSuccessDesc')
@@ -577,6 +576,22 @@ export function ChatInterface({
                 >
                   <Save className="h-4 w-4" />
                 </Button>
+              )}
+              {agentSlug && agentSlug !== 'brand-positioning-monster' && messages.some(m => m.role === 'assistant' && m.content.trim()) && (
+                isCopySaved ? (
+                  <span className="text-xs text-muted-foreground px-2">{t('chat.saved', { defaultValue: '✓ Salvo' })}</span>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={saveCompleteCopy}
+                    title={t('chat.saveCopy', { defaultValue: 'Salvar Copy' })}
+                    className="text-primary"
+                  >
+                    <Save className="h-4 w-4" />
+                    <span className="hidden sm:inline text-xs">{t('chat.saveCopy', { defaultValue: 'Salvar' })}</span>
+                  </Button>
+                )
               )}
               <Button
                 variant="ghost"
@@ -641,25 +656,9 @@ export function ChatInterface({
                   <div className="text-sm prose prose-sm dark:prose-invert max-w-none chat-markdown">
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-xs opacity-70">
-                      {message.timestamp.toLocaleTimeString()}
-                    </p>
-                    {message.role === 'assistant' && message.content.trim() && agentSlug && agentSlug !== 'brand-positioning-monster' && !savedCopyIds.has(message.id) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-xs gap-1 opacity-70 hover:opacity-100"
-                        onClick={() => saveCopyResult(message.content, message.id)}
-                      >
-                        <Save className="h-3 w-3" />
-                        {t('chat.saveCopy', { defaultValue: 'Salvar' })}
-                      </Button>
-                    )}
-                    {message.role === 'assistant' && savedCopyIds.has(message.id) && (
-                      <span className="text-xs opacity-50">{t('chat.saved', { defaultValue: '✓ Salvo' })}</span>
-                    )}
-                  </div>
+                  <p className="text-xs opacity-70 mt-2">
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
                 </div>
               </div>
             ))}
