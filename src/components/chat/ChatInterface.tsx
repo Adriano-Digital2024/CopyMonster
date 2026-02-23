@@ -332,11 +332,6 @@ export function ChatInterface({
         }
       }
 
-      // Auto-save the generated copy
-      if (fullContent.trim()) {
-        saveCopyResult(fullContent, assistantMessageId);
-      }
-
       toast({
         title: t('chat.creditUsedTitle'),
         description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
@@ -480,11 +475,6 @@ export function ChatInterface({
         }
       }
 
-      // Auto-save the generated copy
-      if (fullContent.trim()) {
-        saveCopyResult(fullContent, assistantMessageId);
-      }
-      
       toast({
         title: t('chat.creditUsedTitle'),
         description: t('chat.creditUsedDesc', { credits: user.credits - 1 })
@@ -651,9 +641,25 @@ export function ChatInterface({
                   <div className="text-sm prose prose-sm dark:prose-invert max-w-none chat-markdown">
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
-                  <p className="text-xs opacity-70 mt-2">
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs opacity-70">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                    {message.role === 'assistant' && message.content.trim() && agentSlug && agentSlug !== 'brand-positioning-monster' && !savedCopyIds.has(message.id) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs gap-1 opacity-70 hover:opacity-100"
+                        onClick={() => saveCopyResult(message.content, message.id)}
+                      >
+                        <Save className="h-3 w-3" />
+                        {t('chat.saveCopy', { defaultValue: 'Salvar' })}
+                      </Button>
+                    )}
+                    {message.role === 'assistant' && savedCopyIds.has(message.id) && (
+                      <span className="text-xs opacity-50">{t('chat.saved', { defaultValue: '✓ Salvo' })}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
