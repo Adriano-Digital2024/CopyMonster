@@ -1,50 +1,37 @@
 
 
-## Analise Completa: Problemas de Interacao no Chat
+## Correcao: Banner "Salvar" aparece prematuramente
 
----
+### Problema
+O `triggerSaveReminder()` e chamado no bloco `finally` de `handleSend` (linha 559), que executa apos CADA troca de mensagem. Isso significa que o banner "Sua copy esta pronta" aparece logo apos a primeira resposta do agente - que e apenas uma lista de perguntas, nao a copy final.
 
-### Problema 1: Conteudo desaparece ao trocar de aba
+### Solucao
+Mostrar o banner SOMENTE quando existirem pelo menos 2 mensagens do assistente (a primeira e sempre perguntas de esclarecimento, a copy real vem depois que o usuario responde).
 
-**Causa raiz:** As mensagens do chat sao armazenadas APENAS em `useState` (linha 59 do ChatInterface.tsx). React state e volatil - existe apenas em memoria. Quando o navegador coloca a aba em segundo plano por tempo suficiente, o browser pode descartar o estado da pagina (especialmente em dispositivos moveis ou com pouca memoria), causando um re-render que zera o state.
+### Alteracao unica
 
-**Correcao:** Persistir as mensagens em `sessionStorage` usando o `agentSlug` como chave. Assim, mesmo que o componente re-monte, as mensagens sao recuperadas automaticamente.
+**Arquivo:** `src/components/chat/ChatInterface.tsx`
 
-Alteracoes no `ChatInterface.tsx`:
-- Criar uma chave de sessao: `const sessionKey = agentSlug ? \`chat_session_\${agentSlug}\` : null`
-- Inicializar `messages` lendo de `sessionStorage` se existir dados salvos
-- Adicionar `useEffect` que salva em `sessionStorage` toda vez que `messages` mudar
-- No `handleClear`, tambem limpar o `sessionStorage`
-- Tambem persistir `isCopySaved` no sessionStorage para manter o estado de salvamento
+Modificar a funcao `triggerSaveReminder` (linhas 124-128) para verificar a quantidade de mensagens do assistente antes de exibir o banner:
 
----
+```typescript
+const triggerSaveReminder = useCallback(() => {
+  if (agentSlug && agentSlug !== 'brand-positioning-monster' && !isCopySaved) {
+    // Only show reminder when there are at least 2 assistant messages
+    // (first is always clarifying questions, actual copy comes after)
+    setMessages(currentMessages => {
+      const assistantCount = currentMessages.filter(m => m.role === 'assistant').length;
+      if (assistantCount >= 2) {
+        setShowSaveReminder(true);
+      }
+      return currentMessages;
+    });
+  }
+}, [agentSlug, isCopySaved]);
+```
 
-### Problema 2: Usuario nao percebe o botao de salvar
-
-**Causa raiz:** O botao "Salvar Copy" esta no header do chat (linha 584-594), como um icone pequeno ao lado de Export e Clear. Nao ha nenhuma notificacao visual que chame atencao do usuario quando a copy termina de ser gerada.
-
-**Correcao:** Adicionar um banner/alerta flutuante que aparece AUTOMATICAMENTE quando o streaming termina e existe conteudo do assistente. Esse banner fica visivel acima da area de input, com um botao de acao direto para salvar.
-
-Alteracoes no `ChatInterface.tsx`:
-- Adicionar estado `showSaveReminder` (boolean)
-- Nos callbacks de `handleSend` e `handleAutoStart`, no `finally` block, verificar se existe conteudo do assistente e se o agente nao e `brand-positioning-monster` e se a copy ainda nao foi salva. Se sim, setar `showSaveReminder = true`
-- Renderizar um banner animado entre as mensagens e o input (antes do `<div className="p-4 border-t">`) com:
-  - Icone de Save
-  - Texto: "Sua copy esta pronta! Clique para salvar"
-  - Botao de acao que chama `saveCompleteCopy`
-  - Botao de dismissal (X)
-- Quando `isCopySaved` mudar para true, esconder o banner
-- Quando `handleClear` for chamado, esconder o banner
-
----
-
-### Resumo das alteracoes
-
-**Arquivo unico:** `src/components/chat/ChatInterface.tsx`
-
-1. Persistencia em sessionStorage (resolve conteudo sumindo)
-2. Banner de notificacao pos-streaming (resolve falta de visibilidade do salvar)
-3. Manter o botao de salvar no header tambem (opcao redundante para quem ja conhece)
-
-**Nenhuma alteracao de backend necessaria.**
+Isso garante que:
+- Na primeira interacao (agente faz perguntas) → banner NAO aparece
+- Apos o usuario responder e receber a copy final → banner aparece corretamente
+- Agentes que entregam em uma unica resposta sem perguntas continuam sem banner prematuro
 
