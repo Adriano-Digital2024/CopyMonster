@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Download, Trash2, Loader2, Save } from 'lucide-react';
+import { Send, Download, Trash2, Loader2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +44,32 @@ interface ChatInterfaceProps {
   onSave?: (messages: Message[]) => void;
 }
 
+// --- sessionStorage helpers ---
+function getSessionKey(agentSlug?: string) {
+  return agentSlug ? `chat_session_${agentSlug}` : null;
+}
+
+function loadSessionMessages(key: string | null): Message[] {
+  if (!key) return [];
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as any[];
+    return parsed.map(m => ({ ...m, timestamp: new Date(m.timestamp) }));
+  } catch {
+    return [];
+  }
+}
+
+function loadSessionFlag(key: string | null, flag: string): boolean {
+  if (!key) return false;
+  try {
+    return sessionStorage.getItem(`${key}_${flag}`) === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export function ChatInterface({ 
   agentName, 
   agentColor, 
@@ -56,11 +82,14 @@ export function ChatInterface({
   onMessagesChange,
   onSave
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const sessionKey = getSessionKey(agentSlug);
+
+  const [messages, setMessages] = useState<Message[]>(() => loadSessionMessages(sessionKey));
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasAutoStarted, setHasAutoStarted] = useState(false);
-  const [isCopySaved, setIsCopySaved] = useState(false);
+  const [hasAutoStarted, setHasAutoStarted] = useState(() => loadSessionMessages(sessionKey).length > 0);
+  const [isCopySaved, setIsCopySaved] = useState(() => loadSessionFlag(sessionKey, 'saved'));
+  const [showSaveReminder, setShowSaveReminder] = useState(false);
   const [showNamingDialog, setShowNamingDialog] = useState(false);
   const [copyTitle, setCopyTitle] = useState('');
   const [lastSavedCopyId, setLastSavedCopyId] = useState<string | null>(null);
@@ -69,6 +98,34 @@ export function ChatInterface({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // --- Persist messages to sessionStorage ---
+  useEffect(() => {
+    if (!sessionKey) return;
+    if (messages.length === 0) {
+      sessionStorage.removeItem(sessionKey);
+    } else {
+      sessionStorage.setItem(sessionKey, JSON.stringify(messages));
+    }
+  }, [messages, sessionKey]);
+
+  // --- Persist isCopySaved to sessionStorage ---
+  useEffect(() => {
+    if (!sessionKey) return;
+    sessionStorage.setItem(`${sessionKey}_saved`, String(isCopySaved));
+  }, [isCopySaved, sessionKey]);
+
+  // --- Hide save reminder when copy is saved ---
+  useEffect(() => {
+    if (isCopySaved) setShowSaveReminder(false);
+  }, [isCopySaved]);
+
+  // Helper to show save reminder after streaming
+  const triggerSaveReminder = useCallback(() => {
+    if (agentSlug && agentSlug !== 'brand-positioning-monster' && !isCopySaved) {
+      setShowSaveReminder(true);
+    }
+  }, [agentSlug, isCopySaved]);
 
   // Save complete copy (all assistant messages concatenated)
   const saveCompleteCopy = useCallback(async () => {
@@ -81,6 +138,7 @@ export function ChatInterface({
     const fullContent = assistantMessages.map(m => m.content.trim()).join('\n\n---\n\n');
     
     setIsCopySaved(true);
+    setShowSaveReminder(false);
 
     const copyData = {
       user_id: user.id,
@@ -348,8 +406,9 @@ export function ChatInterface({
       );
     } finally {
       setIsLoading(false);
+      triggerSaveReminder();
     }
-  }, [user, toast, t, systemPrompt, agentSlug, positioningMappingId]);
+  }, [user, toast, t, systemPrompt, agentSlug, positioningMappingId, triggerSaveReminder]);
 
   // Auto-start effect for guided agents (placed after handleAutoStart declaration)
   useEffect(() => {
@@ -382,6 +441,7 @@ export function ChatInterface({
     setMessages(currentMessages);
     setInput('');
     setIsLoading(true);
+    setShowSaveReminder(false);
 
     const assistantMessageId = (Date.now() + 1).toString();
     const assistantMessage: Message = {
@@ -496,6 +556,7 @@ export function ChatInterface({
       });
     } finally {
       setIsLoading(false);
+      triggerSaveReminder();
     }
   };
 
@@ -519,6 +580,12 @@ export function ChatInterface({
     setMessages([]);
     setHasAutoStarted(false);
     setIsCopySaved(false);
+    setShowSaveReminder(false);
+    // Clear sessionStorage
+    if (sessionKey) {
+      sessionStorage.removeItem(sessionKey);
+      sessionStorage.removeItem(`${sessionKey}_saved`);
+    }
     toast({
       title: t('chat.clearSuccessTitle'),
       description: t('chat.clearSuccessDesc')
@@ -552,6 +619,8 @@ export function ChatInterface({
     setLastSavedCopyId(null);
   };
 
+  const shouldShowSaveAction = agentSlug && agentSlug !== 'brand-positioning-monster' && messages.some(m => m.role === 'assistant' && m.content.trim());
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -577,7 +646,7 @@ export function ChatInterface({
                   <Save className="h-4 w-4" />
                 </Button>
               )}
-              {agentSlug && agentSlug !== 'brand-positioning-monster' && messages.some(m => m.role === 'assistant' && m.content.trim()) && (
+              {shouldShowSaveAction && (
                 isCopySaved ? (
                   <span className="text-xs text-muted-foreground px-2">{t('chat.saved', { defaultValue: '✓ Salvo' })}</span>
                 ) : (
@@ -672,6 +741,30 @@ export function ChatInterface({
           </div>
         )}
       </ScrollArea>
+
+      {/* Save Reminder Banner */}
+      {showSaveReminder && !isCopySaved && shouldShowSaveAction && (
+        <div className="mx-4 mb-2 flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 animate-in slide-in-from-bottom-2 duration-300">
+          <Save className="h-5 w-5 text-primary shrink-0" />
+          <p className="text-sm font-medium flex-1">
+            {t('chat.saveReminder', { defaultValue: 'Sua copy está pronta! Clique para salvar antes de sair.' })}
+          </p>
+          <Button
+            size="sm"
+            onClick={saveCompleteCopy}
+            className="shrink-0"
+          >
+            {t('chat.saveCopy', { defaultValue: 'Salvar' })}
+          </Button>
+          <button
+            onClick={() => setShowSaveReminder(false)}
+            className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            aria-label="Dismiss"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <div className="p-4 border-t">
