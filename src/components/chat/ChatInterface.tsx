@@ -123,7 +123,15 @@ export function ChatInterface({
   // Helper to show save reminder after streaming
   const triggerSaveReminder = useCallback(() => {
     if (agentSlug && agentSlug !== 'brand-positioning-monster' && !isCopySaved) {
-      setShowSaveReminder(true);
+      // Only show reminder when there are at least 2 assistant messages
+      // (first is always clarifying questions, actual copy comes after)
+      setMessages(currentMessages => {
+        const assistantCount = currentMessages.filter(m => m.role === 'assistant').length;
+        if (assistantCount >= 2) {
+          setShowSaveReminder(true);
+        }
+        return currentMessages;
+      });
     }
   }, [agentSlug, isCopySaved]);
 
