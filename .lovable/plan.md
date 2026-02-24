@@ -1,75 +1,50 @@
 
 
-## Limpeza Total de Formatacao - Entrega Premium Classe Superior
+## Analise Completa: Problemas de Interacao no Chat
 
 ---
 
-### Problema Identificado
+### Problema 1: Conteudo desaparece ao trocar de aba
 
-Duas fontes de poluicao na entrega dos agentes:
+**Causa raiz:** As mensagens do chat sao armazenadas APENAS em `useState` (linha 59 do ChatInterface.tsx). React state e volatil - existe apenas em memoria. Quando o navegador coloca a aba em segundo plano por tempo suficiente, o browser pode descartar o estado da pagina (especialmente em dispositivos moveis ou com pouca memoria), causando um re-render que zera o state.
 
-1. **Google Ads agent** - O campo `output_structure` no banco de dados usa labels como `H1:`, `H2:`, `D1:` que o LLM reproduz literalmente na saida
-2. **Edge Function (chat-stream)** - O codigo que monta o system prompt usa headers markdown (`#`, `##`) internamente para separar secoes. O LLM ve esses simbolos e replica o estilo na resposta ao usuario
+**Correcao:** Persistir as mensagens em `sessionStorage` usando o `agentSlug` como chave. Assim, mesmo que o componente re-monte, as mensagens sao recuperadas automaticamente.
 
----
-
-### Correcoes
-
-**1. Atualizar output_structure do Google Ads no banco de dados**
-
-Substituir os labels `H1:`, `H2:`, `D1:` por labels limpos e profissionais:
-
-| Antes | Depois |
-|-------|--------|
-| `H1: (max 30 characters)` | `Headline 1: (max 30 characters)` |
-| `H2: (max 30 characters)` | `Headline 2: (max 30 characters)` |
-| `D1: (max 90 characters)` | `Description 1: (max 90 characters)` |
-
-Isso elimina a aparencia de "codigo HTML" na entrega.
-
-**2. Remover todos os marcadores markdown do prompt construction no edge function**
-
-No arquivo `supabase/functions/chat-stream/index.ts`, substituir TODOS os headers `#` e `##` por labels em texto simples com separadores limpos:
-
-| Antes (codigo) | Depois (codigo) |
-|-----------------|-----------------|
-| `# IDENTITY` | `IDENTITY:` |
-| `# ROLE` | `ROLE:` |
-| `# PERSONA` | `PERSONA:` |
-| `# CORE FUNCTION` | `CORE FUNCTION:` |
-| `# QUALITY RULES` | `QUALITY RULES:` |
-| `# EXPECTED INPUTS` | `EXPECTED INPUTS:` |
-| `# MANDATORY OUTPUT STRUCTURE` | `OUTPUT STRUCTURE:` |
-| `# SETTINGS` | `SETTINGS:` |
-| `# REFERENCE EXAMPLES` | `REFERENCE EXAMPLES:` |
-| `## Example 1` | `Example 1:` |
-| `# ADDITIONAL INSTRUCTIONS` | `ADDITIONAL INSTRUCTIONS:` |
-| `## Target Audience` | `Target Audience:` |
-| `## Pain Points` | `Pain Points:` |
-| (todos os `##` do DNA context) | (sem `##`, apenas label com `:`) |
-
-Tambem atualizar os headers no `getUniversalLanguageRules`:
-| Antes | Depois |
-|-------|--------|
-| `# REGRA DE IDIOMA OBRIGATORIA` | `REGRA DE IDIOMA OBRIGATORIA:` |
-| `# FORMATTING RULES (MANDATORY)` | `FORMATTING RULES (MANDATORY):` |
-
-**3. Reforcar regra de formatacao no prompt universal**
-
-Adicionar instrucao explicita contra labels tipo H1/H2/D1:
-- "NEVER use labels like H1, H2, H3, D1, D2 in your output"
-- "Use full descriptive labels: Headline 1, Headline 2, Description 1"
+Alteracoes no `ChatInterface.tsx`:
+- Criar uma chave de sessao: `const sessionKey = agentSlug ? \`chat_session_\${agentSlug}\` : null`
+- Inicializar `messages` lendo de `sessionStorage` se existir dados salvos
+- Adicionar `useEffect` que salva em `sessionStorage` toda vez que `messages` mudar
+- No `handleClear`, tambem limpar o `sessionStorage`
+- Tambem persistir `isCopySaved` no sessionStorage para manter o estado de salvamento
 
 ---
 
-### Arquivos Alterados
+### Problema 2: Usuario nao percebe o botao de salvar
 
-1. `supabase/functions/chat-stream/index.ts` - Remover todos os `#` e `##` do prompt construction + reforcar regras
-2. Banco de dados: UPDATE no `output_structure` do agente `google-ads`
+**Causa raiz:** O botao "Salvar Copy" esta no header do chat (linha 584-594), como um icone pequeno ao lado de Export e Clear. Nao ha nenhuma notificacao visual que chame atencao do usuario quando a copy termina de ser gerada.
 
-### Riscos
+**Correcao:** Adicionar um banner/alerta flutuante que aparece AUTOMATICAMENTE quando o streaming termina e existe conteudo do assistente. Esse banner fica visivel acima da area de input, com um botao de acao direto para salvar.
 
-- Zero risco funcional - apenas mudanca de formatacao no system prompt (o LLM nao precisa de markdown para entender secoes)
-- O LLM interpreta labels em texto simples tao bem quanto headers markdown
-- Deploy do edge function necessario apos alteracao
+Alteracoes no `ChatInterface.tsx`:
+- Adicionar estado `showSaveReminder` (boolean)
+- Nos callbacks de `handleSend` e `handleAutoStart`, no `finally` block, verificar se existe conteudo do assistente e se o agente nao e `brand-positioning-monster` e se a copy ainda nao foi salva. Se sim, setar `showSaveReminder = true`
+- Renderizar um banner animado entre as mensagens e o input (antes do `<div className="p-4 border-t">`) com:
+  - Icone de Save
+  - Texto: "Sua copy esta pronta! Clique para salvar"
+  - Botao de acao que chama `saveCompleteCopy`
+  - Botao de dismissal (X)
+- Quando `isCopySaved` mudar para true, esconder o banner
+- Quando `handleClear` for chamado, esconder o banner
+
+---
+
+### Resumo das alteracoes
+
+**Arquivo unico:** `src/components/chat/ChatInterface.tsx`
+
+1. Persistencia em sessionStorage (resolve conteudo sumindo)
+2. Banner de notificacao pos-streaming (resolve falta de visibilidade do salvar)
+3. Manter o botao de salvar no header tambem (opcao redundante para quem ja conhece)
+
+**Nenhuma alteracao de backend necessaria.**
 
