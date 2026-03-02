@@ -51,7 +51,7 @@ export default function AgentChat() {
   const [selectedDnaId, setSelectedDnaId] = useState<string | null>(null);
   const [showDnaSelector, setShowDnaSelector] = useState(false);
   const { hasDna, dnaList, isLoading: dnaLoading } = useDnaGuard();
-  const { trackViewContent } = useMetaPixel();
+  const { trackLead } = useMetaPixel();
 
   useEffect(() => {
     if (slug) {
@@ -67,12 +67,12 @@ export default function AgentChat() {
     }
   }, [slug]);
 
-  // Track ViewContent when agent loads
+  // Track Lead when agent loads (indicates real interest)
   useEffect(() => {
     if (agent) {
-      trackViewContent({ content_name: agent.name, content_category: 'agent', content_ids: [agent.slug] });
+      trackLead({ content_name: agent.name, content_category: 'agent' });
     }
-  }, [agent, trackViewContent]);
+  }, [agent, trackLead]);
 
   // Auto-select DNA if only one exists, or show selector
   useEffect(() => {
