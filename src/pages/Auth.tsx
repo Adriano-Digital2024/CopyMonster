@@ -67,7 +67,7 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
-  const { trackCompleteRegistration, trackLead } = useMetaPixel();
+  const { trackCompleteRegistration } = useMetaPixel();
   useEffect(() => {
     // Se o carregamento terminou e o usuário está autenticado, redireciona.
     if (!isAuthLoading && isAuthenticated) {
@@ -114,9 +114,8 @@ const Auth = () => {
         phone: validatedData.phone || ''
       });
       
-      // Track Meta Pixel events on successful signup
+      // Track Meta Pixel CompleteRegistration on successful signup
       trackCompleteRegistration({ status: true });
-      trackLead({ content_name: 'signup' });
       
       toast.success(t('auth.signupSuccess'));
       toast.info(t('auth.verifyEmailNotice'));
