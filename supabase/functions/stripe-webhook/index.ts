@@ -9,6 +9,59 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// SHA-256 hash helper for Meta CAPI
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message.trim().toLowerCase());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Send Purchase event to Meta Conversions API
+async function sendMetaPurchaseEvent(email: string, value: number, currency: string, planId: string) {
+  const accessToken = Deno.env.get('META_CONVERSIONS_API_TOKEN');
+  if (!accessToken) {
+    console.warn('[stripe-webhook] META_CONVERSIONS_API_TOKEN not configured, skipping Meta event');
+    return;
+  }
+
+  try {
+    const hashedEmail = await sha256(email);
+    const eventTime = Math.floor(Date.now() / 1000);
+
+    const payload = {
+      data: [{
+        event_name: 'Purchase',
+        event_time: eventTime,
+        action_source: 'website',
+        user_data: {
+          em: [hashedEmail],
+        },
+        custom_data: {
+          value: value,
+          currency: currency,
+          content_ids: [planId],
+          content_type: 'product',
+        },
+      }],
+    };
+
+    const response = await fetch(
+      `https://graph.facebook.com/v21.0/848000381146545/events?access_token=${accessToken}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await response.json();
+    console.log(`[stripe-webhook] Meta Purchase event sent:`, result);
+  } catch (metaError) {
+    console.error('[stripe-webhook] Failed to send Meta Purchase event (non-blocking):', metaError);
+  }
+}
+
 // Credit allocation per plan (sustainable with 300%+ margin)
 const PLAN_CREDITS: Record<string, number> = {
   'starter': 150,   // ~R$0.32/credit
@@ -106,6 +159,21 @@ serve(async (req) => {
             console.error('[stripe-webhook] Error updating user subscription:', error);
           } else {
             console.log(`[stripe-webhook] User ${userId} upgraded successfully`);
+            
+            // Send Purchase event to Meta Conversions API
+            const purchaseValue = (session.amount_total || 0) / 100;
+            const purchaseCurrency = (session.currency || 'brl').toUpperCase();
+            
+            // Get user email from profile
+            const { data: userProfile } = await supabaseClient
+              .from('profiles')
+              .select('email')
+              .eq('id', userId)
+              .single();
+            
+            if (userProfile?.email) {
+              await sendMetaPurchaseEvent(userProfile.email, purchaseValue, purchaseCurrency, planId);
+            }
           }
         }
         break;
