@@ -1,37 +1,44 @@
 
 
-## Correcao: Banner "Salvar" aparece prematuramente
+## Analise do Meta Pixel - Problemas Encontrados
 
-### Problema
-O `triggerSaveReminder()` e chamado no bloco `finally` de `handleSend` (linha 559), que executa apos CADA troca de mensagem. Isso significa que o banner "Sua copy esta pronta" aparece logo apos a primeira resposta do agente - que e apenas uma lista de perguntas, nao a copy final.
+### Estado Atual
 
-### Solucao
-Mostrar o banner SOMENTE quando existirem pelo menos 2 mensagens do assistente (a primeira e sempre perguntas de esclarecimento, a copy real vem depois que o usuario responde).
+O Pixel ID `848000381146545` esta corretamente configurado em `src/lib/meta-pixel.ts`. A infraestrutura e solida:
+- `MetaPixelTracker` no App.tsx rastreia PageView em todas as rotas automaticamente
+- Hook `useMetaPixel` existe com todos os eventos padrao (Lead, Purchase, CompleteRegistration, etc.)
+- Consentimento de cookies e respeitado antes de carregar o pixel
 
-### Alteracao unica
+### Problema Principal: NENHUM evento esta sendo disparado
 
-**Arquivo:** `src/components/chat/ChatInterface.tsx`
+O hook `useMetaPixel()` NAO e utilizado em nenhum componente da aplicacao. Isso significa que:
 
-Modificar a funcao `triggerSaveReminder` (linhas 124-128) para verificar a quantidade de mensagens do assistente antes de exibir o banner:
+| Evento | Status | Onde deveria estar |
+|--------|--------|--------------------|
+| PageView | Funcionando | MetaPixelTracker (automatico) |
+| CompleteRegistration | NAO disparado | Auth.tsx (apos signup) |
+| Lead | NAO disparado | Auth.tsx (apos signup) |
+| InitiateCheckout | NAO disparado | Billing.tsx (ao clicar em assinar) |
+| StartTrial | NAO disparado | AuthContext.tsx (apos criar conta free) |
+| Purchase | NAO disparado | stripe-webhook (servidor) |
+| ViewContent | NAO disparado | Agents.tsx, AgentChat.tsx |
 
-```typescript
-const triggerSaveReminder = useCallback(() => {
-  if (agentSlug && agentSlug !== 'brand-positioning-monster' && !isCopySaved) {
-    // Only show reminder when there are at least 2 assistant messages
-    // (first is always clarifying questions, actual copy comes after)
-    setMessages(currentMessages => {
-      const assistantCount = currentMessages.filter(m => m.role === 'assistant').length;
-      if (assistantCount >= 2) {
-        setShowSaveReminder(true);
-      }
-      return currentMessages;
-    });
-  }
-}, [agentSlug, isCopySaved]);
-```
+### Plano de Correcao
 
-Isso garante que:
-- Na primeira interacao (agente faz perguntas) → banner NAO aparece
-- Apos o usuario responder e receber a copy final → banner aparece corretamente
-- Agentes que entregam em uma unica resposta sem perguntas continuam sem banner prematuro
+**1. Auth.tsx** - Adicionar tracking de `CompleteRegistration` e `Lead` no callback de signup bem-sucedido
+
+**2. Billing.tsx** - Adicionar tracking de `InitiateCheckout` na funcao `handleCheckout` antes de redirecionar para o Stripe
+
+**3. AgentChat.tsx** - Adicionar tracking de `ViewContent` quando o usuario abre um agente especifico
+
+**4. Noscript fallback no index.html** - Adicionar a tag `<noscript>` do Meta Pixel para usuarios com JavaScript desabilitado (pratica recomendada pelo Meta)
+
+### Arquivos a alterar:
+1. `src/pages/Auth.tsx` - CompleteRegistration + Lead
+2. `src/pages/dashboard/Billing.tsx` - InitiateCheckout
+3. `src/pages/dashboard/AgentChat.tsx` - ViewContent
+4. `index.html` - noscript fallback tag
+
+### Nota sobre Purchase
+O evento Purchase deveria ser disparado no servidor (stripe-webhook) via Conversions API, nao no frontend. Por ora, nao sera adicionado no cliente pois o usuario ja saiu do site ao pagar no Stripe.
 
