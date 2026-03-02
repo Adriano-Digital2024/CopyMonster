@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMetaPixel } from '@/hooks/useMetaPixel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -66,6 +67,7 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
+  const { trackCompleteRegistration, trackLead } = useMetaPixel();
   useEffect(() => {
     // Se o carregamento terminou e o usuário está autenticado, redireciona.
     if (!isAuthLoading && isAuthenticated) {
@@ -111,6 +113,11 @@ const Auth = () => {
         password: validatedData.password,
         phone: validatedData.phone || ''
       });
+      
+      // Track Meta Pixel events on successful signup
+      trackCompleteRegistration({ status: true });
+      trackLead({ content_name: 'signup' });
+      
       toast.success(t('auth.signupSuccess'));
       toast.info(t('auth.verifyEmailNotice'));
     } catch (error) {
