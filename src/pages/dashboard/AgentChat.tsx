@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { useDnaGuard } from '@/hooks/useDnaGuard';
+import { useMetaPixel } from '@/hooks/useMetaPixel';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export default function AgentChat() {
   const [selectedDnaId, setSelectedDnaId] = useState<string | null>(null);
   const [showDnaSelector, setShowDnaSelector] = useState(false);
   const { hasDna, dnaList, isLoading: dnaLoading } = useDnaGuard();
+  const { trackViewContent } = useMetaPixel();
 
   useEffect(() => {
     if (slug) {
@@ -64,6 +66,13 @@ export default function AgentChat() {
         });
     }
   }, [slug]);
+
+  // Track ViewContent when agent loads
+  useEffect(() => {
+    if (agent) {
+      trackViewContent({ content_name: agent.name, content_category: 'agent', content_ids: [agent.slug] });
+    }
+  }, [agent, trackViewContent]);
 
   // Auto-select DNA if only one exists, or show selector
   useEffect(() => {

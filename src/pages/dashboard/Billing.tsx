@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useMetaPixel } from '@/hooks/useMetaPixel';
 
 // Price IDs mapping by language/currency
 const priceIdsByLanguage: Record<string, { starter: string; pro: string; legend: string }> = {
@@ -37,6 +38,7 @@ export default function Billing() {
   const { t, i18n } = useTranslation();
   const [discountCode, setDiscountCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const { trackInitiateCheckout } = useMetaPixel();
 
   // Get price IDs based on current language
   const currentLanguage = i18n.language?.substring(0, 2) || 'en';
@@ -81,6 +83,9 @@ export default function Billing() {
       }
 
       console.log('Initiating checkout for plan:', plan.id, 'priceId:', plan.priceId);
+      
+      // Track Meta Pixel InitiateCheckout event
+      trackInitiateCheckout({ content_ids: [plan.id], num_items: 1 });
 
       const { data, error: functionError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
