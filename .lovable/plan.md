@@ -9,74 +9,72 @@
 
 ---
 
-## Analysis: Email Monster — Premium Quality Refinement
+## Analysis: VSL Monster — Premium Quality Refinement
 
-### Current State (slug: `email-monster`)
+### Current State (slug: `vsl-monster`)
 
-- **system_prompt** (~680 chars): Functional, clean formatting rules enforced, language detection present, but no DNA cross-referencing, no sequence-type strategy, no infoproduct focus
-- **role_definition**: Good foundation covering sequence types but generic
-- **core_function**: Adequate but no DNA dependency, no sequence-type differentiation, no structural elements like P.S.
-- **output_structure**: Clean plain-text format with Subject/Body/CTA per email — functional but lacks sequence metadata (type, goal, language) and P.S. support
-- **quality_rules**: Strong formatting prohibition rules already in place — well done
-- **few_shot_examples**: Empty array — major gap, same issue as email-marketing before refinement
-- **Parameters**: temp 0.75, max_tokens 4000, min_words 200, max_words 1000
+- **system_prompt** (~490 chars): Functional but generic — no DNA cross-referencing, no structured VSL flow, no infoproduct focus
+- **role_definition** (~165 chars): "15+ years" backstory, brief
+- **core_function** (~330 chars): Adequate deliverables but no DNA dependency, no duration-based scaling, no scene direction support
+- **output_structure**: Clean numbered format (8 sections), compliant with formatting standard — but missing metadata header (type, offer, duration, language), missing P.S. section, missing scene direction cues, no timing brackets
+- **quality_rules**: Strong formatting and language detection rules already in place — well done
+- **few_shot_examples**: Empty array — major gap
+- **Parameters**: temp 0.80, max_tokens 6000, min_words 1000, max_words 5000
 
 ### Worth Adopting
 
 1. **DNA cross-referencing** — Explicit instruction to extract avatar pain, desire, objections, and proof from loaded DNA context. Currently absent. High value.
 
-2. **Sequence-type strategy matrix** — 7 sequence types (Welcome/Onboarding, Nurture, Launch Warm-up, Sales, Cart Abandonment, Re-engagement, Post-Purchase/Upsell) with distinct strategic purposes and logical flow guidance. Current prompt lists types but provides no strategic differentiation. High value.
+2. **11-section VSL structure** — Current 8-section structure misses Bridge/Credibility (separate from proof), Objection Handling (separate from offer), Urgency/Scarcity (separate from CTA), and P.S. The suggested 11-section flow (Hook → Problem & Agitation → Credibility → Solution → Benefits → Social Proof → Objections & Guarantee → Offer & Urgency → CTA → P.S.) is the standard high-converting VSL format. High value.
 
-3. **Logical progression rule** — Explicit instruction to structure sequences following problem → education → solution → offer → urgency flow. Currently absent. High value.
+3. **Timing brackets and scene directions** — `[00:00 - 01:00]` timestamps and `(Scene: description)` cues make scripts production-ready. Currently absent from output structure. High value.
 
-4. **Length-per-type guidance** — Nurture emails longer (500-1000 words), sales emails concise (200-400), cart recovery shortest (100-200). Currently no type-specific length guidance. Medium-high value.
+4. **Metadata header** — Type, Offer, Goal, Estimated Duration, Language as a header block. Currently absent. Medium value.
 
-5. **Sequence metadata header** — Adding type, goal, number of emails, and detected language as a header block provides professional structure. Currently absent. Medium value.
+5. **Duration-based scaling** — Instruction to adjust section lengths proportionally based on desired VSL duration (15 min vs 30 min vs 60 min). Currently absent. Medium-high value.
 
-6. **Few-shot examples** — Empty array is the biggest gap. Adding 3 examples (PT 5-email launch warm-up nurture sequence, EN 3-email direct sales sequence, ES 2-email cart abandonment sequence) will dramatically improve consistency and output quality. Highest impact.
+6. **Few-shot examples** — Empty array is the biggest gap. Adding 2 examples (PT 15-min mentorship VSL, EN 25-min copywriting course VSL) with full timing, scene directions, and dialogue will dramatically improve output consistency. Highest impact.
 
-7. **P.S. support** — Strategic P.S. for urgency/benefit reinforcement in closing emails. Currently absent from output structure. Medium value.
+7. **P.S. section** — Standard VSL closer that reinforces main benefit or urgency. Currently missing from output structure. Medium value.
 
-8. **Educational balance principle** — Explicit instruction to balance value delivery with strategic promotion, especially in nurture sequences. Currently absent. Medium-high value.
+8. **Infoproduct positioning** — Explicit instruction to position the expert's solution as the inevitable answer to the avatar's problem. Currently generic. Medium-high value.
 
 ### Discard
 
 1. **Model recommendation (Claude/GPT-4)** — Admin panel concern. Discard.
-2. **Temperature change to 0.7** — Current 0.75 is fine for creative sequence writing. No change.
-3. **max_tokens change to 3000** — Current 4000 is better for longer sequences (7-10 emails). No change.
-4. **presence_penalty/frequency_penalty** — Not applicable to current architecture. Discard.
-5. **"10 years experience" backstory** — Excessive persona detail. Discard.
-6. **Markdown headers (##) in output structure** — The suggestion uses `## Email 1:` headers. Must use plain text labels consistent with production formatting standard (no hashtags). Discard format, adopt structure.
-7. **min_words/max_words changes** — Suggestion proposes 80/1000. Current 200/1000 is appropriate for multi-email sequences. No change.
-8. **"Observações finais" section** — Suggestion includes sending tips and interval suggestions at end. This contradicts existing quality_rules which prohibit delivery timing advice. Discard.
-9. **Italic CTA markers** — Suggestion uses `*Call to Action:*` italic formatting. Must use plain text label `CTA:` consistent with current standard. Discard.
+2. **Temperature change to 0.6** — Current 0.80 is appropriate for creative storytelling in VSLs. No change.
+3. **presence_penalty/frequency_penalty** — Not applicable to current architecture. Discard.
+4. **"12 years experience" backstory** — Current "15+ years" is already present. Will refine without excessive persona detail. No dramatic change needed.
+5. **Markdown bold in output structure** — Suggestion uses `**Abertura / Hook**` bold markers. Must use plain text labels consistent with production formatting standard. Discard format, adopt structure.
+6. **min_words/max_words changes** — Suggestion proposes 2000/10000. Current 1000/5000 is adequate for the max_tokens 6000 context window. Changing to 10000 max_words would exceed token capacity. Keep current values.
+7. **max_tokens change to 6000** — Already at 6000. No change.
 
 ### Implementation Plan
 
-**Single SQL migration** updating 5 fields on `email-monster`:
+**Single SQL migration** updating 5 fields on `vsl-monster`:
 
 **1. system_prompt** — Enhanced with:
 - DNA cross-referencing instruction (extract avatar pain, desire, objections, proof from loaded context)
-- Sequence-type strategy matrix (7 types with distinct strategic purposes)
-- Logical progression rule (problem → education → solution → offer → urgency)
-- Educational balance principle for nurture sequences
-- Infoproduct positioning (balance education with strategic promotion)
+- 11-section VSL structure (Hook → Problem & Agitation → Credibility → Solution → Benefits → Social Proof → Objections & Guarantee → Offer & Urgency → CTA → P.S.)
+- Duration-based scaling instruction (adjust section proportions to desired length)
+- Timing brackets and scene direction requirement
+- Infoproduct positioning (expert's solution as inevitable answer)
 - All existing formatting prohibitions preserved
 
-**2. role_definition** — Refined to emphasize sequence strategy mastery across all funnel stages and transformation-based persuasion for infoproducts, without the "10 years" backstory
+**2. role_definition** — Refined to emphasize VSL strategic mastery across all durations, direct response psychology, and production-ready scripting for infoproducts — without excessive backstory
 
-**3. core_function** — Specify deliverables: complete email sequences with subject line per email, body with strategic structure, CTA, and optional P.S. on closing emails — adapted by sequence type, built from minimal briefing (type, goal, offer, number of emails) plus DNA
+**3. core_function** — Specify deliverables: complete VSL scripts with timing brackets, scene directions, dialogue, metadata header — adapted by duration, built from minimal briefing (offer name, goal, duration, angle) plus DNA
 
 **4. output_structure** — Enhanced to include:
-- Sequence metadata header (type, goal, number of emails)
-- Per-email structure: purpose label, subject line, body, CTA, optional P.S.
-- All plain text labels (no markdown headers, no italic markers)
-- Consistent with existing production formatting standard
+- Metadata header (Type, Offer, Goal, Duration, Language)
+- 11 numbered sections with timing bracket format `[00:00 - 01:00]`
+- Scene direction cues `(Scene: description)`
+- P.S. closing section
+- All plain text labels (no markdown bold, no hashtags)
 
-**5. few_shot_examples** — Add 3 examples:
-- Portuguese: 5-email launch warm-up nurture sequence for "Mentoria Lançamentos 360" (progressive education + desire building)
-- English: 3-email direct sales sequence for "High-Converting Copy Course" (benefits + proof + urgency close)
-- Spanish: 2-email cart abandonment sequence for "Workshop Productividad 10x" (gentle reminder + bonus incentive)
+**5. few_shot_examples** — Add 2 examples:
+- Portuguese: 15-min VSL for "Mentoria Lançamentos 360" (full script with timing, scene directions, dialogue)
+- English: 25-min VSL for "High-Converting Copy Course" (full script with expanded sections, US market pricing)
 
 ### What Will NOT Change
 
@@ -86,9 +84,9 @@
 - No edge function changes
 - No model, temperature, or parameter changes
 - No new dependencies
-- min_words/max_words remain 200/1000
-- max_tokens remains 4000
-- temperature remains 0.75
+- min_words/max_words remain 1000/5000
+- max_tokens remains 6000
+- temperature remains 0.80
 - Language detection remains automatic via chat-stream
 - quality_rules field preserved as-is (already strong)
 - Existing formatting prohibitions fully preserved
@@ -105,8 +103,8 @@ Database update:
     core_function = '...',
     output_structure = '...',
     few_shot_examples = '[...]'::jsonb
-  WHERE slug = 'email-monster';
+  WHERE slug = 'vsl-monster';
 ```
 
-Few-shot examples stored as JSON array matching the existing `{input, output}` structure. All output uses plain labels without markdown headers, asterisks, emojis, or decorative elements — consistent with the production formatting standard and existing quality_rules.
+Few-shot examples stored as JSON array matching the existing `{input, output}` structure. All output uses plain labels with timing brackets and scene cues — without markdown bold, hashtags, emojis, or decorative elements — consistent with the production formatting standard and existing quality_rules.
 
