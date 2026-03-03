@@ -1,0 +1,255 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+};
+
+const COOLDOWN_MINUTES = 15;
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const encryptionKey = Deno.env.get('ENCRYPTION_KEY')!;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const userId = userData.user.id;
+    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check integration exists and is connected
+    const { data: integration } = await supabase
+      .from('user_integrations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('provider', 'meta')
+      .eq('status', 'connected')
+      .single();
+
+    if (!integration) {
+      return new Response(JSON.stringify({ error: 'not_connected' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Check cooldown
+    if (integration.last_synced_at) {
+      const lastSync = new Date(integration.last_synced_at).getTime();
+      const now = Date.now();
+      const minutesSinceSync = (now - lastSync) / (1000 * 60);
+      if (minutesSinceSync < COOLDOWN_MINUTES) {
+        const remainingMinutes = Math.ceil(COOLDOWN_MINUTES - minutesSinceSync);
+        await adminSupabase.from('integration_logs').insert({
+          user_id: userId, provider: 'meta', event_type: 'sync_rejected',
+          details: { reason: 'cooldown', remaining_minutes: remainingMinutes }
+        });
+        return new Response(JSON.stringify({ error: 'cooldown', remaining_minutes: remainingMinutes }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // Get decrypted token
+    const { data: accessToken } = await adminSupabase.rpc('get_decrypted_token' as any, {
+      p_user_id: userId, p_provider: 'meta', p_encryption_key: encryptionKey,
+    });
+
+    if (!accessToken) {
+      return new Response(JSON.stringify({ error: 'token_not_found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    let adsCount = 0;
+    let igCount = 0;
+
+    // Sync Ads Data
+    if (integration.meta_ad_account_id) {
+      try {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const dateStart = thirtyDaysAgo.toISOString().split('T')[0];
+        const dateEnd = today.toISOString().split('T')[0];
+
+        const insightsUrl = `https://graph.facebook.com/v21.0/${integration.meta_ad_account_id}/insights?fields=campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,impressions,clicks,spend,ctr,cpc,cpm,reach,frequency,actions,cost_per_action_type,action_values&level=ad&time_range={"since":"${dateStart}","until":"${dateEnd}"}&limit=500&access_token=${accessToken}`;
+
+        const adsResponse = await fetch(insightsUrl);
+        const adsData = await adsResponse.json();
+
+        if (adsData.error) {
+          console.error(`[meta-sync] Ads API error for user ${userId}: ${adsData.error.message}`);
+          await adminSupabase.from('integration_logs').insert({
+            user_id: userId, provider: 'meta', event_type: 'api_error',
+            details: { error: adsData.error.message, endpoint: 'ads_insights' }
+          });
+        } else if (adsData.data) {
+          const adsRows = adsData.data.map((row: any) => {
+            const actions = row.actions || [];
+            const costPerAction = row.cost_per_action_type || [];
+            const actionValues = row.action_values || [];
+
+            const getAction = (type: string) => {
+              const a = actions.find((a: any) => a.action_type === type);
+              return a ? parseInt(a.value) : 0;
+            };
+            const getCostPerAction = (type: string) => {
+              const c = costPerAction.find((c: any) => c.action_type === type);
+              return c ? parseFloat(c.value) : 0;
+            };
+            const getActionValue = (type: string) => {
+              const v = actionValues.find((v: any) => v.action_type === type);
+              return v ? parseFloat(v.value) : 0;
+            };
+
+            const spend = parseFloat(row.spend || '0');
+            const viewContent = getAction('offsite_conversion.fb_pixel_view_content');
+            const initiateCheckout = getAction('offsite_conversion.fb_pixel_initiate_checkout');
+            const purchases = getAction('offsite_conversion.fb_pixel_purchase');
+            const purchaseValue = getActionValue('offsite_conversion.fb_pixel_purchase');
+
+            return {
+              user_id: userId,
+              campaign_name: row.campaign_name,
+              campaign_id: row.campaign_id,
+              adset_name: row.adset_name,
+              adset_id: row.adset_id,
+              ad_name: row.ad_name,
+              ad_id: row.ad_id,
+              impressions: parseInt(row.impressions || '0'),
+              clicks: parseInt(row.clicks || '0'),
+              spend,
+              ctr: parseFloat(row.ctr || '0'),
+              cpc: parseFloat(row.cpc || '0'),
+              cpm: parseFloat(row.cpm || '0'),
+              reach: parseInt(row.reach || '0'),
+              frequency: parseFloat(row.frequency || '0'),
+              roas: spend > 0 ? purchaseValue / spend : 0,
+              view_content: viewContent,
+              initiate_checkout: initiateCheckout,
+              purchases,
+              purchase_value: purchaseValue,
+              cost_per_view_content: viewContent > 0 ? spend / viewContent : 0,
+              cost_per_initiate_checkout: initiateCheckout > 0 ? spend / initiateCheckout : 0,
+              cost_per_purchase: purchases > 0 ? spend / purchases : 0,
+              date_range_start: dateStart,
+              date_range_end: dateEnd,
+            };
+          });
+
+          if (adsRows.length > 0) {
+            const { error: insertError } = await adminSupabase.from('ads_data').insert(adsRows);
+            if (insertError) {
+              console.error(`[meta-sync] Failed to insert ads data for user ${userId}`);
+            } else {
+              adsCount = adsRows.length;
+            }
+          }
+        }
+      } catch (adsError) {
+        console.error(`[meta-sync] Ads sync error for user ${userId}`);
+        await adminSupabase.from('integration_logs').insert({
+          user_id: userId, provider: 'meta', event_type: 'api_error',
+          details: { error: (adsError as Error).message, endpoint: 'ads_sync' }
+        });
+      }
+    }
+
+    // Sync Instagram Data
+    if (integration.instagram_account_id) {
+      try {
+        const mediaUrl = `https://graph.facebook.com/v21.0/${integration.instagram_account_id}/media?fields=id,caption,media_type,permalink,timestamp,insights.metric(impressions,reach,engagement,saved,shares,plays)&limit=50&access_token=${accessToken}`;
+        const igResponse = await fetch(mediaUrl);
+        const igData = await igResponse.json();
+
+        if (igData.error) {
+          console.error(`[meta-sync] Instagram API error for user ${userId}: ${igData.error.message}`);
+          await adminSupabase.from('integration_logs').insert({
+            user_id: userId, provider: 'meta', event_type: 'api_error',
+            details: { error: igData.error.message, endpoint: 'instagram_media' }
+          });
+        } else if (igData.data) {
+          const igRows = igData.data.map((post: any) => {
+            const insights = post.insights?.data || [];
+            const getMetric = (name: string) => {
+              const m = insights.find((i: any) => i.name === name);
+              return m ? m.values?.[0]?.value || 0 : 0;
+            };
+
+            return {
+              user_id: userId,
+              post_id: post.id,
+              post_type: post.media_type?.toLowerCase() || 'unknown',
+              caption: post.caption || null,
+              permalink: post.permalink || null,
+              timestamp: post.timestamp || null,
+              impressions: getMetric('impressions'),
+              reach: getMetric('reach'),
+              engagement: getMetric('engagement'),
+              saves: getMetric('saved'),
+              shares: getMetric('shares'),
+              plays: getMetric('plays'),
+              likes: 0,
+              comments: 0,
+            };
+          });
+
+          if (igRows.length > 0) {
+            const { error: insertError } = await adminSupabase.from('instagram_data').insert(igRows);
+            if (insertError) {
+              console.error(`[meta-sync] Failed to insert IG data for user ${userId}`);
+            } else {
+              igCount = igRows.length;
+            }
+          }
+        }
+      } catch (igError) {
+        console.error(`[meta-sync] Instagram sync error for user ${userId}`);
+        await adminSupabase.from('integration_logs').insert({
+          user_id: userId, provider: 'meta', event_type: 'api_error',
+          details: { error: (igError as Error).message, endpoint: 'instagram_sync' }
+        });
+      }
+    }
+
+    // Update last_synced_at
+    await adminSupabase
+      .from('user_integrations')
+      .update({ last_synced_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('provider', 'meta');
+
+    // Log sync
+    await adminSupabase.from('integration_logs').insert({
+      user_id: userId, provider: 'meta', event_type: 'data_synced',
+      details: { ads_records: adsCount, ig_records: igCount }
+    });
+
+    console.log(`[meta-sync] Sync complete for user ${userId}: ${adsCount} ads, ${igCount} IG posts`);
+
+    return new Response(JSON.stringify({ success: true, ads_records: adsCount, ig_records: igCount }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error(`[meta-sync] Unexpected error:`, error.message);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+});

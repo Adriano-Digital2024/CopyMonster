@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      ads_data: {
+        Row: {
+          ad_creative_body: string | null
+          ad_creative_title: string | null
+          ad_id: string | null
+          ad_name: string | null
+          adset_id: string | null
+          adset_name: string | null
+          campaign_id: string | null
+          campaign_name: string | null
+          clicks: number | null
+          cost_per_initiate_checkout: number | null
+          cost_per_purchase: number | null
+          cost_per_view_content: number | null
+          cpc: number | null
+          cpm: number | null
+          created_at: string
+          ctr: number | null
+          date_range_end: string
+          date_range_start: string
+          frequency: number | null
+          id: string
+          impressions: number | null
+          initiate_checkout: number | null
+          purchase_value: number | null
+          purchases: number | null
+          reach: number | null
+          roas: number | null
+          spend: number | null
+          synced_at: string
+          user_id: string
+          view_content: number | null
+        }
+        Insert: {
+          ad_creative_body?: string | null
+          ad_creative_title?: string | null
+          ad_id?: string | null
+          ad_name?: string | null
+          adset_id?: string | null
+          adset_name?: string | null
+          campaign_id?: string | null
+          campaign_name?: string | null
+          clicks?: number | null
+          cost_per_initiate_checkout?: number | null
+          cost_per_purchase?: number | null
+          cost_per_view_content?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string
+          ctr?: number | null
+          date_range_end: string
+          date_range_start: string
+          frequency?: number | null
+          id?: string
+          impressions?: number | null
+          initiate_checkout?: number | null
+          purchase_value?: number | null
+          purchases?: number | null
+          reach?: number | null
+          roas?: number | null
+          spend?: number | null
+          synced_at?: string
+          user_id: string
+          view_content?: number | null
+        }
+        Update: {
+          ad_creative_body?: string | null
+          ad_creative_title?: string | null
+          ad_id?: string | null
+          ad_name?: string | null
+          adset_id?: string | null
+          adset_name?: string | null
+          campaign_id?: string | null
+          campaign_name?: string | null
+          clicks?: number | null
+          cost_per_initiate_checkout?: number | null
+          cost_per_purchase?: number | null
+          cost_per_view_content?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string
+          ctr?: number | null
+          date_range_end?: string
+          date_range_start?: string
+          frequency?: number | null
+          id?: string
+          impressions?: number | null
+          initiate_checkout?: number | null
+          purchase_value?: number | null
+          purchases?: number | null
+          reach?: number | null
+          roas?: number | null
+          spend?: number | null
+          synced_at?: string
+          user_id?: string
+          view_content?: number | null
+        }
+        Relationships: []
+      }
       agent_prompts: {
         Row: {
           agent_slug: string
@@ -547,6 +646,93 @@ export type Database = {
         }
         Relationships: []
       }
+      instagram_data: {
+        Row: {
+          caption: string | null
+          comments: number | null
+          created_at: string
+          engagement: number | null
+          id: string
+          impressions: number | null
+          likes: number | null
+          permalink: string | null
+          plays: number | null
+          post_id: string | null
+          post_type: string | null
+          reach: number | null
+          saves: number | null
+          shares: number | null
+          synced_at: string
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          comments?: number | null
+          created_at?: string
+          engagement?: number | null
+          id?: string
+          impressions?: number | null
+          likes?: number | null
+          permalink?: string | null
+          plays?: number | null
+          post_id?: string | null
+          post_type?: string | null
+          reach?: number | null
+          saves?: number | null
+          shares?: number | null
+          synced_at?: string
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          comments?: number | null
+          created_at?: string
+          engagement?: number | null
+          id?: string
+          impressions?: number | null
+          likes?: number | null
+          permalink?: string | null
+          plays?: number | null
+          post_id?: string | null
+          post_type?: string | null
+          reach?: number | null
+          saves?: number | null
+          shares?: number | null
+          synced_at?: string
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      integration_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          provider: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          provider?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          provider?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       knowledge_base: {
         Row: {
           category: string
@@ -882,6 +1068,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_integrations: {
+        Row: {
+          connected_at: string | null
+          created_at: string
+          disconnected_at: string | null
+          encrypted_access_token: string | null
+          encrypted_refresh_token: string | null
+          id: string
+          instagram_account_id: string | null
+          last_synced_at: string | null
+          meta_ad_account_id: string | null
+          meta_user_id: string | null
+          provider: string
+          scopes: string[] | null
+          status: string
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string
+          disconnected_at?: string | null
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
+          id?: string
+          instagram_account_id?: string | null
+          last_synced_at?: string | null
+          meta_ad_account_id?: string | null
+          meta_user_id?: string | null
+          provider?: string
+          scopes?: string[] | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string
+          disconnected_at?: string | null
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
+          id?: string
+          instagram_account_id?: string | null
+          last_synced_at?: string | null
+          meta_ad_account_id?: string | null
+          meta_user_id?: string | null
+          provider?: string
+          scopes?: string[] | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           action_url: string | null
@@ -962,6 +1205,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_decrypted_token: {
+        Args: {
+          p_encryption_key: string
+          p_provider: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -971,6 +1222,20 @@ export type Database = {
       }
       promote_user_to_admin: {
         Args: { user_email: string }
+        Returns: undefined
+      }
+      upsert_user_integration: {
+        Args: {
+          p_access_token: string
+          p_encryption_key: string
+          p_instagram_account_id: string
+          p_meta_ad_account_id: string
+          p_meta_user_id: string
+          p_provider: string
+          p_scopes: string[]
+          p_token_expires_at: string
+          p_user_id: string
+        }
         Returns: undefined
       }
     }

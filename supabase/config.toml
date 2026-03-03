@@ -14,3 +14,12 @@ verify_jwt = false
 
 [functions.admin-users]
 verify_jwt = false
+
+[functions.meta-oauth]
+verify_jwt = false
+
+[functions.meta-disconnect]
+verify_jwt = false
+
+[functions.meta-sync]
+verify_jwt = false
