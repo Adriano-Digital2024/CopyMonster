@@ -25,6 +25,7 @@ import Positioning from "./pages/dashboard/Positioning";
 import Campaigns from "./pages/dashboard/Campaigns";
 import CopyResults from "./pages/dashboard/CopyResults";
 import Library from "./pages/dashboard/Library";
+import DnaUpdates from "./pages/dashboard/DnaUpdates";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminAnalytics from "./pages/admin/Analytics";
@@ -82,6 +83,7 @@ const App = () => (
                   <Route path="/dashboard/campaigns" element={<Campaigns />} />
                   <Route path="/dashboard/copy-results" element={<CopyResults />} />
                   <Route path="/dashboard/library" element={<Library />} />
+                  <Route path="/dashboard/positioning/updates" element={<DnaUpdates />} />
                 </Route>
                 {/* Admin - Protected + Admin Required */}
                 <Route element={<ProtectedRoute requireAdmin />}>
