@@ -11,6 +11,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { useDnaGuard } from '@/hooks/useDnaGuard';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
+import { useDnaVersions } from '@/hooks/useDnaVersions';
+import { DnaVersionSelector, DnaVersionBadge } from '@/components/positioning/DnaVersionSelector';
 import {
   Dialog,
   DialogContent,
@@ -52,6 +54,9 @@ export default function AgentChat() {
   const [showDnaSelector, setShowDnaSelector] = useState(false);
   const { hasDna, dnaList, isLoading: dnaLoading } = useDnaGuard();
   const { trackLead } = useMetaPixel();
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+  const [showVersionSelector, setShowVersionSelector] = useState(false);
+  const { versions } = useDnaVersions(selectedDnaId);
 
   useEffect(() => {
     if (slug) {
@@ -165,10 +170,17 @@ export default function AgentChat() {
             <p className="text-sm text-muted-foreground">{agent.description}</p>
           </div>
           {selectedDnaId && (
-            <Badge variant="secondary" className="gap-1.5 cursor-pointer" onClick={() => dnaList.length > 1 && setShowDnaSelector(true)}>
-              <Info className="h-3 w-3" />
-              {t('dna.contextLoaded')}
-            </Badge>
+            <>
+              <Badge variant="secondary" className="gap-1.5 cursor-pointer" onClick={() => dnaList.length > 1 && setShowDnaSelector(true)}>
+                <Info className="h-3 w-3" />
+                {t('dna.contextLoaded')}
+              </Badge>
+              <DnaVersionBadge
+                versions={versions}
+                selectedVersionId={selectedVersionId}
+                onClick={() => setShowVersionSelector(true)}
+              />
+            </>
           )}
         </div>
 
@@ -212,6 +224,15 @@ export default function AgentChat() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* DNA Version Selector Dialog */}
+      <DnaVersionSelector
+        versions={versions}
+        selectedVersionId={selectedVersionId}
+        onSelectVersion={setSelectedVersionId}
+        open={showVersionSelector}
+        onOpenChange={setShowVersionSelector}
+      />
     </DashboardLayout>
   );
 }
