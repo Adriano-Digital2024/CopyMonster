@@ -9,75 +9,64 @@
 
 ---
 
-## Analysis: Blog Posts Monster — Premium Quality Refinement
+## Analysis: Carousel Monster — Premium Quality Refinement
 
-### Current State Assessment
+### Current State
 
-The `blog-posts` agent exists with a functional but shallow configuration:
-
-- **system_prompt**: Clean, correct formatting rules, but lacks DNA cross-referencing, infoproduct positioning, and content depth instructions
-- **role_definition**: Generic SEO focus, no infoproduct specialization
-- **core_function**: Basic — asks the agent to understand topic/keyword before writing, but no depth guidance
-- **output_structure**: Flat template (Title, Meta Description, Introduction, Sections 1-3, Conclusion) — too rigid and generic for long-form authority content
-- **quality_rules**: Good formatting rules already in place, correct language enforcement
+- **system_prompt**: Functional but lacks DNA cross-referencing, per-slide word discipline, and platform awareness
+- **role_definition**: One line — "World-class carousel post specialist"
+- **core_function**: One line — generic
+- **output_structure**: Includes hashtag suggestions and alternative titles (useful), but flat format with no per-slide visual guidance
+- **quality_rules**: Standard formatting rules, correct
 - **few_shot_examples**: Empty array — major gap
-- **expected_inputs**: Adequate but overly rigid
-- **Model**: temp 0.70, max_tokens 4096, min_words 100, max_words 2000
+- **Model**: temp 0.80, max_tokens 3000, min_words 200, max_words 800
 
-### What the Suggestion Improves (Worth Adopting)
+### Worth Adopting
 
-1. **DNA cross-referencing in system_prompt** — Currently absent. Explicit instruction to extract avatar pain, desire, and objections from loaded DNA context will make every article personalized and strategic. High value.
+1. **DNA cross-referencing** — Explicit instruction to extract avatar pain, desire, and unique angle from loaded DNA context. Currently absent. High value.
 
-2. **Infoproduct positioning guidance** — Current prompt has no awareness that articles should subtly drive toward the expert's paid offerings. Adding this instruction transforms generic blog posts into strategic content marketing. High value.
+2. **Persuasive slide flow model** — The suggestion defines a clear narrative arc (Hook → Problem → Value slides → Authority → CTA) with explicit purpose per slide position. Current prompt mentions this loosely but the suggestion makes it structural. High value.
 
-3. **Flexible output structure** — Current structure is a rigid 3-section template. The suggestion allows dynamic subheadings based on topic depth, which produces more natural, authoritative articles. High value.
+3. **Per-slide conciseness instruction** — Carousel slides must be scannable. Adding explicit guidance (max ~50 words per slide, one idea per slide) improves output quality. Currently absent. Medium-high value.
 
-4. **Few-shot examples** — Empty array is the biggest quality gap. Adding 3 examples (PT educational article, EN objection-breaking article, ES listicle format) will dramatically improve output consistency and depth. Highest impact change.
+4. **Visual suggestion per slide** — Brief design notes alongside copy help users go straight to design. The suggestion includes this; current prompt does not. Medium-high value.
 
-5. **Content depth instructions** — Current prompt says nothing about minimum depth, storytelling, case studies, or counter-arguments. The suggestion adds concrete quality expectations. High value.
+5. **Few-shot examples** — Empty array is the biggest gap. Adding 3 examples (PT 7-slide launch errors, EN 5-slide copy tips, ES 6-slide productivity habits) will dramatically improve consistency. Highest impact.
 
-6. **CTA integration guidance** — Current prompt has no instruction about concluding with a strategic call-to-action leading to the expert's offer. Medium-high value.
+6. **Infoproduct positioning** — Instruction to subtly connect educational content to the expert's paid solution in a strategic slide. Currently absent. Medium value.
 
-7. **max_words increase to 4500** — Current 2000 is too low for authority long-form content. The suggestion's 4500 ceiling matches the agent's purpose. Worth adopting.
+### Discard
 
-### What to Discard (No Real Value or Risk)
-
-1. **Model recommendation (Claude/GPT-4)** — Model is configured via admin panel. Irrelevant to prompt content. Discard.
-
-2. **Temperature change to 0.6** — Current 0.7 is appropriate for blog content that needs both creativity and structure. No change.
-
-3. **max_tokens increase to 6000** — Current 4096 is adequate for the model in use. No change.
-
-4. **presence_penalty/frequency_penalty** — Current values work fine. No change.
-
-5. **"15 years experience" backstory** — Excessive persona detail. Discard.
-
-6. **Markdown headers in output_structure** — The suggestion uses `#` and `##` which violates the production formatting standard. Must use plain text labels only.
-
-7. **Meta Description in output** — The current output_structure includes it, which is useful. Keep it but integrate into the improved structure.
+1. **Model recommendation (Claude/GPT-4)** — Admin panel concern. Discard.
+2. **Temperature change to 0.7** — Current 0.8 is fine for creative social content. No change.
+3. **max_tokens reduction to 1500** — Current 3000 is adequate. No change.
+4. **presence_penalty/frequency_penalty** — No change.
+5. **"7 years experience" backstory** — Excessive persona detail. Discard.
+6. **Markdown headers in output_structure** — The suggestion uses `#` and `##` which violates production formatting standard. Must use plain text labels.
+7. **Hashtag removal** — Current output_structure includes hashtag suggestions which are useful for social posts. Keep them.
 
 ### Implementation Plan
 
-**Single SQL migration** updating 6 fields on `blog-posts`:
+**Single SQL migration** updating 5 fields on `carousel-monster`:
 
 **1. system_prompt** — Enhanced with:
-- Explicit DNA cross-referencing instruction (extract avatar pain, desire, objections, unique value from loaded context)
-- Infoproduct positioning guidance (subtly lead toward expert's paid solution)
-- Content depth requirements (storytelling, examples, data, counter-arguments)
-- Maintained absolute formatting rules (already correct)
+- DNA cross-referencing instruction (extract avatar pain, desire, objections, unique angle)
+- Persuasive slide flow model (Hook → Problem → Value → Authority → CTA)
+- Per-slide conciseness rule (one idea per slide, max ~50 words)
+- Visual suggestion instruction (brief design note per slide)
+- Infoproduct positioning guidance (connect content to expert's offer in strategic slide)
+- Maintained formatting rules
 
-**2. role_definition** — Expanded to include infoproduct content marketing specialization and authority-building expertise
+**2. role_definition** — Expanded to include carousel storytelling mastery, platform expertise (Instagram/LinkedIn/Facebook), and infoproduct content specialization
 
-**3. core_function** — Specify deliverables: authority articles that educate, break objections, and naturally lead to conversion, built from minimal briefing plus DNA
+**3. core_function** — Specify deliverables: slide-by-slide copy with visual suggestions, narrative arc, caption, hashtags, and title variations — built from minimal briefing plus DNA
 
-**4. output_structure** — Restructured to support dynamic depth: Title, Meta Description, Opening paragraph, multiple content sections (flexible number), Conclusion with strategic CTA — all plain text labels
+**4. output_structure** — Restructured to show per-slide blocks (slide number, title/purpose, copy text, visual suggestion) followed by caption, hashtags, and title variations — all plain text labels
 
 **5. few_shot_examples** — Add 3 examples:
-- Portuguese: Educational article about content production systems for infoproduct creators (~800 words condensed)
-- English: Objection-breaking article about high-ticket mentorship pricing (~800 words condensed)
-- Spanish: Listicle about launch mistakes with CTA to a course (~600 words condensed)
-
-**6. max_words** — Increase from 2000 to 4500 to match the agent's long-form purpose
+- Portuguese: 7-slide carousel about launch mistakes (educational + authority)
+- English: 5-slide carousel about copy tips (authority + engagement)
+- Spanish: 6-slide carousel about morning productivity habits (inspiration + authority)
 
 ### What Will NOT Change
 
@@ -85,11 +74,11 @@ The `blog-posts` agent exists with a functional but shallow configuration:
 - No schema changes
 - No i18n file changes
 - No edge function changes
-- No model or temperature changes
+- No model, temperature, or parameter changes
 - No new dependencies
+- min_words/max_words remain 200/800
 - Language detection remains automatic via chat-stream
-- Formatting rules enforced by existing quality_rules and getUniversalLanguageRules()
-- min_words stays at 100 (allows short posts when requested)
+- Hashtag suggestions and title variations preserved in output
 
 ### Technical Details
 
@@ -102,10 +91,9 @@ Database update:
     role_definition = '...',
     core_function = '...',
     output_structure = '...',
-    few_shot_examples = '[...]'::jsonb,
-    max_words = 4500
-  WHERE slug = 'blog-posts';
+    few_shot_examples = '[...]'::jsonb
+  WHERE slug = 'carousel-monster';
 ```
 
-Few-shot examples stored as JSON array matching the existing `{input, output}` structure. All output_structure text uses plain labels without markdown headers, asterisks, or emojis — consistent with the production formatting standard.
+Few-shot examples stored as JSON array matching the existing `{input, output}` structure. All output uses plain labels without markdown headers, asterisks, or emojis.
 
