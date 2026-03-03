@@ -387,6 +387,106 @@ export type Database = {
         }
         Relationships: []
       }
+      dna_update_suggestions: {
+        Row: {
+          block_key: string
+          created_at: string
+          current_value: string | null
+          data_source: string
+          id: string
+          impact_estimate: string
+          justification: string
+          mapping_id: string
+          status: string
+          suggested_value: string
+          user_id: string
+        }
+        Insert: {
+          block_key: string
+          created_at?: string
+          current_value?: string | null
+          data_source?: string
+          id?: string
+          impact_estimate?: string
+          justification: string
+          mapping_id: string
+          status?: string
+          suggested_value: string
+          user_id: string
+        }
+        Update: {
+          block_key?: string
+          created_at?: string
+          current_value?: string | null
+          data_source?: string
+          id?: string
+          impact_estimate?: string
+          justification?: string
+          mapping_id?: string
+          status?: string
+          suggested_value?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dna_update_suggestions_mapping_id_fkey"
+            columns: ["mapping_id"]
+            isOneToOne: false
+            referencedRelation: "positioning_mappings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dna_versions: {
+        Row: {
+          blocks: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          mapping_id: string
+          notes: string | null
+          source: string
+          updated_at: string
+          user_id: string
+          version_label: string
+          version_type: string
+        }
+        Insert: {
+          blocks?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          mapping_id: string
+          notes?: string | null
+          source?: string
+          updated_at?: string
+          user_id: string
+          version_label?: string
+          version_type?: string
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          mapping_id?: string
+          notes?: string | null
+          source?: string
+          updated_at?: string
+          user_id?: string
+          version_label?: string
+          version_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dna_versions_mapping_id_fkey"
+            columns: ["mapping_id"]
+            isOneToOne: false
+            referencedRelation: "positioning_mappings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       headlines: {
         Row: {
           category: string | null
@@ -598,6 +698,7 @@ export type Database = {
           document: string | null
           id: string
           is_edited: boolean
+          language: string | null
           status: string
           title: string
           updated_at: string
@@ -622,6 +723,7 @@ export type Database = {
           document?: string | null
           id?: string
           is_edited?: boolean
+          language?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -646,6 +748,7 @@ export type Database = {
           document?: string | null
           id?: string
           is_edited?: boolean
+          language?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -775,6 +878,42 @@ export type Database = {
           input_tokens?: number | null
           model_used?: string | null
           output_tokens?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          message_key: string
+          message_params: Json | null
+          title_key: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_key: string
+          message_params?: Json | null
+          title_key: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message_key?: string
+          message_params?: Json | null
+          title_key?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
