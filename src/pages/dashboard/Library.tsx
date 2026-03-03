@@ -13,7 +13,8 @@ import {
   Calendar,
   MoreVertical,
   Edit2,
-  Pencil
+  Pencil,
+  GitBranch
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -269,6 +270,28 @@ export default function Library() {
             </Button>
           </div>
         </div>
+
+        {/* DNA Updates Banner - only show when there are completed mappings */}
+        {completedMappings.length > 0 && (
+          <Card 
+            className="p-4 flex items-center justify-between cursor-pointer hover:shadow-md transition-all border-primary/20 bg-primary/5"
+            onClick={() => navigate('/dashboard/library/updates')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-primary/10">
+                <GitBranch className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">{t('dashboard.menu.dnaUpdates', 'Atualizações & Evolução do DNA')}</h3>
+                <p className="text-sm text-muted-foreground">{t('library.dnaUpdatesDesc', 'Gerencie versões e sugestões de evolução do seu DNA de marca')}</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="gap-2">
+              <GitBranch className="h-4 w-4" />
+              {t('library.view', 'Visualizar')}
+            </Button>
+          </Card>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

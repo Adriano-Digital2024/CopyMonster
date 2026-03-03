@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Users, CreditCard, Trophy, Settings, LogOut, Menu, Loader2, Target, Rocket, FileText, Book, GitBranch } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Trophy, Settings, LogOut, Menu, Loader2, Target, Rocket, FileText, Book } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -73,7 +73,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const menuItems = [
     { icon: Target, label: t('dashboard.menu.positioning'), path: '/dashboard/positioning', highlight: true },
-    { icon: GitBranch, label: t('dashboard.menu.dnaUpdates'), path: '/dashboard/positioning/updates' },
+    
     { icon: LayoutDashboard, label: t('dashboard.menu.overview'), path: '/dashboard' },
     { icon: Users, label: t('dashboard.menu.agents'), path: '/dashboard/agents' },
     { icon: Rocket, label: t('dashboard.menu.campaigns'), path: '/dashboard/campaigns' },

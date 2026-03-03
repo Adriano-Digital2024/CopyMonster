@@ -83,7 +83,7 @@ const App = () => (
                   <Route path="/dashboard/campaigns" element={<Campaigns />} />
                   <Route path="/dashboard/copy-results" element={<CopyResults />} />
                   <Route path="/dashboard/library" element={<Library />} />
-                  <Route path="/dashboard/positioning/updates" element={<DnaUpdates />} />
+                  <Route path="/dashboard/library/updates" element={<DnaUpdates />} />
                 </Route>
                 {/* Admin - Protected + Admin Required */}
                 <Route element={<ProtectedRoute requireAdmin />}>
