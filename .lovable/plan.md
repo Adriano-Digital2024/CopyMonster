@@ -1,107 +1,239 @@
 
 
-## Confirmations
+## Analysis: DNA Intelligence + Meta Ads Integration — Strategic Implementation Plan
 
-- All system prompts will remain in English.
-- Few-shot examples in multiple languages will not interfere with automatic language detection.
-- Final outputs will always match the detected user language (EN/PT/ES).
-- No changes will be made to language detection logic.
+This is an extremely large and complex feature set. To maintain stability and avoid breaking anything in production, this must be implemented in carefully sequenced phases. Below is the full plan.
 
 ---
 
-## Analysis: Landing Pages Monster — Premium Quality Refinement
+### Phase 1: DNA Versioning System (Database + Backend)
 
-### Current State (slug: `landing-pages`)
+**New tables:**
 
-- **system_prompt** (~780 chars): Functional with language detection, formatting rules, and vague-input handling — but no DNA cross-referencing, no infoproduct focus, no structured section flow
-- **role_definition** (~310 chars): Good foundation — mentions persuasion psychology and buyer awareness levels
-- **core_function** (~260 chars): Basic — asks clarifying questions if info missing, but no DNA dependency, no briefing-based adaptation, no goal differentiation
-- **output_structure**: 7 sections (Headline, Subheadline, Hero, Benefits, Social Proof, CTA, FAQ) — missing Problem Agitation, Offer Details, Guarantee, Objection Handling, P.S., and Urgency sections
-- **quality_rules**: Strong formatting prohibition rules already in place — well done
-- **few_shot_examples**: Empty array — major gap
-- **Parameters**: temp 0.70, max_tokens 4096, min_words 100, max_words 2000
+1. **`dna_versions`** — Stores versioned snapshots of DNA projects
+   - `id` (uuid, PK)
+   - `mapping_id` (uuid, FK → positioning_mappings.id)
+   - `user_id` (uuid, NOT NULL)
+   - `version_label` (text, e.g., "1.0", "1.1")
+   - `version_type` (text: "original", "market_update", "experimental")
+   - `source` (text: "manual", "intelligence_suggestion")
+   - `blocks` (jsonb — snapshot of all 12 block values)
+   - `is_active` (boolean, default false)
+   - `notes` (text, nullable)
+   - `created_at`, `updated_at`
+   - RLS: users own rows, admins see all
 
-### Worth Adopting
+2. **`dna_update_suggestions`** — Intelligence-generated suggestions
+   - `id` (uuid, PK)
+   - `mapping_id` (uuid, FK → positioning_mappings.id)
+   - `user_id` (uuid)
+   - `block_key` (text, e.g., "block_8_objections")
+   - `current_value` (text)
+   - `suggested_value` (text)
+   - `justification` (text)
+   - `impact_estimate` (text: "low", "medium", "high")
+   - `data_source` (text: "meta_ads", "instagram", "market_analysis")
+   - `status` (text: "pending", "applied", "dismissed")
+   - `created_at`
+   - RLS: users own rows, admins see all
 
-1. **DNA cross-referencing** — Explicit instruction to extract avatar pain, desire, objections, and proof from loaded DNA context. Currently absent. High value.
+3. **Add `language` column** to `positioning_mappings` — Stores the language the DNA was created in (pt-BR, en, es), detected from conversation.
 
-2. **11-section landing page structure** — Current 7-section structure misses critical conversion elements: Problem Agitation, Offer/Solution Details, Objection Handling, Guarantee/Risk Reversal, Urgency/Scarcity, and P.S. The suggested structure follows the standard high-converting landing page format. High value.
+**Block classification** (no schema change needed — handled in code):
+- Structural (immutable by system): blocks 1 (audience), 3 (solution), 4 (differentiators), 9 (emotional_connection), 10 (transformation), 11 (voice)
+- Adaptive (can receive suggestions): blocks 2 (pain_points), 5 (awareness_stage), 6 (urgency), 7 (social_proof), 8 (objections), 12 (promises)
 
-3. **Goal differentiation** — Landing pages serve different goals (direct sale, lead capture, webinar registration, waitlist). Current prompt treats all pages the same. The suggestion adds goal-aware adaptation. Medium-high value.
+**Agent chat modification:** When selecting a DNA for copy generation, user can choose which version to use. The `chat-stream` edge function will accept an optional `dna_version_id` parameter and load blocks from `dna_versions` instead of `positioning_mappings` when provided.
 
-4. **Infoproduct positioning** — Explicit focus on courses, mentorships, workshops, e-books. Currently generic. Medium value.
+---
 
-5. **Few-shot examples** — Empty array is the biggest gap. Adding 3 examples (PT direct sale mentorship, EN direct sale copywriting course, ES direct sale workshop) will dramatically improve consistency. Highest impact.
+### Phase 2: Meta Ads Integration (OAuth + Backend)
 
-6. **P.S. closing section** — Standard landing page closer that reinforces urgency or main benefit. Currently missing. Medium value.
+**New tables:**
 
-7. **min_words/max_words adjustment** — Current 100/2000 is too low for complete landing pages. Suggestion proposes 800/3500 which better reflects actual landing page lengths. High value.
+4. **`user_integrations`** — Stores OAuth connections
+   - `id` (uuid, PK)
+   - `user_id` (uuid)
+   - `provider` (text: "meta_ads", "instagram")
+   - `access_token_encrypted` (text) — encrypted via `pgcrypto`
+   - `refresh_token_encrypted` (text, nullable)
+   - `token_expires_at` (timestamptz)
+   - `scopes` (text[])
+   - `provider_user_id` (text)
+   - `provider_account_name` (text, nullable)
+   - `status` (text: "active", "expired", "revoked")
+   - `created_at`, `updated_at`
+   - RLS: users own rows, admins see all
 
-### Discard
+5. **`integration_logs`** — Audit trail
+   - `id` (uuid, PK)
+   - `user_id` (uuid)
+   - `provider` (text)
+   - `event_type` (text: "connected", "disconnected", "token_refreshed", "api_error", "data_synced")
+   - `details` (jsonb, nullable)
+   - `created_at`
+   - RLS: users own rows, admins see all
 
-1. **Model recommendation (Claude/GPT-4)** — Admin panel concern. Discard.
-2. **Temperature change to 0.6** — Current 0.70 is appropriate for creative landing page copy. No change.
-3. **max_tokens change to 4000** — Current 4096 is essentially the same. No change.
-4. **presence_penalty/frequency_penalty** — Not applicable to current architecture. Discard.
-5. **"10 years experience" backstory** — Excessive persona detail. Discard.
-6. **Markdown headers (#, ##) in output structure** — Suggestion uses `# [Headline]` and `## [Subheadline]`. Must use plain text labels consistent with production standard. Discard format, adopt structure.
-7. **Bold markers in output** — Suggestion uses `**Apresente a solução**`. Must remain plain text per existing quality_rules. Discard.
+6. **`ads_data`** — Cached Meta Ads metrics
+   - `id` (uuid, PK)
+   - `user_id` (uuid)
+   - `integration_id` (uuid, FK → user_integrations.id)
+   - `campaign_name` (text)
+   - `ad_name` (text, nullable)
+   - `ctr` (numeric, nullable)
+   - `roas` (numeric, nullable)
+   - `spend` (numeric, nullable)
+   - `impressions` (integer, nullable)
+   - `clicks` (integer, nullable)
+   - `conversions` (integer, nullable)
+   - `ad_copy` (text, nullable)
+   - `creative_type` (text, nullable)
+   - `date_range_start` (date)
+   - `date_range_end` (date)
+   - `raw_data` (jsonb)
+   - `synced_at` (timestamptz)
+   - `created_at`
+   - RLS: users own rows, admins see all
 
-### Implementation Plan
+7. **`instagram_data`** — Cached Instagram metrics
+   - `id` (uuid, PK)
+   - `user_id` (uuid)
+   - `integration_id` (uuid, FK → user_integrations.id)
+   - `post_id` (text)
+   - `post_type` (text: "image", "video", "carousel", "reel", "story")
+   - `caption` (text, nullable)
+   - `engagement_rate` (numeric, nullable)
+   - `likes` (integer, nullable)
+   - `comments` (integer, nullable)
+   - `saves` (integer, nullable)
+   - `shares` (integer, nullable)
+   - `reach` (integer, nullable)
+   - `raw_data` (jsonb)
+   - `synced_at` (timestamptz)
+   - `created_at`
+   - RLS: users own rows, admins see all
 
-**Single data update** modifying 6 fields on `landing-pages`:
+**New edge functions:**
 
-**1. system_prompt** — Enhanced with:
-- DNA cross-referencing instruction (extract avatar pain, desire, objections, proof from loaded context)
-- 11-section landing page structure (Headline → Subheadline → Problem Agitation → Solution/Offer → Benefits → Social Proof → Objection Handling → Guarantee → CTA → Urgency → P.S.)
-- Goal-aware adaptation (direct sale, lead capture, webinar registration)
-- Infoproduct positioning
-- All existing formatting prohibitions preserved
+- **`meta-oauth`** — Handles OAuth flow (initiate + callback), stores encrypted tokens
+- **`meta-sync`** — Fetches ads/Instagram data from Meta Graph API, stores in `ads_data`/`instagram_data`
+- **`meta-disconnect`** — Revokes token, updates integration status
+- **`dna-intelligence`** — Analyzes cached data, generates suggestions in `dna_update_suggestions`
 
-**2. role_definition** — Refined to emphasize conversion-focused landing page mastery for infoproducts, understanding of buyer awareness levels, and multi-goal page strategies
+**Security requirements:**
+- All tokens encrypted at rest using `pgcrypto` extension
+- OAuth flow entirely backend (edge functions), no tokens in frontend
+- Token refresh handled automatically by `meta-sync`
+- Minimum permissions: `ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`
+- User can disconnect at any time
 
-**3. core_function** — Specify deliverables: complete landing page copy with all 11 sections, adapted by goal (sale, lead capture, registration), built from minimal briefing (offer name, goal, optional angle) plus DNA
+**New secrets needed:**
+- `META_APP_ID` — Meta App ID
+- `META_APP_SECRET` — Meta App Secret
+- `ENCRYPTION_KEY` — For token encryption
 
-**4. output_structure** — Enhanced to include all 11 sections with plain text labels:
-- Headline, Subheadline, Problem Agitation, Solution/Offer, Benefits List, Social Proof, Objection Handling, Guarantee, CTA, Urgency/Scarcity, P.S.
+---
 
-**5. few_shot_examples** — Add 3 examples:
-- Portuguese: Direct sale landing page for "Mentoria Lançamentos 360"
-- English: Direct sale landing page for "High-Converting Copy Course"
-- Spanish: Direct sale landing page for "Workshop Productividad 10x"
+### Phase 3: Notification System
 
-**6. min_words/max_words** — Adjust from 100/2000 to 800/3500 to match actual landing page output requirements
+8. **`user_notifications`** table
+   - `id` (uuid, PK)
+   - `user_id` (uuid)
+   - `type` (text: "dna_update", "integration_status", "system")
+   - `title_key` (text — i18n key)
+   - `message_key` (text — i18n key)
+   - `message_params` (jsonb, nullable — for i18n interpolation)
+   - `action_url` (text, nullable)
+   - `is_read` (boolean, default false)
+   - `created_at`
+   - RLS: users own rows
+
+Frontend: Notification bell icon in dashboard header, dropdown with unread count.
+
+---
+
+### Phase 4: New Dashboard Pages (Frontend)
+
+All pages use `DashboardLayout`, follow existing i18n patterns, and are protected routes.
+
+1. **DNA Updates & Evolution** (`/dashboard/positioning/updates`)
+   - Shows pending suggestions from `dna_update_suggestions`
+   - Side-by-side comparison: current vs suggested
+   - Apply (creates new version) or Dismiss buttons
+   - Version history timeline
+
+2. **DNA Version Selector** (component within agent chat flow)
+   - When user launches an agent, if their selected DNA has multiple versions, show version picker
+   - Default: active version
+
+3. **Performance Overview** (`/dashboard/performance-overview`)
+   - Consolidated metrics from Meta Ads + Instagram
+   - Charts using Recharts (already installed)
+
+4. **Ads Intelligence** (`/dashboard/ads-intelligence`)
+   - Meta Ads data visualization
+   - Top performing ads, CTR trends, ROAS analysis
+
+5. **Market Radar** (`/dashboard/market-radar`)
+   - Trend detection from collected data
+   - Language/hook analysis from Instagram captions
+
+6. **Integration Settings** (new tab in `/dashboard/settings`)
+   - Connect/Disconnect Meta Ads
+   - Connection status indicator
+   - Last sync timestamp
+
+**New menu items** added to `DashboardLayout` sidebar.
+
+**i18n:** All new strings added to `src/i18n/config.ts` under all 3 languages (en, pt, es).
+
+---
+
+### Phase 5: Plan-Based Limits
+
+- Version creation follows DNA limits (versions are unlimited within a DNA project — they don't count as new DNAs)
+- Integration access gated by plan: Free/Starter cannot connect Meta (Pro+ only)
+- Market Radar page gated by plan (Legend only, or Pro+ depending on strategy)
+
+---
+
+### Implementation Order
+
+This is too large for a single implementation cycle. Recommended phased approach:
+
+**Sprint 1:** Database schema (all new tables) + DNA versioning backend + version selector UI
+**Sprint 2:** Meta OAuth edge functions + Integration settings UI + token management
+**Sprint 3:** Data sync edge functions + Ads Intelligence + Performance Overview pages
+**Sprint 4:** DNA Intelligence Engine + Suggestions UI + Notification system
+**Sprint 5:** Market Radar + Instagram analysis + Polish
+
+---
 
 ### What Will NOT Change
 
-- No frontend/UI changes
-- No schema changes
-- No i18n file changes
-- No edge function changes
-- No model changes
-- No new dependencies
-- max_tokens remains 4096
-- temperature remains 0.70
-- Language detection remains automatic via chat-stream
-- quality_rules field preserved as-is (already strong)
-- Existing formatting prohibitions fully preserved
+- Existing routes, pages, and components remain untouched
+- Current `positioning_mappings` table structure preserved
+- `chat-stream` edge function extended (not rewritten)
+- Authentication, Stripe, admin panel unchanged
+- Current i18n structure extended (not modified)
+- UI theme, colors, typography unchanged
+- All 29 agents continue working identically
+- DNA enforcement logic preserved
+
+---
 
 ### Technical Details
 
 ```text
-Files changed: 0 (data update only via insert tool)
-
-Database update:
-  UPDATE agents SET
-    system_prompt = '...',
-    role_definition = '...',
-    core_function = '...',
-    output_structure = '...',
-    few_shot_examples = '[...]'::jsonb,
-    min_words = 800,
-    max_words = 3500
-  WHERE slug = 'landing-pages';
+New database tables: 8
+New edge functions: 4
+New dashboard pages: 4-5
+New dashboard components: ~10
+i18n keys added: ~150 (across 3 languages)
+New secrets required: 3 (META_APP_ID, META_APP_SECRET, ENCRYPTION_KEY)
 ```
 
-Few-shot examples stored as JSON array matching the existing `{input, output}` structure. All output uses plain text without markdown headers, bold markers, emojis, or decorative elements — consistent with production formatting standard and existing quality_rules.
+### Recommendation
+
+Due to the scope, I recommend starting with **Sprint 1 (DNA Versioning)** as it delivers immediate value with zero external dependencies, and builds the foundation for everything else. Shall I proceed with Sprint 1?
 
