@@ -1,188 +1,253 @@
-## Sprint 3 — Gap Analysis & Checklist
+## Sprint 4 — DNA Intelligence Engine: Implementation Plan
 
-After thorough review of the codebase, database schema, and existing implementations, here is what **already exists** vs **what's missing** for Sprint 3.
+### What Already Exists
 
----
+- `ads_data` table with creative body/title, funnel metrics (ViewContent, InitiateCheckout, Purchase, ROAS, CTR, CPA)
+- `instagram_data` table with engagement metrics
+- `dna_update_suggestions` table with block_key, justification, impact_estimate, status
+- `dna_versions` table with jsonb block snapshots, version_type, source
+- `user_notifications` table with i18n title/message keys
+- `NotificationBell` component in dashboard header
+- Block classification system (`STRUCTURAL_BLOCKS` / `ADAPTIVE_BLOCKS` in `dna-block-config.ts`)
+- `useDnaGuard` with version limit enforcement
+- `DnaUpdates` page with apply/dismiss/revert flows
+- Ads Intelligence, Performance Overview, Market Radar pages (data visualization only, no intelligence)
+- `meta-sync` edge function with creative data fetching
 
-### Already Implemented (from previous sprints)
+### What's Missing for Sprint 4
 
+**Nothing exists yet for:**
 
-| Item                                                                                                                                             | Status |
-| ------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| `dna_versions` table with `version_label`, `version_type`, `source`, `blocks` (jsonb snapshot), `is_active`                                      | Done   |
-| `dna_update_suggestions` table with `block_key`, `current_value`, `suggested_value`, `justification`, `impact_estimate`, `data_source`, `status` | Done   |
-| RLS on both tables (user isolation + admin access)                                                                                               | Done   |
-| `useDnaVersions` hook (fetch, active version tracking)                                                                                           | Done   |
-| `useDnaGuard` hook with DNA limits per plan (free:1, starter:1, pro:10, legend:50)                                                               | Done   |
-| `DnaVersionSelector` component (select version in dialog)                                                                                        | Done   |
-| `DnaVersionBadge` component                                                                                                                      | Done   |
-| `DnaUpdates` page at `/dashboard/library/updates` (view suggestions, apply as new version, dismiss, version history)                             | Done   |
-| DNA Updates banner in Library page                                                                                                               | Done   |
-| Route `/dashboard/library/updates` registered in App.tsx                                                                                         | Done   |
-| i18n keys for versions, suggestions, updates (PT/EN/ES)                                                                                          | Done   |
-| `user_notifications` table with `title_key`, `message_key`, `action_url`                                                                         | Done   |
-
-
----
-
-### What's Missing (Sprint 3 Gaps)
-
-#### 1. Structural vs Adaptive Block Classification — MISSING
-
-No `block_category` metadata exists anywhere. The 12 blocks are not classified as structural or adaptive in the database or code. The document describes which blocks are which, but this separation is not persisted or enforced.
-
-**Needed:**
-
-- Create a config/constant defining which blocks are structural (immutable) vs adaptive (evolutive)
-- Enforce in `dna_update_suggestions` that only adaptive blocks can receive suggestions
-- Enforce in the `DnaUpdates` UI that structural blocks cannot be modified via suggestions
-
-#### 2. Version Limits per Plan — MISSING
-
-`useDnaGuard` enforces DNA count limits but there are **no version count limits**. The spec requires: Starter: 50 versions/DNA, Pro: 500, Legend: 1000.
-
-**Needed:**
-
-- Add `VERSION_LIMITS` constant alongside `DNA_LIMITS`
-- Check version count before creating new versions in `DnaUpdates` and any version-creation flow
-- Backend enforcement (ideally a DB function or check in edge functions)
-
-#### 3. `dna_update_suggestions` missing `language` column — MISSING
-
-The spec requires suggestions to respect the DNA's original language. The table lacks a `language` column.
-
-**Needed:**
-
-- Migration to add `language` column to `dna_update_suggestions`
-
-#### 4. New Pages — MISSING
-
-These pages do not exist:
-
-- `/dashboard/ads-intelligence` — Ads Intelligence (structured visualization of collected ad data)
-- `/dashboard/performance-overview` — Performance Overview (consolidated Meta + Instagram metrics)
-- `/dashboard/market-radar` — Market Radar (placeholder for future trend detection)
-
-**Needed:**
-
-- Create 3 new page components
-- Register routes in App.tsx
-- Add sidebar navigation items
-- Full i18n (PT/EN/ES)
-
-#### 5. Strategic Notifications Flow — PARTIAL
-
-`user_notifications` table exists but there's no mechanism to create notifications when suggestions are generated. No notification bell/UI in the dashboard to display them.
-
-**Needed:**
-
-- Notification display component in dashboard layout (bell icon with count)
-- Hook to fetch unread notifications
-- Mark-as-read functionality
-- i18n for notification templates
-
-#### 6. Version Revert Functionality — MISSING
-
-The spec says "must be possible to revert to any previous version." Current UI shows version history but has no revert action.
-
-**Needed:**
-
-- "Revert to this version" button in version history list
-- Logic to deactivate current version and activate selected one
-
-#### 7. Version Comparison — MISSING (documented as future)
-
-The spec mentions "compare versions in the future." No action needed now, but the data structure supports it via `blocks` jsonb snapshots.
+1. Creative performance classification engine (High Performer / Stable / Underperforming)
+2. Recommendation generation logic (pattern detection → suggestion creation)
+3. "Generate Smart Version" button
+4. Notification triggers when intelligence events occur
+5. Classification badges on Ads Intelligence page
+6. Decision logging for audit trail
 
 ---
 
-### Implementation Checklist for Approval
+### Implementation Plan
+
+#### 1. Edge Function: `dna-intelligence` (NEW)
+
+Core engine that runs analysis on a user's data. Called manually via button or future cron.
+
+**Logic flow:**
+
+1. Authenticate user via JWT
+2. Fetch user's `ads_data` (last 30 days) and active DNA (`positioning_mappings` + active `dna_versions`)
+3. **Classify creatives** using rule-based scoring:
+  - **High Performer**: ROAS > 2x AND CTR > 1.5% AND purchases > 0
+  - **Stable**: ROAS 1-2x OR (CTR > 1% AND no purchases decline)
+  - **Underperforming**: ROAS < 1x OR CTR < 0.5% OR zero conversions with spend > threshold
+4. **Generate recommendations** for adaptive blocks:
+  - High Performer: extract winning copy patterns → suggest reinforcing adaptive blocks (promises, urgency, objections)
+  - Underperforming: identify weak hooks/angles → suggest alternatives for pain_points, awareness_stage, urgency
+5. **Save suggestions** to `dna_update_suggestions` (only adaptive blocks, respecting `isStructuralBlock()`)
+6. **Create notifications** in `user_notifications` for each new suggestion
+7. **Log decisions** to `integration_logs` with event_type `intelligence_analysis`
+
+#### 2. Database Migration
+
+- New table `creative_classifications`:
+  - `id`, `user_id`, `ad_id`, `classification` (high_performer/stable/underperforming), `score`, `metrics_snapshot` (jsonb), `created_at`
+  - RLS: users see own, admins see all
+  - Index on `(user_id, classification)`
+- New table `intelligence_logs`:
+  - `id`, `user_id`, `analysis_type`, `input_summary` (jsonb), `output_summary` (jsonb), `suggestions_generated`, `created_at`
+  - RLS: users see own, admins see all
+
+#### 3. Frontend: Intelligence Integration
+
+**Ads Intelligence page updates:**
+
+- Add classification badge per creative (color-coded: green/yellow/red)
+- Add "Run Intelligence Analysis" button that calls `dna-intelligence`
+- Show last analysis timestamp
+
+**DnaUpdates page updates:**
+
+- Add "Generate Smart Version" button:
+  - Clones active version
+  - Applies all pending suggestions from intelligence
+  - Saves as new version with `version_type: 'ai_generated'`, `source: 'intelligence_engine'`
+  - Respects plan version limits
+- Filter suggestions by source (manual vs intelligence)
+
+**Performance Overview updates:**
+
+- Add summary card showing classification distribution (X high performers, Y stable, Z underperforming)
+
+**Market Radar updates:**
+
+- Show trend signals from classification data (e.g., "3 creatives declined this week")
+
+#### 4. Notification Triggers
+
+The `dna-intelligence` edge function will insert notifications:
+
+- `notifications.intelligence.highPerformer` — when a creative is classified as high performer
+- `notifications.intelligence.decline` — when a creative drops from stable to underperforming
+- `notifications.intelligence.newSuggestion` — when new DNA suggestions are generated
+- `notifications.intelligence.versionCreated` — when a smart version is auto-created
+
+#### 5. i18n (~40 new keys across PT/EN/ES)
+
+- Classification labels, analysis button text, notification templates, smart version labels, intelligence status messages
+
+#### 6. Config: `supabase/config.toml`
+
+- Add `[functions.dna-intelligence]` with `verify_jwt = false` (manual JWT validation in code)
+
+---
+
+### Architecture Summary
+
+```text
+User clicks "Run Analysis"
+        │
+        ▼
+  dna-intelligence (Edge Function)
+        │
+        ├─► Fetch ads_data (last 30 days)
+        ├─► Classify each creative (rules-based)
+        ├─► Save to creative_classifications
+        ├─► Compare with active DNA blocks
+        ├─► Generate suggestions (adaptive only)
+        ├─► Save to dna_update_suggestions
+        ├─► Create user_notifications
+        └─► Log to intelligence_logs
+        │
+        ▼
+  Frontend reacts:
+  - Badges update on Ads Intelligence
+  - NotificationBell shows alerts
+  - DnaUpdates shows new suggestions
+  - "Generate Smart Version" applies them
+```
+
+### Files to Create/Modify
 
 
-| #   | Task                                                                                                                                                                                                                                                                                                            | Scope                     |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| 1   | **Define block classification constants** — Create `STRUCTURAL_BLOCKS` and `ADAPTIVE_BLOCKS` arrays in a shared config file. Structural: audience, solution, differentiators, emotional_connection, transformation, voice. Adaptive: pain_points, awareness_stage, urgency, social_proof, objections, promises. | Frontend config           |
-| 2   | **Enforce adaptive-only suggestions** — Add validation in `DnaUpdates.handleApply` and future suggestion generation that only adaptive blocks can be modified via suggestions.                                                                                                                                  | Frontend + future backend |
-| 3   | **Add version limits per plan** — Add `VERSION_LIMITS` (starter:50, pro:500, legend:1000) to `useDnaGuard`. Check before version creation. Show upgrade message when limit hit.                                                                                                                                 | Frontend hook             |
-| 4   | **Add `language` column to `dna_update_suggestions**` — SQL migration adding nullable `language` text column with default from DNA's language.                                                                                                                                                                  | DB migration              |
-| 5   | **Create Ads Intelligence page** — `/dashboard/ads-intelligence` showing ads_data with funnel metrics (ViewContent → InitiateCheckout → Purchase), filterable by campaign/date. Charts using recharts.                                                                                                          | New page + route          |
-| 6   | **Create Performance Overview page** — `/dashboard/performance-overview` consolidating Meta Ads + Instagram metrics in a single dashboard view.                                                                                                                                                                 | New page + route          |
-| 7   | **Create Market Radar page** — `/dashboard/market-radar` as a placeholder structure connected to existing data, ready for future trend detection.                                                                                                                                                               | New page + route          |
-| 8   | **Add notification bell component** — Display unread `user_notifications` count in dashboard header with dropdown list and mark-as-read.                                                                                                                                                                        | New component             |
-| 9   | **Add version revert functionality** — "Revert" button in version history (DnaUpdates page) that activates a previous version.                                                                                                                                                                                  | UI update                 |
-| 10  | **Register all new routes** — Add 3 new routes to App.tsx and sidebar navigation.                                                                                                                                                                                                                               | Router + layout           |
-| 11  | **Full i18n for all new pages** — Add ~80 translation keys across PT/EN/ES for the 3 new pages, notification templates, block classification labels, and version limit messages.                                                                                                                                | i18n config               |
-| 12  | **Update sidebar navigation** — Add menu items for Ads Intelligence, Performance Overview, and Market Radar under a new "Intelligence" section.                                                                                                                                                                 | Layout component          |
+| File                                           | Action                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
+| `supabase/functions/dna-intelligence/index.ts` | **CREATE** — Core engine                                             |
+| `supabase/migrations/[timestamp].sql`          | **CREATE** — `creative_classifications` + `intelligence_logs` tables |
+| `src/pages/dashboard/AdsIntelligence.tsx`      | **MODIFY** — Add classification badges + analysis button             |
+| `src/pages/dashboard/DnaUpdates.tsx`           | **MODIFY** — Add "Generate Smart Version" button                     |
+| `src/pages/dashboard/PerformanceOverview.tsx`  | **MODIFY** — Add classification summary                              |
+| `src/pages/dashboard/MarketRadar.tsx`          | **MODIFY** — Add trend signals                                       |
+| `src/i18n/config.ts`                           | **MODIFY** — ~40 new keys                                            |
+| `supabase/config.toml`                         | **MODIFY** — Add dna-intelligence function                           |
 
 
-**Zero changes to:** existing routes, Stripe, agents, auth, Meta integration Edge Functions, or current table structures.
+### Ajustes Finais — Sprint 4 (DNA Intelligence Engine)
 
-Please approve this checklist to proceed with implementation.  Obs: Ajustes Pequenos Antes de Aprovar
+## 1. Ativar verificação automática de JWT
 
-Apenas 4 pontos para alinhar melhor com o documento original:
+No `supabase/config.toml`:
 
-Version Limits — Backend Enforcement
+**Alterar para:**
 
-Você colocou:
+```
+[functions.dna-intelligence]
+verify_jwt = true
+```
 
-Frontend hook
+Motivo:  
+  
+Usar a verificação nativa do Supabase para reduzir risco de segurança e evitar validação manual desnecessária.
 
-Isso é insuficiente.
+---
 
-Deve constar explicitamente:
+## 2. Implementar Rate Limit da Análise
 
-Backend enforcement obrigatório
+Adicionar controle para evitar execução excessiva da Edge Function.
 
-Validação no Supabase (function ou trigger)
+Regra recomendada:
 
-Nunca depender apenas do frontend
+- Permitir 1 análise por usuário a cada X minutos (ex: 15 ou 30 minutos)
 
-Sugestão de ajuste no checklist:
+Implementação possível:
 
-Adicionar:
+- Salvar `last_analysis_at` no perfil do usuário  
+  
+ou
+- Verificar timestamp da última execução em `intelligence_logs`
 
-“Version limit must also be enforced at database level or via secure backend function.”
+Se estiver dentro do intervalo mínimo:
 
-Sem isso, você abre brecha para bypass via API.
+- Bloquear execução
+- Retornar mensagem informativa no frontend
 
-Structural vs Adaptive — Persistência
+---
 
-Você mencionou config constants.
+## 3. Definir Volume Mínimo para Classificação
 
-Isso resolve UI, mas não resolve integridade sistêmica.
+Evitar classificações com base em dados insuficientes.
 
-O documento original exige que a separação seja persistida, não apenas conceitual.
+Adicionar critérios mínimos antes de classificar:
 
-Melhor ajuste:
+Exemplo:
 
-Manter constante no frontend
+- Mínimo de impressões (ex: ≥ 1000)
+- Mínimo de spend (ex: ≥ valor mínimo configurado)
+- Mínimo de conversões para considerar High Performer (ex: ≥ 3)
 
-E também registrar block_category na estrutura do DNA (nem que seja metadata no snapshot)
+Se não atingir volume mínimo:
 
-Não precisa reestruturar tabela, mas precisa garantir que não dependa apenas de frontend.
+- Classificar como “insufficient_data”
+- Não gerar recomendações
 
-Language Column
+---
 
-Correto adicionar language na dna_update_suggestions.
+## 4. Evitar Sugestões Duplicadas
 
-Apenas acrescente:
+Antes de salvar nova sugestão em `dna_update_suggestions`:
 
-Deve ser obrigatória para novas sugestões.
+Verificar se já existe:
 
-Deve respeitar idioma original do DNA, não idioma ativo da UI.
+- Sugestão pendente para o mesmo `block_key`  
+  
+ou
+- Sugestão com mesmo hash/conteúdo ainda não aplicada
 
-Pequeno detalhe importante.
+Se existir:
 
-Charts Library
+- Não criar nova
+- Apenas atualizar timestamp se necessário
 
-Você citou:
+Isso evita poluição da interface DnaUpdates.
 
-Charts using recharts
+---
 
-Evite impor biblioteca se o padrão do projeto já usa outra.
+## 5. Comparar com Classificação Anterior
 
-Melhor escrever:
+Antes de salvar nova classificação:
 
-“Use existing charting pattern already adopted in the project.”
+- Buscar última classificação do mesmo criativo
+- Comparar status anterior vs atual
 
-Isso evita conflito arquitetural.
+Somente disparar notificações de “decline” se houver mudança real:
+
+- stable → underperforming
+- high_performer → underperforming
+
+Evitar notificações repetidas sem mudança de estado.
+
+---
+
+# Resumo
+
+Para finalizar corretamente a Sprint 4, é necessário:
+
+1. Ativar `verify_jwt = true`
+2. Implementar rate limit por usuário
+3. Exigir volume mínimo para classificação
+4. Bloquear sugestões duplicadas
+5. Comparar classificação anterior antes de notificar
+
+Com esses ajustes aplicados, a Sprint 4 estará pronta para produção de forma segura e [escalável.](http://escalável.Zero)   [Zero](http://escalável.Zero) changes to:
+
+- Stripe, Auth, agents, meta-sync, existing routes, table schemas
