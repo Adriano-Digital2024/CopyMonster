@@ -1,50 +1,87 @@
+## Fix: Add `config_id` to Meta Business Login OAuth URL
 
+### Problem
 
-## Diagnóstico: Bordas dos Cards
+The Meta OAuth URL is missing the required `config_id` parameter for Facebook Login for Business. Without it, the Business Login flow fails silently on callback.
 
-### O que está acontecendo
+### Changes
 
-O CSS está com `--border: 240 10% 14%` para dark mode. Embora 14% seja "escuro" em termos absolutos, sobre um fundo de apenas 3.9% de luminosidade, a diferença relativa (3.5x mais claro) cria uma borda bastante perceptível — que o olho humano interpreta como "branca" em contraste com o fundo quase preto.
+**1. Store config_id as a Supabase secret**
 
-### Por que isso "volta" a cada atualização
+- Add secret `META_BUSINESS_CONFIG_ID` = `1920808931973572`
 
-Toda vez que o `src/index.css` é editado (via `... keep existing code`), existe risco de os valores serem resetados para defaults do shadcn/ui (que usa `baseColor: "slate"` com bordas mais claras). O problema é que não existe proteção contra isso.
+**2. Update `supabase/functions/meta-oauth/index.ts**`
 
-### Solução (2 ações)
+- Read `META_BUSINESS_CONFIG_ID` from env
+- Append `&config_id=${businessConfigId}` to the OAuth URL (line 46)
+- No other changes — token exchange, redirect_uri, scopes, graph endpoints remain untouched
 
-**1. Reduzir a luminosidade da borda no dark mode**
+### Add config_id to Meta Business Login OAuth URL
 
-Alterar em `src/index.css`:
-- `--border: 240 10% 14%` → `--border: 240 10% 10%`  
-- `--input: 240 10% 14%` → `--input: 240 10% 10%`
+### 1️⃣ Criar Secret no Supabase
 
-Isso reduz a diferença relativa com o fundo (de 3.5x para 2.5x), tornando as bordas muito mais discretas.
+No projeto do Supabase:
 
-**2. Adicionar proteção contra regressão**
+**Settings → Edge Functions → Secrets**
 
-Adicionar um bloco de comentário explícito no topo do CSS (dentro de `:root`) marcando os valores de borda como "LOCKED — DO NOT CHANGE":
+Adicionar:
 
-```css
-/* ⚠️ LOCKED VALUES — DO NOT MODIFY ⚠️
-   Border and input colors are calibrated for CopyMonster's dark/light themes.
-   Dark mode: 10% lightness (subtle on 3.9% background)
-   Light mode: 85% lightness (subtle on 100% background)
-   Changing these causes visible "white border" regression. */
---border: 240 10% 10%;
---input: 240 10% 10%;
+```
+META_BUSINESS_CONFIG_ID=1920808931973572
 ```
 
-E repetir o comentário na seção `.light`:
-```css
-/* ⚠️ LOCKED — see :root comment */
---border: 240 5.9% 85%;
---input: 240 5.9% 85%;
+---
+
+### 2️⃣ Atualizar arquivo:
+
+```
+supabase/functions/meta-oauth/index.ts
 ```
 
-Isso garante que futuras edições no arquivo vejam o aviso e não sobrescrevam os valores.
+### Alterações:
 
-### Arquivo afetado
-- `src/index.css` — apenas 4 linhas de valor + comentários de proteção
+- Ler variável do ambiente:
 
-### Zero alterações em: componentes, rotas, layout, lógica de negócio.
+```
+const businessConfigId = Deno.env.get("META_BUSINESS_CONFIG_ID")
+```
 
+- Adicionar na URL de OAuth (linha onde monta o login):
+
+```
+&config_id=${businessConfigId}
+```
+
+---
+
+## ✅ Resultado esperado
+
+A URL final deverá ficar assim:
+
+```
+https://www.facebook.com/v19.0/dialog/oauth?
+client_id=APP_ID
+&redirect_uri=REDIRECT_URI
+&scope=SCOPES
+&response_type=code
+&config_id=1920808931973572
+```
+
+---
+
+# 🚨 Importante
+
+Não alterar:
+
+- scopes
+- redirect_uri
+- token exchange
+- graph endpoints
+
+Somente adicionar `config_id`. Result
+
+OAuth URL will become:
+
+```
+...&response_type=code&config_id=1920808931973572
+```
