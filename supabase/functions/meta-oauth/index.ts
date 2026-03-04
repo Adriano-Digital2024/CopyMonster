@@ -18,6 +18,7 @@ serve(async (req) => {
     const metaAppId = Deno.env.get('META_APP_ID')!;
     const metaAppSecret = Deno.env.get('META_APP_SECRET')!;
     const encryptionKey = Deno.env.get('ENCRYPTION_KEY')!;
+    const businessConfigId = Deno.env.get('META_BUSINESS_CONFIG_ID')!;
     const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:5173';
 
     const url = new URL(req.url);
@@ -43,7 +44,7 @@ serve(async (req) => {
       const state = userData.user.id; // user_id as state for callback
       const scopes = 'ads_read,read_insights,instagram_basic,instagram_manage_insights';
 
-      const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
+      const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code&config_id=${businessConfigId}`;
 
       return new Response(JSON.stringify({ url: oauthUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
