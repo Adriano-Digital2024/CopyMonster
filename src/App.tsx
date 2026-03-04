@@ -26,6 +26,9 @@ import Campaigns from "./pages/dashboard/Campaigns";
 import CopyResults from "./pages/dashboard/CopyResults";
 import Library from "./pages/dashboard/Library";
 import DnaUpdates from "./pages/dashboard/DnaUpdates";
+import AdsIntelligence from "./pages/dashboard/AdsIntelligence";
+import PerformanceOverview from "./pages/dashboard/PerformanceOverview";
+import MarketRadar from "./pages/dashboard/MarketRadar";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/Users";
 import AdminAnalytics from "./pages/admin/Analytics";
@@ -84,6 +87,9 @@ const App = () => (
                   <Route path="/dashboard/copy-results" element={<CopyResults />} />
                   <Route path="/dashboard/library" element={<Library />} />
                   <Route path="/dashboard/library/updates" element={<DnaUpdates />} />
+                  <Route path="/dashboard/ads-intelligence" element={<AdsIntelligence />} />
+                  <Route path="/dashboard/performance-overview" element={<PerformanceOverview />} />
+                  <Route path="/dashboard/market-radar" element={<MarketRadar />} />
                 </Route>
                 {/* Admin - Protected + Admin Required */}
                 <Route element={<ProtectedRoute requireAdmin />}>

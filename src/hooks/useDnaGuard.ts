@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { DNA_LIMITS, VERSION_LIMITS } from '@/lib/dna-block-config';
 
 interface DnaProject {
   id: string;
@@ -17,15 +18,10 @@ interface DnaGuardResult {
   dnaList: DnaProject[];
   dnaLimit: number;
   canCreateMore: boolean;
+  versionLimit: number;
   isLoading: boolean;
+  checkVersionLimit: (mappingId: string) => Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
 }
-
-const DNA_LIMITS: Record<string, number> = {
-  free: 1,
-  starter: 1,
-  pro: 10,
-  legend: 50,
-};
 
 export function useDnaGuard(): DnaGuardResult {
   const { user } = useAuth();
@@ -34,6 +30,7 @@ export function useDnaGuard(): DnaGuardResult {
 
   const plan = user?.subscription_status || 'free';
   const dnaLimit = DNA_LIMITS[plan] ?? 1;
+  const versionLimit = VERSION_LIMITS[plan] ?? 50;
 
   useEffect(() => {
     if (!user) {
@@ -64,6 +61,19 @@ export function useDnaGuard(): DnaGuardResult {
     fetchDna();
   }, [user]);
 
+  const checkVersionLimit = async (mappingId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> => {
+    if (!user) return { canCreate: false, currentCount: 0, limit: versionLimit };
+
+    const { count } = await supabase
+      .from('dna_versions')
+      .select('id', { count: 'exact', head: true })
+      .eq('mapping_id', mappingId)
+      .eq('user_id', user.id);
+
+    const currentCount = count || 0;
+    return { canCreate: currentCount < versionLimit, currentCount, limit: versionLimit };
+  };
+
   const dnaCount = dnaList.length;
   const hasDna = dnaCount > 0;
   const canCreateMore = dnaCount < dnaLimit;
@@ -74,6 +84,8 @@ export function useDnaGuard(): DnaGuardResult {
     dnaList,
     dnaLimit,
     canCreateMore,
+    versionLimit,
     isLoading,
+    checkVersionLimit,
   };
 }
