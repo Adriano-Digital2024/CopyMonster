@@ -7,6 +7,76 @@ const corsHeaders = {
 };
 
 const COOLDOWN_MINUTES = 15;
+const TOKEN_EXPIRY_WARNING_DAYS = 7;
+
+// Meta API error codes
+const META_ERROR_CODES = {
+  INVALID_TOKEN: 190,
+  PERMISSION_REMOVED: 10,
+  RATE_LIMIT: 4,
+  APP_NOT_INSTALLED: 102,
+};
+
+function classifyMetaError(error: any): { status: string; eventType: string } | null {
+  const code = error?.code;
+  const subcode = error?.error_subcode;
+
+  if (code === META_ERROR_CODES.INVALID_TOKEN || subcode === 463 || subcode === 467) {
+    return { status: 'token_expired', eventType: 'token_expired' };
+  }
+  if (code === META_ERROR_CODES.PERMISSION_REMOVED) {
+    return { status: 'permission_revoked', eventType: 'permission_revoked' };
+  }
+  if (code === META_ERROR_CODES.RATE_LIMIT) {
+    return { status: 'rate_limited', eventType: 'rate_limited' };
+  }
+  if (code === META_ERROR_CODES.APP_NOT_INSTALLED) {
+    return { status: 'permission_revoked', eventType: 'permission_revoked' };
+  }
+  return null;
+}
+
+async function updateIntegrationStatus(adminSupabase: any, userId: string, status: string) {
+  await adminSupabase
+    .from('user_integrations')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .eq('provider', 'meta');
+}
+
+async function fetchCreativeData(adIds: string[], accessToken: string): Promise<Map<string, { body: string | null; title: string | null }>> {
+  const creativeMap = new Map();
+  // Batch in groups of 50 to avoid URL length issues
+  const batches = [];
+  for (let i = 0; i < adIds.length; i += 50) {
+    batches.push(adIds.slice(i, i + 50));
+  }
+
+  for (const batch of batches) {
+    try {
+      const ids = batch.join(',');
+      const url = `https://graph.facebook.com/v21.0/?ids=${ids}&fields=creative{body,title,link_url}&access_token=${accessToken}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.error) {
+        for (const [adId, adData] of Object.entries(data)) {
+          const creative = (adData as any)?.creative;
+          if (creative) {
+            creativeMap.set(adId, {
+              body: creative.body || null,
+              title: creative.title || null,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`[meta-sync] Creative fetch error for batch`);
+    }
+  }
+
+  return creativeMap;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -42,11 +112,38 @@ serve(async (req) => {
       .select('*')
       .eq('user_id', userId)
       .eq('provider', 'meta')
-      .eq('status', 'connected')
+      .in('status', ['connected'])
       .single();
 
     if (!integration) {
       return new Response(JSON.stringify({ error: 'not_connected' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Check token expiration BEFORE calling Meta API
+    if (integration.token_expires_at) {
+      const expiresAt = new Date(integration.token_expires_at).getTime();
+      const now = Date.now();
+      const daysUntilExpiry = (expiresAt - now) / (1000 * 60 * 60 * 24);
+
+      if (daysUntilExpiry <= 0) {
+        // Token is expired
+        await updateIntegrationStatus(adminSupabase, userId, 'token_expired');
+        await adminSupabase.from('integration_logs').insert({
+          user_id: userId, provider: 'meta', event_type: 'token_expired',
+          details: { reason: 'token_expired', expired_at: integration.token_expires_at }
+        });
+        return new Response(JSON.stringify({ error: 'token_expired' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (daysUntilExpiry <= TOKEN_EXPIRY_WARNING_DAYS) {
+        // Token expiring soon — log warning but continue sync
+        await adminSupabase.from('integration_logs').insert({
+          user_id: userId, provider: 'meta', event_type: 'token_expiring_soon',
+          details: { days_remaining: Math.ceil(daysUntilExpiry), expires_at: integration.token_expires_at }
+        });
+      }
     }
 
     // Check cooldown
@@ -77,9 +174,10 @@ serve(async (req) => {
 
     let adsCount = 0;
     let igCount = 0;
+    let hasFatalError = false;
 
     // Sync Ads Data
-    if (integration.meta_ad_account_id) {
+    if (integration.meta_ad_account_id && !hasFatalError) {
       try {
         const today = new Date();
         const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -92,12 +190,29 @@ serve(async (req) => {
         const adsData = await adsResponse.json();
 
         if (adsData.error) {
+          const classification = classifyMetaError(adsData.error);
+          if (classification) {
+            await updateIntegrationStatus(adminSupabase, userId, classification.status);
+            await adminSupabase.from('integration_logs').insert({
+              user_id: userId, provider: 'meta', event_type: classification.eventType,
+              details: { error: adsData.error.message, code: adsData.error.code, endpoint: 'ads_insights' }
+            });
+            hasFatalError = true;
+            return new Response(JSON.stringify({ error: classification.status }), {
+              status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+
           console.error(`[meta-sync] Ads API error for user ${userId}: ${adsData.error.message}`);
           await adminSupabase.from('integration_logs').insert({
             user_id: userId, provider: 'meta', event_type: 'api_error',
-            details: { error: adsData.error.message, endpoint: 'ads_insights' }
+            details: { error: adsData.error.message, code: adsData.error.code, endpoint: 'ads_insights' }
           });
         } else if (adsData.data) {
+          // Fetch creative data for all ad IDs
+          const adIds = [...new Set(adsData.data.map((row: any) => row.ad_id).filter(Boolean))];
+          const creativeMap = adIds.length > 0 ? await fetchCreativeData(adIds as string[], accessToken) : new Map();
+
           const adsRows = adsData.data.map((row: any) => {
             const actions = row.actions || [];
             const costPerAction = row.cost_per_action_type || [];
@@ -106,10 +221,6 @@ serve(async (req) => {
             const getAction = (type: string) => {
               const a = actions.find((a: any) => a.action_type === type);
               return a ? parseInt(a.value) : 0;
-            };
-            const getCostPerAction = (type: string) => {
-              const c = costPerAction.find((c: any) => c.action_type === type);
-              return c ? parseFloat(c.value) : 0;
             };
             const getActionValue = (type: string) => {
               const v = actionValues.find((v: any) => v.action_type === type);
@@ -121,6 +232,8 @@ serve(async (req) => {
             const initiateCheckout = getAction('offsite_conversion.fb_pixel_initiate_checkout');
             const purchases = getAction('offsite_conversion.fb_pixel_purchase');
             const purchaseValue = getActionValue('offsite_conversion.fb_pixel_purchase');
+
+            const creative = creativeMap.get(row.ad_id);
 
             return {
               user_id: userId,
@@ -146,6 +259,8 @@ serve(async (req) => {
               cost_per_view_content: viewContent > 0 ? spend / viewContent : 0,
               cost_per_initiate_checkout: initiateCheckout > 0 ? spend / initiateCheckout : 0,
               cost_per_purchase: purchases > 0 ? spend / purchases : 0,
+              ad_creative_body: creative?.body || null,
+              ad_creative_title: creative?.title || null,
               date_range_start: dateStart,
               date_range_end: dateEnd,
             };
@@ -170,18 +285,28 @@ serve(async (req) => {
     }
 
     // Sync Instagram Data
-    if (integration.instagram_account_id) {
+    if (integration.instagram_account_id && !hasFatalError) {
       try {
         const mediaUrl = `https://graph.facebook.com/v21.0/${integration.instagram_account_id}/media?fields=id,caption,media_type,permalink,timestamp,insights.metric(impressions,reach,engagement,saved,shares,plays)&limit=50&access_token=${accessToken}`;
         const igResponse = await fetch(mediaUrl);
         const igData = await igResponse.json();
 
         if (igData.error) {
-          console.error(`[meta-sync] Instagram API error for user ${userId}: ${igData.error.message}`);
-          await adminSupabase.from('integration_logs').insert({
-            user_id: userId, provider: 'meta', event_type: 'api_error',
-            details: { error: igData.error.message, endpoint: 'instagram_media' }
-          });
+          const classification = classifyMetaError(igData.error);
+          if (classification) {
+            await updateIntegrationStatus(adminSupabase, userId, classification.status);
+            await adminSupabase.from('integration_logs').insert({
+              user_id: userId, provider: 'meta', event_type: classification.eventType,
+              details: { error: igData.error.message, code: igData.error.code, endpoint: 'instagram_media' }
+            });
+            // Don't return here — ads may have succeeded, just stop IG sync
+          } else {
+            console.error(`[meta-sync] Instagram API error for user ${userId}: ${igData.error.message}`);
+            await adminSupabase.from('integration_logs').insert({
+              user_id: userId, provider: 'meta', event_type: 'api_error',
+              details: { error: igData.error.message, code: igData.error.code, endpoint: 'instagram_media' }
+            });
+          }
         } else if (igData.data) {
           const igRows = igData.data.map((post: any) => {
             const insights = post.insights?.data || [];
@@ -246,7 +371,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error(`[meta-sync] Unexpected error:`, error.message);
+    console.error(`[meta-sync] Unexpected error:`, (error as Error).message);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
