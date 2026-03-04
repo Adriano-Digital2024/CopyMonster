@@ -31,7 +31,8 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // Meta integration state
-  const [metaStatus, setMetaStatus] = useState<'disconnected' | 'connected' | 'loading'>('loading');
+  type MetaStatusType = 'disconnected' | 'connected' | 'token_expired' | 'permission_revoked' | 'rate_limited' | 'error' | 'loading';
+  const [metaStatus, setMetaStatus] = useState<MetaStatusType>('loading');
   const [metaIntegration, setMetaIntegration] = useState<any>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -43,12 +44,13 @@ export default function Settings() {
       .eq('provider', 'meta')
       .maybeSingle();
     
-    if (data && data.status === 'connected') {
-      setMetaStatus('connected');
+    if (data) {
+      const status = data.status as MetaStatusType;
+      setMetaStatus(['connected', 'token_expired', 'permission_revoked', 'rate_limited', 'error'].includes(status) ? status : 'disconnected');
       setMetaIntegration(data);
     } else {
       setMetaStatus('disconnected');
-      setMetaIntegration(data);
+      setMetaIntegration(null);
     }
   }, []);
 
@@ -154,6 +156,26 @@ export default function Settings() {
         toast({
           title: t('dashboard.settings.integrations.errors.cooldown'),
           description: t('dashboard.settings.integrations.errors.cooldownDesc', { minutes: data.remaining_minutes }),
+          variant: 'destructive',
+        });
+      } else if (data.error === 'token_expired') {
+        toast({
+          title: t('dashboard.settings.integrations.errors.tokenExpired'),
+          description: t('dashboard.settings.integrations.errors.tokenExpiredDesc'),
+          variant: 'destructive',
+        });
+        fetchMetaIntegration();
+      } else if (data.error === 'permission_revoked') {
+        toast({
+          title: t('dashboard.settings.integrations.errors.permissionRevoked'),
+          description: t('dashboard.settings.integrations.errors.permissionRevokedDesc'),
+          variant: 'destructive',
+        });
+        fetchMetaIntegration();
+      } else if (data.error === 'rate_limited') {
+        toast({
+          title: t('dashboard.settings.integrations.errors.rateLimited'),
+          description: t('dashboard.settings.integrations.errors.rateLimitedDesc'),
           variant: 'destructive',
         });
       } else if (data.success) {
@@ -379,15 +401,39 @@ export default function Settings() {
                         <p className="text-sm text-muted-foreground">{t('dashboard.settings.integrations.meta.description')}</p>
                       </div>
                     </div>
-                    <Badge variant={metaStatus === 'connected' ? 'default' : 'secondary'}>
+                    <Badge variant={
+                      metaStatus === 'connected' ? 'default' 
+                      : metaStatus === 'token_expired' || metaStatus === 'permission_revoked' || metaStatus === 'error' ? 'destructive'
+                      : 'secondary'
+                    }>
                       {metaStatus === 'connected' 
                         ? t('dashboard.settings.integrations.status.connected')
-                        : metaStatus === 'loading' 
-                          ? '...'
-                          : t('dashboard.settings.integrations.status.disconnected')
+                        : metaStatus === 'token_expired'
+                          ? t('dashboard.settings.integrations.status.tokenExpired')
+                          : metaStatus === 'permission_revoked'
+                            ? t('dashboard.settings.integrations.status.permissionRevoked')
+                            : metaStatus === 'rate_limited'
+                              ? t('dashboard.settings.integrations.status.rateLimited')
+                              : metaStatus === 'error'
+                                ? t('dashboard.settings.integrations.status.error')
+                                : metaStatus === 'loading' 
+                                  ? '...'
+                                  : t('dashboard.settings.integrations.status.disconnected')
                       }
                     </Badge>
                   </div>
+
+                  {/* Warning message for error statuses */}
+                  {(metaStatus === 'token_expired' || metaStatus === 'permission_revoked') && (
+                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm">
+                      <p className="text-destructive font-medium">
+                        {metaStatus === 'token_expired' 
+                          ? t('dashboard.settings.integrations.errors.tokenExpiredDesc')
+                          : t('dashboard.settings.integrations.errors.permissionRevokedDesc')
+                        }
+                      </p>
+                    </div>
+                  )}
 
                   {metaStatus === 'connected' && metaIntegration && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
@@ -416,6 +462,15 @@ export default function Settings() {
                       <>
                         <Button onClick={handleSyncMeta} disabled={isSyncing} size="sm">
                           {isSyncing ? t('dashboard.settings.integrations.meta.syncing') : t('dashboard.settings.integrations.meta.sync')}
+                        </Button>
+                        <Button onClick={handleDisconnectMeta} variant="outline" size="sm">
+                          {t('dashboard.settings.integrations.meta.disconnect')}
+                        </Button>
+                      </>
+                    ) : metaStatus === 'token_expired' || metaStatus === 'permission_revoked' ? (
+                      <>
+                        <Button onClick={handleConnectMeta} disabled={isConnecting} size="sm">
+                          {isConnecting ? '...' : t('dashboard.settings.integrations.meta.reconnect')}
                         </Button>
                         <Button onClick={handleDisconnectMeta} variant="outline" size="sm">
                           {t('dashboard.settings.integrations.meta.disconnect')}
