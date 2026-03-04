@@ -495,6 +495,7 @@ export type Database = {
           id: string
           impact_estimate: string
           justification: string
+          language: string
           mapping_id: string
           status: string
           suggested_value: string
@@ -508,6 +509,7 @@ export type Database = {
           id?: string
           impact_estimate?: string
           justification: string
+          language?: string
           mapping_id: string
           status?: string
           suggested_value: string
@@ -521,6 +523,7 @@ export type Database = {
           id?: string
           impact_estimate?: string
           justification?: string
+          language?: string
           mapping_id?: string
           status?: string
           suggested_value?: string

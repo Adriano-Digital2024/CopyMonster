@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, GitBranch, TrendingUp, ArrowRight, CheckCircle, XCircle, Clock, Sparkles } from 'lucide-react';
+import { Loader2, GitBranch, CheckCircle, XCircle, Clock, Sparkles, RotateCcw, Lock, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useDnaVersions } from '@/hooks/useDnaVersions';
 import { useDnaGuard } from '@/hooks/useDnaGuard';
+import { isStructuralBlock, getBlockMeta, ADAPTIVE_BLOCKS } from '@/lib/dna-block-config';
 
 interface DnaSuggestion {
   id: string;
@@ -27,10 +28,11 @@ interface DnaSuggestion {
 export default function DnaUpdates() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { dnaList } = useDnaGuard();
+  const { dnaList, checkVersionLimit } = useDnaGuard();
   const [suggestions, setSuggestions] = useState<DnaSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState<string | null>(null);
+  const [reverting, setReverting] = useState<string | null>(null);
 
   const activeDna = dnaList.length > 0 ? dnaList[0] : null;
   const { versions, refetch: refetchVersions } = useDnaVersions(activeDna?.id || null);
@@ -48,7 +50,9 @@ export default function DnaUpdates() {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        setSuggestions(data as unknown as DnaSuggestion[]);
+        // Filter: only show suggestions for adaptive blocks
+        const filtered = (data as unknown as DnaSuggestion[]).filter(s => !isStructuralBlock(s.block_key));
+        setSuggestions(filtered);
       }
       setLoading(false);
     };
@@ -58,10 +62,23 @@ export default function DnaUpdates() {
 
   const handleApply = async (suggestion: DnaSuggestion) => {
     if (!user || !activeDna) return;
+
+    // Enforce: structural blocks cannot be modified via suggestions
+    if (isStructuralBlock(suggestion.block_key)) {
+      toast.error(t('dna.updates.structuralBlocked'));
+      return;
+    }
+
+    // Check version limit
+    const { canCreate, currentCount, limit } = await checkVersionLimit(suggestion.mapping_id);
+    if (!canCreate) {
+      toast.error(t('dna.updates.versionLimitReached', { count: currentCount, limit }));
+      return;
+    }
+
     setApplying(suggestion.id);
 
     try {
-      // Fetch current mapping blocks
       const { data: mapping } = await supabase
         .from('positioning_mappings')
         .select('*')
@@ -70,7 +87,6 @@ export default function DnaUpdates() {
 
       if (!mapping) throw new Error('Mapping not found');
 
-      // Create blocks snapshot with the suggested change applied
       const blocks: Record<string, string | null> = {};
       for (let i = 1; i <= 12; i++) {
         const key = i === 10 ? 'block_10_transformation' :
@@ -81,18 +97,15 @@ export default function DnaUpdates() {
       }
       blocks[suggestion.block_key] = suggestion.suggested_value;
 
-      // Calculate next version label
       const nextLabel = versions.length === 0 ? '1.1' : 
         `1.${versions.length + 1}`;
 
-      // Deactivate all current versions
       await supabase
         .from('dna_versions')
         .update({ is_active: false })
         .eq('mapping_id', suggestion.mapping_id)
         .eq('user_id', user.id);
 
-      // Create new version
       await supabase
         .from('dna_versions')
         .insert([{
@@ -106,7 +119,6 @@ export default function DnaUpdates() {
           notes: suggestion.justification,
         }]);
 
-      // Mark suggestion as applied
       await supabase
         .from('dna_update_suggestions')
         .update({ status: 'applied' })
@@ -132,6 +144,34 @@ export default function DnaUpdates() {
     toast.success(t('dna.updates.dismissed'));
   };
 
+  const handleRevert = async (versionId: string, mappingId: string) => {
+    if (!user) return;
+    setReverting(versionId);
+
+    try {
+      // Deactivate all versions for this mapping
+      await supabase
+        .from('dna_versions')
+        .update({ is_active: false })
+        .eq('mapping_id', mappingId)
+        .eq('user_id', user.id);
+
+      // Activate the selected version
+      await supabase
+        .from('dna_versions')
+        .update({ is_active: true })
+        .eq('id', versionId)
+        .eq('user_id', user.id);
+
+      refetchVersions();
+      toast.success(t('dna.versions.activated'));
+    } catch (err) {
+      console.error('Error reverting version:', err);
+    } finally {
+      setReverting(null);
+    }
+  };
+
   const getImpactBadge = (impact: string) => {
     switch (impact) {
       case 'high': return <Badge variant="destructive">{t('dna.updates.impactHigh')}</Badge>;
@@ -150,19 +190,10 @@ export default function DnaUpdates() {
     }
   };
 
-  const blockLabels: Record<string, string> = {
-    block_1_audience: 'Audience',
-    block_2_pain_points: 'Pain Points',
-    block_3_solution: 'Solution',
-    block_4_differentiators: 'Differentiators',
-    block_5_awareness_stage: 'Awareness Stage',
-    block_6_urgency: 'Urgency',
-    block_7_social_proof: 'Social Proof',
-    block_8_objections: 'Objections',
-    block_9_emotional_connection: 'Emotional Connection',
-    block_10_transformation: 'Transformation',
-    block_11_voice: 'Voice',
-    block_12_promises: 'Promises',
+  const getBlockLabel = (blockKey: string) => {
+    const meta = getBlockMeta(blockKey);
+    if (meta) return t(meta.labelKey);
+    return blockKey;
   };
 
   return (
@@ -199,7 +230,10 @@ export default function DnaUpdates() {
                     <CardContent className="pt-4 space-y-4">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">{blockLabels[suggestion.block_key] || suggestion.block_key}</Badge>
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Shield className="h-3 w-3" />
+                            {getBlockLabel(suggestion.block_key)}
+                          </Badge>
                           {getImpactBadge(suggestion.impact_estimate)}
                           <Badge variant="secondary">{getSourceLabel(suggestion.data_source)}</Badge>
                         </div>
@@ -286,8 +320,23 @@ export default function DnaUpdates() {
                          version.version_type === 'market_update' ? t('dna.versions.marketUpdate') :
                          t('dna.versions.experimental')}
                       </Badge>
-                      {version.is_active && (
+                      {version.is_active ? (
                         <Badge className="bg-primary">{t('dna.versions.active')}</Badge>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          disabled={reverting === version.id}
+                          onClick={() => handleRevert(version.id, version.mapping_id)}
+                        >
+                          {reverting === version.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : (
+                            <RotateCcw className="h-3 w-3 mr-1" />
+                          )}
+                          {t('dna.versions.revert')}
+                        </Button>
                       )}
                     </div>
                   </div>

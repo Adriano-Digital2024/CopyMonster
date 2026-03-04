@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Users, CreditCard, Trophy, Settings, LogOut, Menu, Loader2, Target, Rocket, FileText, Book } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Trophy, Settings, LogOut, Menu, Loader2, Target, Rocket, FileText, Book, BarChart3, Activity, Radar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -11,6 +11,7 @@ import logoLight from '@/assets/logo-light.png';
 import { useTheme } from '@/components/ThemeProvider';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { TrialExpiredModal } from '@/components/trial/TrialExpiredModal';
+import { NotificationBell } from '@/components/dashboard/NotificationBell';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -80,6 +81,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: FileText, label: t('dashboard.menu.copyResults'), path: '/dashboard/copy-results' },
     { icon: Book, label: t('dashboard.menu.library'), path: '/dashboard/library' },
     { icon: Trophy, label: t('dashboard.menu.performance'), path: '/dashboard/performance' },
+    
+    // Intelligence section
+    { icon: BarChart3, label: t('dashboard.menu.adsIntelligence'), path: '/dashboard/ads-intelligence' },
+    { icon: Activity, label: t('dashboard.menu.performanceOverview'), path: '/dashboard/performance-overview' },
+    { icon: Radar, label: t('dashboard.menu.marketRadar'), path: '/dashboard/market-radar' },
+    
     { icon: CreditCard, label: t('dashboard.menu.billing'), path: '/dashboard/billing' },
     { icon: Settings, label: t('dashboard.menu.settings'), path: '/dashboard/settings' },
   ];
@@ -161,6 +168,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Sheet>
 
             <div className="flex items-center gap-2 ml-auto">
+              <NotificationBell />
               <LanguageSwitcher />
               <ThemeToggle />
             </div>
