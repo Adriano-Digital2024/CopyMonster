@@ -11,6 +11,7 @@ const MIN_IMPRESSIONS = 1000;
 const MIN_SPEND = 5;
 const MIN_PURCHASES_HIGH = 3;
 const RATE_LIMIT_MINUTES = 15;
+const INTELLIGENCE_CREDIT_COST = 5;
 
 interface ClassificationResult {
   ad_id: string;
@@ -96,6 +97,50 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({ error: "rate_limited", wait_minutes: waitMinutes }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Check admin bypass
+    const { data: adminRole } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const isAdmin = !!adminRole;
+
+    // Deduct credits BEFORE analysis (atomic, same pattern as chat-stream)
+    if (!isAdmin) {
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("credits")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile || profile.credits < INTELLIGENCE_CREDIT_COST) {
+        return new Response(
+          JSON.stringify({ error: "insufficient_credits", required: INTELLIGENCE_CREDIT_COST, available: profile?.credits || 0 }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Atomic deduction
+      const { error: deductError } = await adminClient.rpc("", {}).catch(() => ({ error: null }));
+      // Direct update with condition
+      const { data: updated, error: updateError } = await adminClient
+        .from("profiles")
+        .update({ credits: profile.credits - INTELLIGENCE_CREDIT_COST })
+        .eq("id", user.id)
+        .gte("credits", INTELLIGENCE_CREDIT_COST)
+        .select("credits")
+        .single();
+
+      if (updateError || !updated) {
+        return new Response(
+          JSON.stringify({ error: "insufficient_credits" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }

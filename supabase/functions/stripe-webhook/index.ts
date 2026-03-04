@@ -62,11 +62,11 @@ async function sendMetaPurchaseEvent(email: string, value: number, currency: str
   }
 }
 
-// Credit allocation per plan (sustainable with 300%+ margin)
+// Credit allocation per plan (USD pricing — overwrites on renewal, no accumulation)
 const PLAN_CREDITS: Record<string, number> = {
-  'starter': 150,   // ~R$0.32/credit
-  'pro': 400,       // ~R$0.24/credit
-  'legend': 1000,   // ~R$0.20/credit
+  'starter': 1000,
+  'pro': 5000,
+  'legend': 15000,
 };
 
 // Main function

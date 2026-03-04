@@ -13,23 +13,11 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useMetaPixel } from '@/hooks/useMetaPixel';
 
-// Price IDs mapping by language/currency
-const priceIdsByLanguage: Record<string, { starter: string; pro: string; legend: string }> = {
-  en: {
-    starter: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
-    pro: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
-    legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG'
-  },
-  pt: {
-    starter: 'price_1SqRcbRiKNxooUH09cijDYsq',
-    pro: 'price_1SqRe4RiKNxooUH0tYyprM4P',
-    legend: 'price_1SqRgVRiKNxooUH0knqhTTF9'
-  },
-  es: {
-    starter: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
-    pro: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
-    legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG'
-  }
+// Single USD Price IDs for all languages
+const priceIds = {
+  starter: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
+  pro: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
+  legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG',
 };
 
 export default function Billing() {
@@ -39,10 +27,6 @@ export default function Billing() {
   const [discountCode, setDiscountCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const { trackInitiateCheckout } = useMetaPixel();
-
-  // Get price IDs based on current language
-  const currentLanguage = i18n.language?.substring(0, 2) || 'en';
-  const priceIds = priceIdsByLanguage[currentLanguage] || priceIdsByLanguage.en;
 
   const plans = [
     {

@@ -34,8 +34,8 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 10% 8%;
-    --input: 240 10% 8%;
+    --border: 240 10% 14%;
+    --input: 240 10% 14%;
     --ring: 51 98% 33%;
 
     --radius: 0.75rem;
@@ -89,8 +89,8 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --border: 240 5.9% 85%;
+    --input: 240 5.9% 85%;
     --ring: 51 98% 33%;
 
     /* Gradients for Light Mode */
