@@ -34,8 +34,13 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 10% 14%;
-    --input: 240 10% 14%;
+    /* ⚠️ LOCKED VALUES — DO NOT MODIFY ⚠️
+       Border and input colors are calibrated for CopyMonster's dark/light themes.
+       Dark mode: 10% lightness (subtle on 3.9% background)
+       Light mode: 85% lightness (subtle on 100% background)
+       Changing these causes visible "white border" regression. */
+    --border: 240 10% 10%;
+    --input: 240 10% 10%;
     --ring: 51 98% 33%;
 
     --radius: 0.75rem;
@@ -89,6 +94,7 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
+    /* ⚠️ LOCKED — see :root comment */
     --border: 240 5.9% 85%;
     --input: 240 5.9% 85%;
     --ring: 51 98% 33%;
