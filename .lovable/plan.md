@@ -1,127 +1,96 @@
 
 
-## Sprint 2: Meta Ads Integration — Respostas e Decisões Arquiteturais
+## Validação Sprint 2 — Análise e Gaps Identificados
 
-Abaixo estão as confirmações para cada ponto levantado, seguidas do plano de implementação detalhado.
-
----
-
-### 1. Segurança e Criptografia — CONFIRMADO
-
-- **Criptografia antes do armazenamento**: Tokens serão criptografados no Edge Function (`meta-oauth`) usando `pgcrypto` com `pgp_sym_encrypt(token, ENCRYPTION_KEY)` ANTES de qualquer INSERT. O banco nunca recebe texto puro.
-- **ENCRYPTION_KEY isolada**: Armazenada exclusivamente como Supabase Secret, acessível apenas por Edge Functions via `Deno.env.get()`. Nunca exposta ao frontend.
-- **Tokens em logs**: Todos os `console.log` nas Edge Functions usarão apenas IDs e status — nunca valores de token. Exemplo: `[meta-oauth] Token stored for user ${userId}` (sem o token).
+Após revisão completa do código das 3 Edge Functions e do frontend, aqui está o diagnóstico honesto de cada ponto:
 
 ---
 
-### 2. Isolamento por Usuário — CONFIRMADO
+### 1. Refresh automático do token — GAP ENCONTRADO
 
-- Todas as Edge Functions extraem `user_id` do JWT via `supabase.auth.getUser(token)` (padrão já usado em `chat-stream`).
-- Todas as queries filtram por `user_id` autenticado.
-- Todas as tabelas novas terão RLS com política `auth.uid() = user_id`.
-- Nenhuma operação aceita `user_id` via body — sempre extraído do token.
+**Estado atual:** O `meta-oauth` troca o short-lived token por um long-lived token (~60 dias) e armazena `token_expires_at`. Porém, **não existe mecanismo de renovação automática**. Quando o token expira, o sync simplesmente falhará com erro da Meta API sem atualizar o status para `token_expired`.
 
----
-
-### 3. Modelo de Execução do meta-sync — DECISÃO: HÍBRIDO
-
-**Recomendação aplicada:**
-- **Sync manual** como padrão: botão "Atualizar dados" na UI, com cooldown de 15 minutos entre syncs por usuário.
-- **Preparado para automático**: a arquitetura suporta `pg_cron` futuro, mas NÃO será ativado agora.
-- **Rate limit interno**: Edge Function verifica `last_synced_at` antes de chamar a Meta API. Se < 15 min, rejeita.
-- **Retry**: Em caso de erro 429 da Meta, responde ao usuário com mensagem clara (sem retry automático na v1). Erros são logados em `integration_logs`.
+**Correção necessária:** No `meta-sync`, adicionar verificação de `token_expires_at` ANTES de chamar a API. Se expirado ou próximo (< 7 dias), atualizar status para `token_expired` e retornar erro claro ao frontend.
 
 ---
 
-### 4. Logs de Auditoria — CONFIRMADO
+### 2. Tratamento de erros da Meta API — PARCIAL
 
-A tabela `integration_logs` registrará todos os seguintes eventos via `event_type`:
-- `connected` — OAuth concluído com sucesso
-- `disconnected` — Usuário desconectou
-- `token_refreshed` — Token renovado automaticamente
-- `api_error` — Erro na chamada à Meta API (com detalhes no campo `details` jsonb)
-- `permission_denied` — Permissão insuficiente detectada
-- `data_synced` — Sync concluído com sucesso (com contagem de registros)
-- `sync_rejected` — Sync rejeitado por cooldown
+**Estado atual:** Erros são logados em `integration_logs` com `event_type: 'api_error'`, mas o `status` da integração em `user_integrations` **nunca é atualizado** quando ocorre token inválido ou permissão removida. O frontend continua mostrando "connected" mesmo com token morto. Não há prevenção contra loops — cada sync tenta novamente mesmo com erros permanentes.
+
+**Correção necessária:** Detectar error codes da Meta (190 = token inválido, 10 = permissão removida, etc.) e atualizar o `status` da integração para valores como `token_expired` ou `error`. O frontend deve reagir a esses status.
 
 ---
 
-### 5. Permissões OAuth — Princípio do Menor Privilégio
+### 3. Rate Limit Global — GAP
 
-Permissões exatas solicitadas:
-- `ads_read` — Leitura de dados de anúncios (métricas, campanhas)
-- `read_insights` — Leitura de insights de performance
-- `instagram_basic` — Informações básicas do perfil Instagram
-- `instagram_manage_insights` — Métricas de posts do Instagram
+**Estado atual:** Existe cooldown de 15 min por usuário, mas **zero proteção global**. Se 100 usuários sincronizarem simultaneamente, todos atingem o rate limit do App na Meta.
 
-**Nenhuma permissão de escrita.** Nenhum `ads_management`, `business_management` ou `publish_*`.
+**Correção recomendada (v2):** Isso é aceitável para a v1 com poucos usuários. Para escalar, será necessário implementar uma fila (pg_cron + batch processing) ou semáforo global. Documentar como limitação conhecida da v1.
 
 ---
 
-### 6. Métricas Ampliadas — CONFIRMADO
+### 4. Performance e Indexação — GAP
 
-A tabela `ads_data` será expandida para incluir as métricas de funil solicitadas:
+**Estado atual:** As tabelas `ads_data` e `instagram_data` **não possuem índices** além do PK. Queries por `user_id` e `date_range_start` serão lentas com crescimento.
 
-| Campo | Tipo | Descrição |
-|-------|------|-----------|
-| `view_content` | integer | ViewContent events |
-| `initiate_checkout` | integer | InitiateCheckout events |
-| `purchases` | integer | Purchase events |
-| `purchase_value` | numeric | Valor total de Purchase |
-| `cost_per_view_content` | numeric | Calculado: spend / view_content |
-| `cost_per_initiate_checkout` | numeric | Calculado: spend / initiate_checkout |
-| `cost_per_purchase` | numeric | Calculado: spend / purchases |
-
-Essas métricas serão coletadas via Meta Marketing API usando `action_type` filtering nos insights. Associadas ao `ad_name` e `campaign_name` para análise por anúncio.
+**Correção necessária:** Migração SQL para criar índices:
+- `ads_data`: index em `(user_id, date_range_start)` e `(user_id, ad_id)`
+- `instagram_data`: index em `(user_id, synced_at)` e `(user_id, post_id)`
 
 ---
 
-### 7. i18n — CONFIRMADO
+### 5. Dados ao Desconectar — PRESERVADOS (correto)
 
-- Todas as novas strings adicionadas em `src/i18n/config.ts` nos 3 idiomas (PT/EN/ES).
-- Zero texto hardcoded — 100% via `t()`.
-- Erros da Meta API traduzidos com chaves como `integrations.errors.tokenExpired`.
-- Status de conexão, botões, tooltips, notificações — tudo localizado.
+**Estado atual:** O `meta-disconnect` limpa tokens e atualiza status para `disconnected`, mas **preserva** `ads_data` e `instagram_data`. Isso é o comportamento correto — dados históricos são ativos estratégicos.
 
----
-
-### 8. Preservação Estrutural — CONFIRMADO
-
-- Zero alterações em rotas existentes
-- Zero alterações em componentes existentes (exceto Settings.tsx que ganha uma nova tab)
-- Stripe, agentes, auth, tabelas atuais intactos
-- Implementação 100% modular: novas tabelas, novos edge functions, nova tab em Settings
+**Nenhuma correção necessária**, apenas documentar como intencional.
 
 ---
 
-### 9. Dados: Cache + Histórico
+### 6. Métricas vs Criativos — GAP PARCIAL
 
-- `ads_data` e `instagram_data` mantêm **histórico permanente** com `date_range_start` / `date_range_end`.
-- Cada sync adiciona registros novos (INSERT), não sobrescreve.
-- Isso permite análise temporal e alimenta futuramente o DNA Intelligence Engine.
-- Cleanup opcional futuro: dados > 12 meses podem ser arquivados.
+**Estado atual:** A tabela `ads_data` tem campos `ad_creative_body` e `ad_creative_title`, mas o `meta-sync` **não os preenche**. A API call não solicita `ad.creative{body,title}` nos fields.
+
+**Correção necessária:** Após coletar insights, fazer uma chamada adicional para `GET /{ad_id}?fields=creative{body,title,link_url}` para associar o copy ao desempenho. Isso é fundamental para o DNA Intelligence Engine.
 
 ---
 
-### Plano de Implementação (Sprint 2)
+### 7. Status Estruturado — GAP
 
-**Passo 1: Secrets**
-- Solicitar ao usuário: `META_APP_ID`, `META_APP_SECRET`, `ENCRYPTION_KEY`
+**Estado atual:** O campo `status` em `user_integrations` usa apenas `connected` e `disconnected`. Não há tratamento para `token_expired`, `permission_revoked`, `rate_limited` ou `error`.
 
-**Passo 2: Migração SQL**
-- Habilitar `pgcrypto` extension
-- Criar tabelas: `user_integrations`, `integration_logs`, `ads_data` (com métricas de funil ampliadas), `instagram_data`
-- RLS em todas as tabelas
+**Correção necessária:** Expandir os status possíveis e atualizar o `meta-sync` para transicionar entre eles com base nos erros da Meta API. O frontend já lida com status via Badge — basta mapear os novos valores.
 
-**Passo 3: Edge Functions**
-- `meta-oauth`: Inicia OAuth, recebe callback, criptografa e armazena tokens, registra log
-- `meta-disconnect`: Revoga token, atualiza status, registra log
-- `meta-sync`: Coleta dados da Meta API com cooldown de 15min, armazena métricas incluindo ViewContent/InitiateCheckout/Purchase, registra log
+---
 
-**Passo 4: Frontend**
-- Nova tab "Integrações" em `/dashboard/settings` com connect/disconnect Meta, status, último sync
-- ~60 chaves i18n (PT/EN/ES)
+### 8. Segurança — CONFIRMADO
 
-**Passo 5: config.toml**
-- Adicionar as 3 novas functions com `verify_jwt = false`
+- Tokens são criptografados via `pgp_sym_encrypt()` na function `upsert_user_integration` (SECURITY DEFINER)
+- `ENCRYPTION_KEY` é acessada apenas via `Deno.env.get()` nas Edge Functions
+- Nenhum `console.log` contém tokens — apenas user IDs e status
+- O frontend nunca recebe tokens — apenas status e metadados
+- Decriptação ocorre apenas no `meta-sync` via `get_decrypted_token` (SECURITY DEFINER)
+
+---
+
+### Plano de Correções (Sprint 2.1 — Hardening)
+
+**Migração SQL:**
+1. Adicionar índices de performance em `ads_data` e `instagram_data`
+
+**Edge Function `meta-sync` — Atualizar:**
+1. Verificar `token_expires_at` antes de chamar a API — se expirado, setar status `token_expired` e retornar erro
+2. Detectar error codes da Meta (190, 10, 4) e atualizar status da integração (`token_expired`, `permission_revoked`, `rate_limited`)
+3. Após coletar insights de ads, fazer chamada adicional para buscar `creative{body,title}` e popular `ad_creative_body` / `ad_creative_title`
+
+**Frontend `Settings.tsx` — Atualizar:**
+1. Mapear novos status (`token_expired`, `error`, `permission_revoked`) no Badge e mostrar mensagem/ação apropriada (ex: "Reconectar")
+
+**i18n — Adicionar ~8 chaves:**
+1. Mensagens para `token_expired`, `permission_revoked`, `reconnect` nos 3 idiomas
+
+**Nenhuma alteração em:**
+- Rotas existentes, Stripe, agentes, auth, tabelas atuais
+- Apenas updates em `meta-sync`, `Settings.tsx`, e nova migração SQL
 
