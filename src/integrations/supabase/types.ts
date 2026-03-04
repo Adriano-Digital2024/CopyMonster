@@ -447,6 +447,36 @@ export type Database = {
           },
         ]
       }
+      creative_classifications: {
+        Row: {
+          ad_id: string
+          classification: string
+          created_at: string
+          id: string
+          metrics_snapshot: Json
+          score: number
+          user_id: string
+        }
+        Insert: {
+          ad_id: string
+          classification?: string
+          created_at?: string
+          id?: string
+          metrics_snapshot?: Json
+          score?: number
+          user_id: string
+        }
+        Update: {
+          ad_id?: string
+          classification?: string
+          created_at?: string
+          id?: string
+          metrics_snapshot?: Json
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       discounts: {
         Row: {
           code: string
@@ -732,6 +762,36 @@ export type Database = {
           event_type?: string
           id?: string
           provider?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      intelligence_logs: {
+        Row: {
+          analysis_type: string
+          created_at: string
+          id: string
+          input_summary: Json | null
+          output_summary: Json | null
+          suggestions_generated: number
+          user_id: string
+        }
+        Insert: {
+          analysis_type?: string
+          created_at?: string
+          id?: string
+          input_summary?: Json | null
+          output_summary?: Json | null
+          suggestions_generated?: number
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string
+          created_at?: string
+          id?: string
+          input_summary?: Json | null
+          output_summary?: Json | null
+          suggestions_generated?: number
           user_id?: string
         }
         Relationships: []
