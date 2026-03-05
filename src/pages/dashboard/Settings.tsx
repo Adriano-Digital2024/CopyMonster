@@ -55,9 +55,30 @@ export default function Settings() {
   }, []);
 
   useEffect(() => {
+    // Check for OAuth redirect query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const metaParam = urlParams.get('meta');
+    if (metaParam === 'success') {
+      toast({
+        title: t('dashboard.settings.integrations.success.connected'),
+        description: t('dashboard.settings.integrations.success.connectedDesc'),
+      });
+      setIsConnecting(false);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (metaParam === 'error') {
+      toast({
+        title: t('dashboard.settings.integrations.errors.connectFailed'),
+        description: t('dashboard.settings.integrations.errors.connectFailedDesc'),
+        variant: 'destructive',
+      });
+      setIsConnecting(false);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     fetchMetaIntegration();
 
-    // Listen for OAuth callback messages
+    // Listen for OAuth callback messages (popup mode)
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'meta-oauth-success') {
         toast({
@@ -94,7 +115,11 @@ export default function Settings() {
       );
       const data = await res.json();
       if (data.url) {
-        window.open(data.url, 'meta-oauth', 'width=600,height=700');
+        const popup = window.open(data.url, 'meta-oauth', 'width=600,height=700');
+        if (!popup || popup.closed) {
+          // Popup blocked - redirect full page instead
+          window.location.href = data.url;
+        }
       } else {
         throw new Error('No OAuth URL returned');
       }
