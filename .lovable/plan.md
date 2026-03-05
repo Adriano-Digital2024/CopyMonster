@@ -1,87 +1,57 @@
-## Fix: Add `config_id` to Meta Business Login OAuth URL
 
-### Problem
 
-The Meta OAuth URL is missing the required `config_id` parameter for Facebook Login for Business. Without it, the Business Login flow fails silently on callback.
+## Diagnóstico: `ERR_BLOCKED_BY_RESPONSE` no Meta OAuth
 
-### Changes
+### Problema Real
 
-**1. Store config_id as a Supabase secret**
+O código backend está correto -- a URL gerada já contém `config_id=1920808931973572` (confirmado nos network requests). O problema é que o `window.open()` tenta abrir um popup do Facebook a partir do iframe do preview Lovable, e o Facebook bloqueia isso com o header `X-Frame-Options: DENY`.
 
-- Add secret `META_BUSINESS_CONFIG_ID` = `1920808931973572`
+Porém, mesmo em produção, popups podem ser bloqueados por pop-up blockers. A solução mais robusta é usar `window.location.href` como fallback quando o popup falhar.
 
-**2. Update `supabase/functions/meta-oauth/index.ts**`
+### Mudança Proposta
 
-- Read `META_BUSINESS_CONFIG_ID` from env
-- Append `&config_id=${businessConfigId}` to the OAuth URL (line 46)
-- No other changes — token exchange, redirect_uri, scopes, graph endpoints remain untouched
+**Arquivo:** `src/pages/dashboard/Settings.tsx` (linhas 96-98)
 
-### Add config_id to Meta Business Login OAuth URL
+Alterar a lógica de `handleConnectMeta` para:
+1. Tentar abrir popup com `window.open()`
+2. Se o popup for bloqueado (retorna `null`), redirecionar a página inteira com `window.location.href`
 
-### 1️⃣ Criar Secret no Supabase
-
-No projeto do Supabase:
-
-**Settings → Edge Functions → Secrets**
-
-Adicionar:
-
-```
-META_BUSINESS_CONFIG_ID=1920808931973572
+```typescript
+if (data.url) {
+  const popup = window.open(data.url, 'meta-oauth', 'width=600,height=700');
+  if (!popup || popup.closed) {
+    // Popup blocked - redirect full page instead
+    window.location.href = data.url;
+  }
+} else {
+  throw new Error('No OAuth URL returned');
+}
 ```
 
----
+Isso também requer ajustar o callback no backend para redirecionar de volta ao app em vez de usar `window.opener.postMessage` quando não há popup. Precisamos atualizar o `meta-oauth` edge function para detectar isso.
 
-### 2️⃣ Atualizar arquivo:
+### Mudança no Backend
 
-```
-supabase/functions/meta-oauth/index.ts
-```
+**Arquivo:** `supabase/functions/meta-oauth/index.ts`
 
-### Alterações:
+No callback de sucesso/erro, em vez de apenas tentar `window.opener.postMessage`, adicionar fallback de redirecionamento:
 
-- Ler variável do ambiente:
-
-```
-const businessConfigId = Deno.env.get("META_BUSINESS_CONFIG_ID")
-```
-
-- Adicionar na URL de OAuth (linha onde monta o login):
-
-```
-&config_id=${businessConfigId}
+```html
+<script>
+  if (window.opener) {
+    window.opener.postMessage({type:'meta-oauth-success'},'*');
+    window.close();
+  } else {
+    window.location.href = 'SITE_URL/dashboard/settings?meta=success';
+  }
+</script>
 ```
 
----
+Usar a variável `siteUrl` (já lida do env) para construir o redirect.
 
-## ✅ Resultado esperado
+### Resumo das Mudanças
 
-A URL final deverá ficar assim:
+1. **Frontend** (`Settings.tsx`): fallback de `window.location.href` quando popup é bloqueado
+2. **Backend** (`meta-oauth/index.ts`): fallback de redirect no callback quando `window.opener` não existe
+3. **Frontend** (`Settings.tsx`): detectar query param `?meta=success` ou `?meta=error` no carregamento da página para atualizar o estado da integração
 
-```
-https://www.facebook.com/v19.0/dialog/oauth?
-client_id=APP_ID
-&redirect_uri=REDIRECT_URI
-&scope=SCOPES
-&response_type=code
-&config_id=1920808931973572
-```
-
----
-
-# 🚨 Importante
-
-Não alterar:
-
-- scopes
-- redirect_uri
-- token exchange
-- graph endpoints
-
-Somente adicionar `config_id`. Result
-
-OAuth URL will become:
-
-```
-...&response_type=code&config_id=1920808931973572
-```
