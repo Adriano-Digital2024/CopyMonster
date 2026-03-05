@@ -1,57 +1,48 @@
 
 
-## Diagnóstico: `ERR_BLOCKED_BY_RESPONSE` no Meta OAuth
+## Diagnóstico: Dois problemas encontrados
 
-### Problema Real
+### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
 
-O código backend está correto -- a URL gerada já contém `config_id=1920808931973572` (confirmado nos network requests). O problema é que o `window.open()` tenta abrir um popup do Facebook a partir do iframe do preview Lovable, e o Facebook bloqueia isso com o header `X-Frame-Options: DENY`.
+O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
 
-Porém, mesmo em produção, popups podem ser bloqueados por pop-up blockers. A solução mais robusta é usar `window.location.href` como fallback quando o popup falhar.
+**Solução (manual, fora do Lovable):**
+1. Acesse https://developers.facebook.com → seu App
+2. Vá em **App Review** ou **App Mode** e mude para **Live**
+3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
 
-### Mudança Proposta
+### Problema 2: `pgp_sym_encrypt` falha na produção
 
-**Arquivo:** `src/pages/dashboard/Settings.tsx` (linhas 96-98)
+Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
 
-Alterar a lógica de `handleConnectMeta` para:
-1. Tentar abrir popup com `window.open()`
-2. Se o popup for bloqueado (retorna `null`), redirecionar a página inteira com `window.location.href`
-
-```typescript
-if (data.url) {
-  const popup = window.open(data.url, 'meta-oauth', 'width=600,height=700');
-  if (!popup || popup.closed) {
-    // Popup blocked - redirect full page instead
-    window.location.href = data.url;
-  }
-} else {
-  throw new Error('No OAuth URL returned');
-}
+```
+error: "function pgp_sym_encrypt(text, text) does not exist"
+step: "store_token"
 ```
 
-Isso também requer ajustar o callback no backend para redirecionar de volta ao app em vez de usar `window.opener.postMessage` quando não há popup. Precisamos atualizar o `meta-oauth` edge function para detectar isso.
+A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
 
-### Mudança no Backend
+**Solução (SQL a executar no Supabase):**
 
-**Arquivo:** `supabase/functions/meta-oauth/index.ts`
+Atualizar a function para qualificar as chamadas com `extensions.`:
 
-No callback de sucesso/erro, em vez de apenas tentar `window.opener.postMessage`, adicionar fallback de redirecionamento:
-
-```html
-<script>
-  if (window.opener) {
-    window.opener.postMessage({type:'meta-oauth-success'},'*');
-    window.close();
-  } else {
-    window.location.href = 'SITE_URL/dashboard/settings?meta=success';
-  }
-</script>
+```sql
+CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
+  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
 ```
 
-Usar a variável `siteUrl` (já lida do env) para construir o redirect.
+E fazer o mesmo na function `get_decrypted_token`:
+```sql
+  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
+```
 
-### Resumo das Mudanças
+### Resumo das Ações
 
-1. **Frontend** (`Settings.tsx`): fallback de `window.location.href` quando popup é bloqueado
-2. **Backend** (`meta-oauth/index.ts`): fallback de redirect no callback quando `window.opener` não existe
-3. **Frontend** (`Settings.tsx`): detectar query param `?meta=success` ou `?meta=error` no carregamento da página para atualizar o estado da integração
+| Ação | Onde | Tipo |
+|------|------|------|
+| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
+| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
+| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
+
+Nenhuma alteração de código frontend ou edge function é necessária.
 
