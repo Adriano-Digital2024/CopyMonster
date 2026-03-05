@@ -59,7 +59,7 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-        return new Response(`<html><body><script>window.opener?.postMessage({type:'meta-oauth-error'},'*');window.close();</script></body></html>`, {
+        return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-error'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=error';}</script></body></html>`, {
           headers: { 'Content-Type': 'text/html' }
         });
       }
@@ -82,7 +82,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
-        return new Response(`<html><body><script>window.opener?.postMessage({type:'meta-oauth-error'},'*');window.close();</script></body></html>`, {
+        return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-error'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=error';}</script></body></html>`, {
           headers: { 'Content-Type': 'text/html' }
         });
       }
@@ -133,7 +133,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: upsertError.message, step: 'store_token' }
         });
-        return new Response(`<html><body><script>window.opener?.postMessage({type:'meta-oauth-error'},'*');window.close();</script></body></html>`, {
+        return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-error'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=error';}</script></body></html>`, {
           headers: { 'Content-Type': 'text/html' }
         });
       }
@@ -148,7 +148,7 @@ serve(async (req) => {
 
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
-      return new Response(`<html><body><script>window.opener?.postMessage({type:'meta-oauth-success'},'*');window.close();</script></body></html>`, {
+      return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-success'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=success';}</script></body></html>`, {
         headers: { 'Content-Type': 'text/html' }
       });
     }
