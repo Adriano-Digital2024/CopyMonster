@@ -193,7 +193,7 @@ serve(async (req) => {
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
       return new Response(buildCallbackHtml('success', siteUrl), {
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
     }
 
