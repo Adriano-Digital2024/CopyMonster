@@ -59,7 +59,7 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-        return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-error'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=error';}</script></body></html>`, {
+        return new Response(buildCallbackHtml('error', siteUrl), {
           headers: { 'Content-Type': 'text/html' }
         });
       }
