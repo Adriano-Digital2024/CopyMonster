@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Radar, TrendingUp, Zap, Globe, TrendingDown, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMetaIntegration } from '@/hooks/useMetaIntegration';
+import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPrompt';
 
 export default function MarketRadar() {
   const { t } = useTranslation();
