@@ -103,8 +103,8 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-        return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html' }
+      return new Response(buildCallbackHtml('error', siteUrl), {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
 
