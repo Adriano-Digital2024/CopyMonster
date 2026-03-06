@@ -181,6 +181,8 @@ export default function AdsIntelligence() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
+        ) : (!meta.isConnected || !meta.hasData) ? (
+          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} />
         ) : adsData.length === 0 ? (
           <Card className="p-8 text-center">
             <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />

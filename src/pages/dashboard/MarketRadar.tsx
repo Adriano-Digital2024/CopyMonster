@@ -52,8 +52,12 @@ export default function MarketRadar() {
           <p className="text-muted-foreground">{t('intelligence.radar.subtitle')}</p>
         </div>
 
+        {(!meta.isConnected || !meta.hasData) && !loading && (
+          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} />
+        )}
+
         {/* Trend Signals from Classifications */}
-        {!loading && trends.total > 0 && (
+        {!loading && meta.hasData && trends.total > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="p-4">
               <div className="flex items-center gap-3">
