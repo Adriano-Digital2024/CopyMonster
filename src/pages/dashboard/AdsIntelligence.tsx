@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { toast } from 'sonner';
+import { useMetaIntegration } from '@/hooks/useMetaIntegration';
+import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPrompt';
 
 export default function AdsIntelligence() {
   const { t, i18n } = useTranslation();
