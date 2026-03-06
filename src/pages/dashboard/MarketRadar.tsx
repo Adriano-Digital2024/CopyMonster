@@ -6,10 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Radar, TrendingUp, Zap, Globe, TrendingDown, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMetaIntegration } from '@/hooks/useMetaIntegration';
+import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPrompt';
 
 export default function MarketRadar() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const meta = useMetaIntegration();
   const [trends, setTrends] = useState<{ declines: number; newHigh: number; total: number }>({ declines: 0, newHigh: 0, total: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -49,8 +52,12 @@ export default function MarketRadar() {
           <p className="text-muted-foreground">{t('intelligence.radar.subtitle')}</p>
         </div>
 
+        {(!meta.isConnected || !meta.hasData) && !loading && (
+          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} />
+        )}
+
         {/* Trend Signals from Classifications */}
-        {!loading && trends.total > 0 && (
+        {!loading && meta.hasData && trends.total > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="p-4">
               <div className="flex items-center gap-3">

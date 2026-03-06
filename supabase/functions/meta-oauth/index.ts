@@ -103,8 +103,8 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-        return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html' }
+      return new Response(buildCallbackHtml('error', siteUrl), {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
 
@@ -127,7 +127,7 @@ serve(async (req) => {
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
         return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html' }
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
 
@@ -178,7 +178,7 @@ serve(async (req) => {
           details: { error: upsertError.message, step: 'store_token' }
         });
         return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html' }
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
 
@@ -193,7 +193,7 @@ serve(async (req) => {
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
       return new Response(buildCallbackHtml('success', siteUrl), {
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
     }
 

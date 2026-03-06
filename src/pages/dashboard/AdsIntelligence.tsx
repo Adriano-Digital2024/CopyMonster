@@ -9,10 +9,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { toast } from 'sonner';
+import { useMetaIntegration } from '@/hooks/useMetaIntegration';
+import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPrompt';
 
 export default function AdsIntelligence() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const meta = useMetaIntegration();
   const [adsData, setAdsData] = useState<any[]>([]);
   const [classifications, setClassifications] = useState<Record<string, { classification: string; score: number }>>({});
   const [loading, setLoading] = useState(true);
@@ -178,6 +181,8 @@ export default function AdsIntelligence() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
+        ) : (!meta.isConnected || !meta.hasData) ? (
+          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} />
         ) : adsData.length === 0 ? (
           <Card className="p-8 text-center">
             <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
