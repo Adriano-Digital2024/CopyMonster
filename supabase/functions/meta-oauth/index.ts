@@ -148,7 +148,7 @@ serve(async (req) => {
 
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
-      return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-success'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=success';}</script></body></html>`, {
+      return new Response(buildCallbackHtml('success', siteUrl), {
         headers: { 'Content-Type': 'text/html' }
       });
     }
