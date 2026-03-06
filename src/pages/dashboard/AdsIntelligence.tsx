@@ -15,6 +15,7 @@ import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPr
 export default function AdsIntelligence() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const meta = useMetaIntegration();
   const [adsData, setAdsData] = useState<any[]>([]);
   const [classifications, setClassifications] = useState<Record<string, { classification: string; score: number }>>({});
   const [loading, setLoading] = useState(true);
