@@ -13,6 +13,7 @@ import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPr
 export default function PerformanceOverview() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const meta = useMetaIntegration();
   const [adsData, setAdsData] = useState<any[]>([]);
   const [igData, setIgData] = useState<any[]>([]);
   const [classifications, setClassifications] = useState<{ high: number; stable: number; under: number; insufficient: number }>({ high: 0, stable: 0, under: 0, insufficient: 0 });
