@@ -1,48 +1,41 @@
 
 
-## Diagnóstico: Dois problemas encontrados
+## Diagnosis
 
-### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
+The Meta OAuth connection is **working correctly**. Evidence:
 
-O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
+- Edge function logs: `Successfully connected for user 863b030e...`
+- Database: `status = 'connected'`, `meta_ad_account_id = act_1900689210361394`, all 6 scopes stored
+- No errors in edge function logs
 
-**Solução (manual, fora do Lovable):**
-1. Acesse https://developers.facebook.com → seu App
-2. Vá em **App Review** ou **App Mode** e mude para **Live**
-3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
+The "Permissão Revogada" badge in the screenshot is the **old state** before this connection attempt.
 
-### Problema 2: `pgp_sym_encrypt` falha na produção
+### What the user sees as "error"
 
-Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
+The popup shows the raw HTML response from the callback. This happens because:
 
-```
-error: "function pgp_sym_encrypt(text, text) does not exist"
-step: "store_token"
-```
+1. `window.opener` is `null` due to cross-origin navigation (parent on `app.copymonster.me` → popup navigated through `facebook.com` → `supabase.co`)
+2. The fallback `window.location.href` tries to redirect to `SITE_URL/dashboard/settings?meta=success`
+3. But the user sees the raw HTML momentarily before the redirect
 
-A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
+### Fixes
 
-**Solução (SQL a executar no Supabase):**
+**1. Improve popup HTML response** - Add visible loading text and a `meta` refresh fallback so the user sees "Conectando..." instead of raw script tags, and ensure the redirect always works even if JS fails.
 
-Atualizar a function para qualificar as chamadas com `extensions.`:
+**2. Use `document.referrer` or `localStorage` as fallback** - Store a flag in `localStorage` before opening the popup, then check it on the Settings page load to detect successful connections even if `postMessage` fails.
 
-```sql
-CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
-  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
-```
+### Technical Changes
 
-E fazer o mesmo na function `get_decrypted_token`:
-```sql
-  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
-```
+**File: `supabase/functions/meta-oauth/index.ts`**
+- Replace all 4 HTML response templates (3 error + 1 success) with proper HTML that shows a visual message ("Conectando..." or "Erro") and includes multiple fallback mechanisms:
+  - `window.opener.postMessage` (primary)
+  - `window.close()` (for popup mode)
+  - `window.location.href` redirect (fallback)
+  - `<meta http-equiv="refresh">` (ultimate fallback)
 
-### Resumo das Ações
+**File: `src/pages/dashboard/Settings.tsx`**
+- After `fetchMetaIntegration()` completes on mount, ensure the UI reflects the current DB status (which is already `connected`)
+- No logic change needed - the existing code already handles `?meta=success` param and `postMessage` events
 
-| Ação | Onde | Tipo |
-|------|------|------|
-| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
-| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
-| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
-
-Nenhuma alteração de código frontend ou edge function é necessária.
+The edge function will be redeployed after the changes.
 
