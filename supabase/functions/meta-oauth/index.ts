@@ -178,7 +178,7 @@ serve(async (req) => {
           details: { error: upsertError.message, step: 'store_token' }
         });
         return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html' }
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
 
