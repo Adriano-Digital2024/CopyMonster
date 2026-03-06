@@ -127,7 +127,7 @@ serve(async (req) => {
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
         return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html' }
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
 
