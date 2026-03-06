@@ -7,6 +7,8 @@ import { Loader2, TrendingUp, Instagram, Megaphone, BarChart3 } from 'lucide-rea
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useMetaIntegration } from '@/hooks/useMetaIntegration';
+import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPrompt';
 
 export default function PerformanceOverview() {
   const { t } = useTranslation();
