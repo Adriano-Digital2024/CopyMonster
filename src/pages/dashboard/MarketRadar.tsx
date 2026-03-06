@@ -12,6 +12,7 @@ import { MetaConnectionPrompt } from '@/components/intelligence/MetaConnectionPr
 export default function MarketRadar() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const meta = useMetaIntegration();
   const [trends, setTrends] = useState<{ declines: number; newHigh: number; total: number }>({ declines: 0, newHigh: 0, total: 0 });
   const [loading, setLoading] = useState(true);
 
