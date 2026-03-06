@@ -82,7 +82,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
-        return new Response(`<html><body><script>if(window.opener){window.opener.postMessage({type:'meta-oauth-error'},'*');window.close();}else{window.location.href='${siteUrl}/dashboard/settings?meta=error';}</script></body></html>`, {
+        return new Response(buildCallbackHtml('error', siteUrl), {
           headers: { 'Content-Type': 'text/html' }
         });
       }
