@@ -145,14 +145,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fetch ads_data (last 30 days)
+    // Fetch ads_data (filter by date_range_end to include lifetime data with old start dates)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
     const { data: adsData } = await adminClient
       .from("ads_data")
       .select("*")
       .eq("user_id", user.id)
-      .gte("date_range_start", thirtyDaysAgo)
-      .order("date_range_start", { ascending: false })
+      .gte("date_range_end", thirtyDaysAgo)
+      .order("date_range_end", { ascending: false })
       .limit(500);
 
     if (!adsData || adsData.length === 0) {
