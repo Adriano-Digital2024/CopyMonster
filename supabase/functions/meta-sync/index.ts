@@ -300,9 +300,55 @@ serve(async (req) => {
           });
 
           if (adsRows.length > 0) {
+            // Dedup: delete old ads_data before inserting fresh results
+            await adminSupabase.from('ads_data').delete().eq('user_id', userId);
+
+            // Follow pagination to collect all pages
+            let nextUrl = adsData.paging?.next;
+            while (nextUrl) {
+              try {
+                const nextRes = await fetch(nextUrl);
+                const nextData = await nextRes.json();
+                if (nextData.data && nextData.data.length > 0) {
+                  for (const row of nextData.data) {
+                    const actions = row.actions || [];
+                    const actionValues = row.action_values || [];
+                    const getAction = (type: string) => { const a = actions.find((a: any) => a.action_type === type); return a ? parseInt(a.value) : 0; };
+                    const getActionValue = (type: string) => { const v = actionValues.find((v: any) => v.action_type === type); return v ? parseFloat(v.value) : 0; };
+                    const spend = parseFloat(row.spend || '0');
+                    const viewContent = getAction('offsite_conversion.fb_pixel_view_content');
+                    const initiateCheckout = getAction('offsite_conversion.fb_pixel_initiate_checkout');
+                    const purchases = getAction('offsite_conversion.fb_pixel_purchase');
+                    const purchaseValue = getActionValue('offsite_conversion.fb_pixel_purchase');
+                    const creative = creativeMap.get(row.ad_id);
+                    adsRows.push({
+                      user_id: userId, campaign_name: row.campaign_name, campaign_id: row.campaign_id,
+                      adset_name: row.adset_name, adset_id: row.adset_id, ad_name: row.ad_name, ad_id: row.ad_id,
+                      impressions: parseInt(row.impressions || '0'), clicks: parseInt(row.clicks || '0'), spend,
+                      ctr: parseFloat(row.ctr || '0'), cpc: parseFloat(row.cpc || '0'), cpm: parseFloat(row.cpm || '0'),
+                      reach: parseInt(row.reach || '0'), frequency: parseFloat(row.frequency || '0'),
+                      roas: spend > 0 ? purchaseValue / spend : 0, view_content: viewContent,
+                      initiate_checkout: initiateCheckout, purchases, purchase_value: purchaseValue,
+                      cost_per_view_content: viewContent > 0 ? spend / viewContent : 0,
+                      cost_per_initiate_checkout: initiateCheckout > 0 ? spend / initiateCheckout : 0,
+                      cost_per_purchase: purchases > 0 ? spend / purchases : 0,
+                      ad_creative_body: creative?.body || null, ad_creative_title: creative?.title || null,
+                      date_range_start: row.date_start || new Date().toISOString().split('T')[0],
+                      date_range_end: row.date_stop || new Date().toISOString().split('T')[0],
+                    });
+                  }
+                }
+                nextUrl = nextData.paging?.next;
+              } catch (pageErr) {
+                console.error(`[meta-sync] Pagination error: ${(pageErr as Error).message}`);
+                break;
+              }
+            }
+
+            console.log(`[meta-sync] Total ads rows after pagination: ${adsRows.length}`);
             const { error: insertError } = await adminSupabase.from('ads_data').insert(adsRows);
             if (insertError) {
-              console.error(`[meta-sync] Failed to insert ads data for user ${userId}`);
+              console.error(`[meta-sync] Failed to insert ads data for user ${userId}: ${insertError.message}`);
             } else {
               adsCount = adsRows.length;
             }
