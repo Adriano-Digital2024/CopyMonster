@@ -6,48 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-function buildCallbackHtml(result: 'success' | 'error', siteUrl: string): string {
-  const isSuccess = result === 'success';
-  const messageType = isSuccess ? 'meta-oauth-success' : 'meta-oauth-error';
+function redirectTo(siteUrl: string, result: 'success' | 'error'): Response {
   const redirectUrl = `${siteUrl}/dashboard/settings?meta=${result}`;
-  const title = isSuccess ? 'Conexão realizada!' : 'Erro na conexão';
-  const subtitle = isSuccess
-    ? 'Você será redirecionado automaticamente...'
-    : 'Ocorreu um erro. Redirecionando...';
-  const emoji = isSuccess ? '✅' : '❌';
-
-  return `<!DOCTYPE html>
-<html><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="3;url=${redirectUrl}">
-<title>${title}</title>
-<style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a0a;color:#fff}
-  .card{text-align:center;padding:2rem;border-radius:12px;background:#1a1a1a;border:1px solid #333;max-width:360px}
-  .emoji{font-size:3rem;margin-bottom:1rem}
-  h1{font-size:1.25rem;margin:0 0 .5rem}
-  p{color:#888;font-size:.875rem;margin:0}
-</style>
-</head><body>
-<div class="card">
-  <div class="emoji">${emoji}</div>
-  <h1>${title}</h1>
-  <p>${subtitle}</p>
-</div>
-<script>
-try {
-  if (window.opener && !window.opener.closed) {
-    window.opener.postMessage({type:'${messageType}'},'*');
-    setTimeout(function(){ window.close(); }, 1500);
-  } else {
-    setTimeout(function(){ window.location.href='${redirectUrl}'; }, 1500);
-  }
-} catch(e) {
-  setTimeout(function(){ window.location.href='${redirectUrl}'; }, 1500);
-}
-</script>
-</body></html>`;
+  return new Response(null, {
+    status: 302,
+    headers: { 'Location': redirectUrl },
+  });
 }
 
 serve(async (req) => {
@@ -103,9 +67,7 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-      return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
-        });
+        return redirectTo(siteUrl, 'error');
       }
 
       const userId = state;
@@ -126,9 +88,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
-        return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
-        });
+        return redirectTo(siteUrl, 'error');
       }
 
       // Exchange short-lived token for long-lived token
@@ -156,7 +116,6 @@ serve(async (req) => {
       // Encrypt and store token using service role (bypasses RLS for upsert)
       const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
 
-      // Encrypt token in SQL using pgcrypto
       const { error: upsertError } = await adminSupabase.rpc('upsert_user_integration' as any, {
         p_user_id: userId,
         p_provider: 'meta',
@@ -177,9 +136,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: upsertError.message, step: 'store_token' }
         });
-        return new Response(buildCallbackHtml('error', siteUrl), {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
-        });
+        return redirectTo(siteUrl, 'error');
       }
 
       // Log successful connection
@@ -192,9 +149,7 @@ serve(async (req) => {
 
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
-      return new Response(buildCallbackHtml('success', siteUrl), {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
-      });
+      return redirectTo(siteUrl, 'success');
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
@@ -203,7 +158,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error(`[meta-oauth] Unexpected error:`, error.message);
+    console.error(`[meta-oauth] Unexpected error:`, (error as Error).message);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
