@@ -294,8 +294,8 @@ serve(async (req) => {
               cost_per_purchase: purchases > 0 ? spend / purchases : 0,
               ad_creative_body: creative?.body || null,
               ad_creative_title: creative?.title || null,
-              date_range_start: dateStart,
-              date_range_end: dateEnd,
+              date_range_start: row.date_start || new Date().toISOString().split('T')[0],
+              date_range_end: row.date_stop || new Date().toISOString().split('T')[0],
             };
           });
 
