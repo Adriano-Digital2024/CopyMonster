@@ -62,7 +62,7 @@ serve(async (req) => {
 
       const redirectUri = `${supabaseUrl}/functions/v1/meta-oauth?action=callback`;
       const state = userData.user.id; // user_id as state for callback
-      const scopes = 'ads_management,ads_read,business_management,pages_show_list,pages_read_engagement,public_profile';
+      const scopes = 'ads_management,ads_read,business_management,pages_show_list,pages_read_engagement,public_profile,instagram_basic,instagram_manage_insights';
 
       const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code&config_id=${businessConfigId}`;
 
@@ -137,7 +137,7 @@ serve(async (req) => {
         p_meta_user_id: meData.id || null,
         p_meta_ad_account_id: adAccountId,
         p_instagram_account_id: igAccountId,
-        p_scopes: ['ads_management', 'ads_read', 'business_management', 'pages_show_list', 'pages_read_engagement', 'public_profile'],
+        p_scopes: ['ads_management', 'ads_read', 'business_management', 'pages_show_list', 'pages_read_engagement', 'public_profile', 'instagram_basic', 'instagram_manage_insights'],
       });
 
       if (upsertError) {

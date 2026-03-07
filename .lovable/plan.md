@@ -1,43 +1,48 @@
 
 
-## Diagnosis
+## Diagnóstico: Dois problemas encontrados
 
-The Meta integration is connected (status: `connected`, token valid until May 2026), sync executes successfully (HTTP 200), but Meta Insights API returns `{"data":[]}` for both `level=ad` and `level=campaign` over the last 90 days. The user confirms ads exist in `act_1900689210361394`.
+### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
 
-Two problems to fix:
+O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
 
-### Problem 1: Empty Insights response despite active ads
+**Solução (manual, fora do Lovable):**
+1. Acesse https://developers.facebook.com → seu App
+2. Vá em **App Review** ou **App Mode** e mude para **Live**
+3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
 
-The current query uses a custom `time_range` with `level=ad`. If the account has campaigns that ran outside the 90-day window, or if the campaigns are draft/paused with no spend, Insights returns empty. We need better diagnostics:
+### Problema 2: `pgp_sym_encrypt` falha na produção
 
-- Query the `/campaigns` endpoint directly (not insights) to list campaigns and their statuses — this confirms whether campaigns exist at all
-- Try `date_preset=maximum` instead of a fixed 90-day range to capture all historical data
-- Try account-level insights (no `level` param) as a simpler fallback
-- Log all results for diagnosis
+Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
 
-### Problem 2: Instagram scopes missing from OAuth
+```
+error: "function pgp_sym_encrypt(text, text) does not exist"
+step: "store_token"
+```
 
-The user wants Instagram sync, but the OAuth flow currently requests only ads scopes. Need to add `instagram_basic` and `instagram_manage_insights` back.
+A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
 
----
+**Solução (SQL a executar no Supabase):**
 
-## Technical Changes
+Atualizar a function para qualificar as chamadas com `extensions.`:
 
-### 1. `supabase/functions/meta-oauth/index.ts`
-- Add `instagram_basic,instagram_manage_insights` to the `scopes` string on line 65
-- Add these to the `p_scopes` array on line 140
+```sql
+CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
+  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
+```
 
-### 2. `supabase/functions/meta-sync/index.ts`
-- Before running Insights, query `GET /{ad_account_id}/campaigns?fields=id,name,status,objective&limit=100` to list campaigns and log them — this tells us if the account has campaigns at all
-- Change from `time_range` (90 days) to `date_preset=maximum` to capture ALL historical data, not just the last 90 days
-- If `level=ad` returns empty, try account-level (no `level` param) with `date_preset=maximum` as a second fallback
-- Log campaign list and account-level insights for debugging
+E fazer o mesmo na function `get_decrypted_token`:
+```sql
+  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
+```
 
-### 3. Redeploy both edge functions
+### Resumo das Ações
 
-### 4. After deployment
-User will need to:
-1. Disconnect and reconnect Meta (to get new Instagram scopes)
-2. Sync again
-3. We check the logs for the campaign list diagnostic
+| Ação | Onde | Tipo |
+|------|------|------|
+| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
+| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
+| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
+
+Nenhuma alteração de código frontend ou edge function é necessária.
 
