@@ -161,7 +161,7 @@ serve(async (req) => {
 
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
-      return redirectTo(siteUrl, 'success');
+      return buildCallbackHtml(siteUrl, 'success');
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
