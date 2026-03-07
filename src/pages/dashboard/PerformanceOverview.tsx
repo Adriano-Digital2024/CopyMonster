@@ -85,7 +85,7 @@ export default function PerformanceOverview() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (!meta.isConnected || !meta.hasData) ? (
-          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} />
+          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} isSynced={meta.isSynced} />
         ) : (
           <>
             {/* Classification Summary */}
