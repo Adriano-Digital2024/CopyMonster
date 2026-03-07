@@ -295,8 +295,9 @@ serve(async (req) => {
       }
     }
 
-    // Sync Instagram Data
-    if (integration.instagram_account_id && !hasFatalError) {
+    // Sync Instagram Data (only if scopes allow)
+    if (integration.instagram_account_id && hasIgScopes && !hasFatalError) {
+      console.log(`[meta-sync] Starting Instagram sync for account ${integration.instagram_account_id}`);
       try {
         const mediaUrl = `https://graph.facebook.com/v21.0/${integration.instagram_account_id}/media?fields=id,caption,media_type,permalink,timestamp,insights.metric(impressions,reach,engagement,saved,shares,plays)&limit=50&access_token=${accessToken}`;
         const igResponse = await fetch(mediaUrl);
