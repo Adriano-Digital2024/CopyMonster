@@ -59,7 +59,7 @@ export function useMetaIntegration(): MetaIntegrationResult {
 
   return {
     status,
-    isConnected: status === 'connected',
+    isConnected: status === 'connected' || status === 'permission_revoked',
     hasData,
     isLoading,
     isSynced: lastSyncedAt !== null,
