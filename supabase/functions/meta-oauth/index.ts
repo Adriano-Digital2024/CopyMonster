@@ -148,7 +148,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: upsertError.message, step: 'store_token' }
         });
-        return redirectTo(siteUrl, 'error');
+        return buildCallbackHtml(siteUrl, 'error');
       }
 
       // Log successful connection
