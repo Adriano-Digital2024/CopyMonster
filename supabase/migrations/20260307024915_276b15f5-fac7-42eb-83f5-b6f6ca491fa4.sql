@@ -1,0 +1,1 @@
+UPDATE public.user_integrations SET status = 'connected' WHERE status = 'permission_revoked' AND provider = 'meta';

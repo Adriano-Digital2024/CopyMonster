@@ -328,10 +328,11 @@ serve(async (req) => {
         if (igData.error) {
           const classification = classifyMetaError(igData.error);
           if (classification) {
-            await updateIntegrationStatus(adminSupabase, userId, classification.status);
+            // Do NOT update integration status for IG errors — ads may still work fine
+            console.log(`[meta-sync] Instagram permission issue (non-fatal): ${igData.error.message}`);
             await adminSupabase.from('integration_logs').insert({
               user_id: userId, provider: 'meta', event_type: classification.eventType,
-              details: { error: igData.error.message, code: igData.error.code, endpoint: 'instagram_media' }
+              details: { error: igData.error.message, code: igData.error.code, endpoint: 'instagram_media', non_fatal: true }
             });
             // Don't return here — ads may have succeeded, just stop IG sync
           } else {

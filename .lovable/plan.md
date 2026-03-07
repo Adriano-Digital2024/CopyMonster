@@ -1,59 +1,48 @@
 
 
-## Diagnosis
+## Diagnóstico: Dois problemas encontrados
 
-From the database analysis, here's exactly what's happening:
+### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
 
-### Root Cause: Instagram error corrupts the entire integration status
+O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
 
-1. **Integration status is `permission_revoked`** — not `connected`
-2. This happened because during the last sync, Instagram returned error code 10: *"Application does not have permission for this action"*
-3. The `meta-sync` function classified this IG error and called `updateIntegrationStatus(adminSupabase, userId, 'permission_revoked')` — overwriting the status for the **entire** integration
-4. Ads synced successfully (1 record exists in `ads_data`), but the status was already corrupted by the IG error
-5. `useMetaIntegration` checks `status === 'connected'` → `isConnected` is `false` → all 3 dashboard pages show MetaConnectionPrompt instead of data
+**Solução (manual, fora do Lovable):**
+1. Acesse https://developers.facebook.com → seu App
+2. Vá em **App Review** ou **App Mode** e mude para **Live**
+3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
 
-### Secondary issue: Instagram permissions not approved
-The Meta App likely hasn't had `instagram_basic` / `instagram_manage_insights` approved in Meta App Review, or the Instagram account isn't properly linked as a Business account. This is an external configuration issue, not a code bug.
+### Problema 2: `pgp_sym_encrypt` falha na produção
 
-### Data state
-- `ads_data`: 1 record (the sync worked for ads)
-- `instagram_data`: 0 records (IG permission denied)
-- `user_integrations.status`: `permission_revoked` (should be `connected` since ads work fine)
+Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
 
----
+```
+error: "function pgp_sym_encrypt(text, text) does not exist"
+step: "store_token"
+```
 
-## Technical Changes
+A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
 
-### 1. `supabase/functions/meta-sync/index.ts` — Don't let IG errors corrupt integration status
+**Solução (SQL a executar no Supabase):**
 
-**Current behavior** (line ~329-335): When Instagram returns an error with a classified code, it calls `updateIntegrationStatus` to set the whole integration to `permission_revoked`.
+Atualizar a function para qualificar as chamadas com `extensions.`:
 
-**Fix**: For Instagram errors, only log the error — do NOT update the main integration status. The integration status should reflect the primary (Ads) connection health. Add a separate field or just log it.
+```sql
+CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
+  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
+```
 
-Specifically:
-- Remove the `updateIntegrationStatus` call inside the Instagram error handler (lines 331-332)
-- Keep the `integration_logs` insert so the error is recorded
-- Add a console.log noting the IG permission issue was non-fatal
+E fazer o mesmo na function `get_decrypted_token`:
+```sql
+  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
+```
 
-### 2. `src/hooks/useMetaIntegration.ts` — Treat `permission_revoked` more gracefully
+### Resumo das Ações
 
-**Current behavior**: Only `status === 'connected'` sets `isConnected = true`.
+| Ação | Onde | Tipo |
+|------|------|------|
+| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
+| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
+| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
 
-**Fix**: Consider the integration "functional" if status is `connected` OR if `hasData` is true (meaning a successful sync happened at some point). This prevents a single IG error from hiding all existing ads data.
-
-Change the hook:
-- `isConnected`: true if status is `connected` OR `permission_revoked` (since ads may still work)
-- Add `status` to the returned object so pages can show a warning about partial permissions if needed
-
-### 3. Fix the current broken status in the database
-
-Run a data update to set the integration status back to `connected` so the user's dashboard works immediately after deployment.
-
-### 4. Redeploy `meta-sync` edge function
-
----
-
-## Summary
-
-The fix is small but critical: **Instagram errors should not override the integration status for the entire Meta connection.** Ads and Instagram are independent data sources, and a permission issue on one should not block the other.
+Nenhuma alteração de código frontend ou edge function é necessária.
 
