@@ -119,6 +119,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'not_connected' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    // Determine which syncs to run based on stored scopes
+    const scopes: string[] = integration.scopes || [];
+    const hasAdScopes = scopes.some(s => ['ads_management', 'ads_read'].includes(s));
+    const hasIgScopes = scopes.some(s => ['instagram_basic', 'instagram_manage_insights'].includes(s));
+    console.log(`[meta-sync] User ${userId} scopes: ${scopes.join(', ')} | hasAdScopes=${hasAdScopes} hasIgScopes=${hasIgScopes}`);
+
     // Check token expiration BEFORE calling Meta API
     if (integration.token_expires_at) {
       const expiresAt = new Date(integration.token_expires_at).getTime();
@@ -177,7 +183,7 @@ serve(async (req) => {
     let hasFatalError = false;
 
     // Sync Ads Data
-    if (integration.meta_ad_account_id && !hasFatalError) {
+    if (integration.meta_ad_account_id && hasAdScopes && !hasFatalError) {
       try {
         const today = new Date();
         const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -186,8 +192,13 @@ serve(async (req) => {
 
         const insightsUrl = `https://graph.facebook.com/v21.0/${integration.meta_ad_account_id}/insights?fields=campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,impressions,clicks,spend,ctr,cpc,cpm,reach,frequency,actions,cost_per_action_type,action_values&level=ad&time_range={"since":"${dateStart}","until":"${dateEnd}"}&limit=500&access_token=${accessToken}`;
 
+        console.log(`[meta-sync] Fetching ads insights for account ${integration.meta_ad_account_id}, range ${dateStart} to ${dateEnd}`);
         const adsResponse = await fetch(insightsUrl);
         const adsData = await adsResponse.json();
+        console.log(`[meta-sync] Ads API response status: ${adsResponse.status}, has error: ${!!adsData.error}, data count: ${adsData.data?.length ?? 'N/A'}`);
+        if (adsData.error) {
+          console.log(`[meta-sync] Ads API error detail: ${JSON.stringify(adsData.error)}`);
+        }
 
         if (adsData.error) {
           const classification = classifyMetaError(adsData.error);
@@ -284,8 +295,9 @@ serve(async (req) => {
       }
     }
 
-    // Sync Instagram Data
-    if (integration.instagram_account_id && !hasFatalError) {
+    // Sync Instagram Data (only if scopes allow)
+    if (integration.instagram_account_id && hasIgScopes && !hasFatalError) {
+      console.log(`[meta-sync] Starting Instagram sync for account ${integration.instagram_account_id}`);
       try {
         const mediaUrl = `https://graph.facebook.com/v21.0/${integration.instagram_account_id}/media?fields=id,caption,media_type,permalink,timestamp,insights.metric(impressions,reach,engagement,saved,shares,plays)&limit=50&access_token=${accessToken}`;
         const igResponse = await fetch(mediaUrl);

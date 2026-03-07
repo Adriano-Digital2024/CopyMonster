@@ -1,58 +1,48 @@
 
 
-## Diagnosis
+## Diagnóstico: Dois problemas encontrados
 
-Three distinct issues are preventing the flow from working end-to-end:
+### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
 
-### Issue 1: Authorization code used twice (popup bug)
+O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
 
-The logs show:
-- `00:02:29` — Successfully connected
-- `00:07:59` — "This authorization code has expired"
+**Solução (manual, fora do Lovable):**
+1. Acesse https://developers.facebook.com → seu App
+2. Vá em **App Review** ou **App Mode** e mude para **Live**
+3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
 
-The second failure happens because the user re-attempted the connection (possibly from the error page of the previous attempt or by clicking "Connect" again). The auth code is single-use and short-lived. This is not a code bug per se, but the UX should make it clearer when a connection already succeeded.
+### Problema 2: `pgp_sym_encrypt` falha na produção
 
-### Issue 2: Meta Ads sync returns 0 records every time
+Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
 
-All three sync attempts logged `ads_records: 0`. The meta-sync function calls the Meta Insights API correctly, but the response likely contains an empty `data` array. Possible causes:
-- The ad account `act_1900689210361394` may have no active or recent ads in the last 30 days
-- The `ads_management` scope might require additional approval for Insights access
+```
+error: "function pgp_sym_encrypt(text, text) does not exist"
+step: "store_token"
+```
 
-**Fix**: Add detailed logging to meta-sync so we can see the raw API response from Meta, making it possible to diagnose whether it's an empty account or an API error being silently swallowed.
+A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
 
-### Issue 3: Instagram sync fails — permission revoked
+**Solução (SQL a executar no Supabase):**
 
-The logs show: `(#10) Application does not have permission for this action` on the `instagram_media` endpoint. This is expected because the OAuth scopes were updated to remove `instagram_basic` and `instagram_manage_insights` per user request.
+Atualizar a function para qualificar as chamadas com `extensions.`:
 
-**Fix**: Update `meta-sync` to skip Instagram sync when the user's stored scopes don't include Instagram permissions. Currently it blindly tries IG sync whenever `instagram_account_id` exists.
+```sql
+CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
+  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
+```
 
-### Issue 4: Dashboard pages show empty state
+E fazer o mesmo na function `get_decrypted_token`:
+```sql
+  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
+```
 
-The pages check `meta.isConnected && meta.hasData`. Since the current status is `disconnected` (user disconnected after the failed second attempt) and `ads_data` has 0 records, the `MetaConnectionPrompt` is shown correctly. Once the user reconnects and syncs successfully, the dashboards will populate.
+### Resumo das Ações
 
----
+| Ação | Onde | Tipo |
+|------|------|------|
+| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
+| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
+| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
 
-## Technical Changes
-
-### 1. `supabase/functions/meta-sync/index.ts`
-- Add console.log for the raw Meta API response (ads insights URL and response body) so we can diagnose empty results
-- Skip Instagram sync when stored scopes don't include `instagram_basic` or `instagram_manage_insights`
-- Read scopes from `user_integrations` record before deciding which endpoints to call
-
-### 2. `supabase/functions/meta-oauth/index.ts`
-- No changes needed — the function itself works correctly
-
-### 3. Redeploy both edge functions
-
-### 4. No frontend changes needed
-The dashboard pages are correctly showing the empty state because there truly is no data and the integration is disconnected.
-
----
-
-## After Implementation
-
-The user needs to:
-1. Reconnect Meta in Settings → Integrations
-2. Click "Sincronizar" to trigger the sync
-3. Check edge function logs to see the raw Meta API response — if the ad account has no recent ads, the result will legitimately be 0 records
+Nenhuma alteração de código frontend ou edge function é necessária.
 
