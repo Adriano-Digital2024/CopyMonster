@@ -183,7 +183,7 @@ serve(async (req) => {
     let hasFatalError = false;
 
     // Sync Ads Data
-    if (integration.meta_ad_account_id && !hasFatalError) {
+    if (integration.meta_ad_account_id && hasAdScopes && !hasFatalError) {
       try {
         const today = new Date();
         const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
