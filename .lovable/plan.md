@@ -1,48 +1,41 @@
 
 
-## Diagnóstico: Dois problemas encontrados
+## Diagnosis
 
-### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
+The Meta integration **is connected** (status: `connected`, token valid until May 2026), and sync executes successfully (HTTP 200, no API errors). However, the Meta Insights API returns **0 ad records** every time. This causes all three dashboard pages to show the "connect/sync" prompt because `hasData` is false.
 
-O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
+There are two distinct problems:
 
-**Solução (manual, fora do Lovable):**
-1. Acesse https://developers.facebook.com → seu App
-2. Vá em **App Review** ou **App Mode** e mude para **Live**
-3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
+### Problem 1: Ads API returns empty data
 
-### Problema 2: `pgp_sym_encrypt` falha na produção
+The current query fetches insights for only the **last 30 days** at `level=ad`. If the ad account has no ads running in that window, it returns an empty array. The sync also lacks logging of the raw response body, making it impossible to confirm whether the account truly has no ads or if there's a subtle API issue (e.g., wrong account ID, permissions).
 
-Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
+### Problem 2: Dashboard UX is misleading
 
-```
-error: "function pgp_sym_encrypt(text, text) does not exist"
-step: "store_token"
-```
+When Meta is connected and synced but has 0 records, the pages show `MetaConnectionPrompt` saying "connect" or "sync" -- but the user already did that. The UI should distinguish between:
+- Not connected at all
+- Connected but never synced
+- Connected, synced, but account has no data
 
-A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
+---
 
-**Solução (SQL a executar no Supabase):**
+## Technical Changes
 
-Atualizar a function para qualificar as chamadas com `extensions.`:
+### 1. `supabase/functions/meta-sync/index.ts`
+- Expand date range from **30 days to 90 days** to catch more historical data
+- Log the **raw JSON response body** (first 2000 chars) from the Insights API so we can diagnose empty results
+- If `level=ad` returns 0 results, try a **fallback query at `level=campaign`** to verify the account has campaigns at all, and log the result
+- Redeploy the function
 
-```sql
-CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
-  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
-```
+### 2. `src/hooks/useMetaIntegration.ts`
+- Add `lastSyncedAt` already exists but also expose `isSynced` (boolean: `lastSyncedAt !== null`) for clearer state distinction in the UI
 
-E fazer o mesmo na function `get_decrypted_token`:
-```sql
-  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
-```
+### 3. `src/components/intelligence/MetaConnectionPrompt.tsx`
+- Add a third state: **connected + synced but no data**
+- Show a message like "Your Meta account is connected and synced, but no ad data was found in the last 90 days. Make sure your ad account has active or recent campaigns."
+- Accept new prop `isSynced` to distinguish this state
 
-### Resumo das Ações
-
-| Ação | Onde | Tipo |
-|------|------|------|
-| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
-| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
-| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
-
-Nenhuma alteração de código frontend ou edge function é necessária.
+### 4. Dashboard pages (`AdsIntelligence.tsx`, `PerformanceOverview.tsx`, `MarketRadar.tsx`)
+- Pass `meta.lastSyncedAt` to `MetaConnectionPrompt` so it can show the correct state
+- When `meta.isConnected && !meta.hasData && meta.lastSyncedAt`, show the "no data found" message instead of the "sync" prompt
 
