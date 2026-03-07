@@ -186,16 +186,28 @@ serve(async (req) => {
     if (integration.meta_ad_account_id && hasAdScopes && !hasFatalError) {
       try {
         const today = new Date();
-        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const dateStart = thirtyDaysAgo.toISOString().split('T')[0];
+        const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+        const dateStart = ninetyDaysAgo.toISOString().split('T')[0];
         const dateEnd = today.toISOString().split('T')[0];
 
         const insightsUrl = `https://graph.facebook.com/v21.0/${integration.meta_ad_account_id}/insights?fields=campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,impressions,clicks,spend,ctr,cpc,cpm,reach,frequency,actions,cost_per_action_type,action_values&level=ad&time_range={"since":"${dateStart}","until":"${dateEnd}"}&limit=500&access_token=${accessToken}`;
 
         console.log(`[meta-sync] Fetching ads insights for account ${integration.meta_ad_account_id}, range ${dateStart} to ${dateEnd}`);
         const adsResponse = await fetch(insightsUrl);
-        const adsData = await adsResponse.json();
+        const adsRawText = await adsResponse.text();
+        console.log(`[meta-sync] Ads API raw response (first 2000 chars): ${adsRawText.substring(0, 2000)}`);
+        const adsData = JSON.parse(adsRawText);
         console.log(`[meta-sync] Ads API response status: ${adsResponse.status}, has error: ${!!adsData.error}, data count: ${adsData.data?.length ?? 'N/A'}`);
+
+        // If level=ad returns 0 results, try level=campaign as fallback diagnostic
+        if (!adsData.error && (!adsData.data || adsData.data.length === 0)) {
+          console.log(`[meta-sync] No ad-level data found. Trying campaign-level fallback...`);
+          const campaignUrl = `https://graph.facebook.com/v21.0/${integration.meta_ad_account_id}/insights?fields=campaign_name,campaign_id,impressions,spend&level=campaign&time_range={"since":"${dateStart}","until":"${dateEnd}"}&limit=50&access_token=${accessToken}`;
+          const campaignRes = await fetch(campaignUrl);
+          const campaignRaw = await campaignRes.text();
+          console.log(`[meta-sync] Campaign-level fallback response (first 2000 chars): ${campaignRaw.substring(0, 2000)}`);
+        }
+
         if (adsData.error) {
           console.log(`[meta-sync] Ads API error detail: ${JSON.stringify(adsData.error)}`);
         }

@@ -53,7 +53,7 @@ export default function MarketRadar() {
         </div>
 
         {(!meta.isConnected || !meta.hasData) && !loading && (
-          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} />
+          <MetaConnectionPrompt isConnected={meta.isConnected} hasData={meta.hasData} isSynced={meta.isSynced} />
         )}
 
         {/* Trend Signals from Classifications */}

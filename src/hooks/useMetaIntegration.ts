@@ -61,6 +61,7 @@ export function useMetaIntegration(): MetaIntegrationResult {
     isConnected: status === 'connected',
     hasData,
     isLoading,
+    isSynced: lastSyncedAt !== null,
     lastSyncedAt,
     refetch: fetch,
   };
