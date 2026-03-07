@@ -192,8 +192,13 @@ serve(async (req) => {
 
         const insightsUrl = `https://graph.facebook.com/v21.0/${integration.meta_ad_account_id}/insights?fields=campaign_name,campaign_id,adset_name,adset_id,ad_name,ad_id,impressions,clicks,spend,ctr,cpc,cpm,reach,frequency,actions,cost_per_action_type,action_values&level=ad&time_range={"since":"${dateStart}","until":"${dateEnd}"}&limit=500&access_token=${accessToken}`;
 
+        console.log(`[meta-sync] Fetching ads insights for account ${integration.meta_ad_account_id}, range ${dateStart} to ${dateEnd}`);
         const adsResponse = await fetch(insightsUrl);
         const adsData = await adsResponse.json();
+        console.log(`[meta-sync] Ads API response status: ${adsResponse.status}, has error: ${!!adsData.error}, data count: ${adsData.data?.length ?? 'N/A'}`);
+        if (adsData.error) {
+          console.log(`[meta-sync] Ads API error detail: ${JSON.stringify(adsData.error)}`);
+        }
 
         if (adsData.error) {
           const classification = classifyMetaError(adsData.error);
