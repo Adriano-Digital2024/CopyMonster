@@ -119,6 +119,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'not_connected' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    // Determine which syncs to run based on stored scopes
+    const scopes: string[] = integration.scopes || [];
+    const hasAdScopes = scopes.some(s => ['ads_management', 'ads_read'].includes(s));
+    const hasIgScopes = scopes.some(s => ['instagram_basic', 'instagram_manage_insights'].includes(s));
+    console.log(`[meta-sync] User ${userId} scopes: ${scopes.join(', ')} | hasAdScopes=${hasAdScopes} hasIgScopes=${hasIgScopes}`);
+
     // Check token expiration BEFORE calling Meta API
     if (integration.token_expires_at) {
       const expiresAt = new Date(integration.token_expires_at).getTime();
