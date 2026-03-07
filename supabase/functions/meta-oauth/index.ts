@@ -79,7 +79,7 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-        return redirectTo(siteUrl, 'error');
+        return buildCallbackHtml(siteUrl, 'error');
       }
 
       const userId = state;
