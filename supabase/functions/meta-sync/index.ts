@@ -415,6 +415,8 @@ serve(async (req) => {
           });
 
           if (igRows.length > 0) {
+            // Dedup: delete old instagram_data before inserting fresh results
+            await adminSupabase.from('instagram_data').delete().eq('user_id', userId);
             const { error: insertError } = await adminSupabase.from('instagram_data').insert(igRows);
             if (insertError) {
               console.error(`[meta-sync] Failed to insert IG data for user ${userId}`);
