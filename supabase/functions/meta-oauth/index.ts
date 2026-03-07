@@ -6,11 +6,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-function redirectTo(siteUrl: string, result: 'success' | 'error'): Response {
+function buildCallbackHtml(siteUrl: string, result: 'success' | 'error'): Response {
   const redirectUrl = `${siteUrl}/dashboard/settings?meta=${result}`;
-  return new Response(null, {
-    status: 302,
-    headers: { 'Location': redirectUrl },
+  const messageType = result === 'success' ? 'meta-oauth-success' : 'meta-oauth-error';
+  const displayMsg = result === 'success' ? 'Conexão realizada! Fechando...' : 'Erro na conexão. Redirecionando...';
+
+  const html = `<!DOCTYPE html><html><head><title>CopyMonster</title></head>
+<body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+<div style="text-align:center"><p>${displayMsg}</p></div>
+<script>
+try{if(window.opener)window.opener.postMessage({type:'${messageType}'},'*');}catch(e){}
+setTimeout(function(){window.close();},500);
+setTimeout(function(){window.location.href='${redirectUrl}';},2000);
+</script></body></html>`;
+
+  return new Response(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
 
@@ -67,7 +79,7 @@ serve(async (req) => {
 
       if (errorParam || !code || !state) {
         console.error(`[meta-oauth] Callback error: ${errorParam || 'missing code/state'}`);
-        return redirectTo(siteUrl, 'error');
+        return buildCallbackHtml(siteUrl, 'error');
       }
 
       const userId = state;
@@ -88,7 +100,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
-        return redirectTo(siteUrl, 'error');
+        return buildCallbackHtml(siteUrl, 'error');
       }
 
       // Exchange short-lived token for long-lived token
@@ -136,7 +148,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: upsertError.message, step: 'store_token' }
         });
-        return redirectTo(siteUrl, 'error');
+        return buildCallbackHtml(siteUrl, 'error');
       }
 
       // Log successful connection
@@ -149,7 +161,7 @@ serve(async (req) => {
 
       console.log(`[meta-oauth] Successfully connected for user ${userId}`);
 
-      return redirectTo(siteUrl, 'success');
+      return buildCallbackHtml(siteUrl, 'success');
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), {

@@ -1,45 +1,48 @@
 
 
-## Problem
+## Diagnóstico: Dois problemas encontrados
 
-The 302 redirect approach works but causes the full app to load inside the popup window. The popup should close itself after the OAuth completes, not navigate to the dashboard.
+### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
 
-## Solution
+O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
 
-Replace the 302 redirect with an HTML page that:
-1. Sends `postMessage` to the opener (primary — works when `window.opener` is available)
-2. Closes itself via `window.close()`
-3. If neither works (opener is null due to cross-origin), redirects to the settings page as final fallback
+**Solução (manual, fora do Lovable):**
+1. Acesse https://developers.facebook.com → seu App
+2. Vá em **App Review** ou **App Mode** e mude para **Live**
+3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
 
-The key insight: `window.close()` works on popups opened via `window.open()` even cross-origin. The previous attempt failed because it tried `window.opener.postMessage` first (which is null cross-origin) and fell through to redirect. We should try `window.close()` regardless.
+### Problema 2: `pgp_sym_encrypt` falha na produção
 
-## Technical Changes
+Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
 
-### `supabase/functions/meta-oauth/index.ts`
-
-Replace the `redirectTo` function with a `buildCallbackHtml` function that returns an HTML page:
-
-```html
-<html><head><title>CopyMonster</title></head>
-<body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
-  <div style="text-align:center">
-    <p>Conexão realizada! Fechando...</p>
-  </div>
-  <script>
-    // Try postMessage to parent
-    try { if(window.opener) window.opener.postMessage({type:'meta-oauth-success'},'*'); } catch(e){}
-    // Always try to close the popup
-    setTimeout(function(){ window.close(); }, 500);
-    // Fallback: if close didn't work (not a popup), redirect after 2s
-    setTimeout(function(){ window.location.href = 'REDIRECT_URL'; }, 2000);
-  </script>
-</body></html>
+```
+error: "function pgp_sym_encrypt(text, text) does not exist"
+step: "store_token"
 ```
 
-For errors, same structure but with error message and `meta-oauth-error` type.
+A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
 
-Return with `Content-Type: text/html; charset=utf-8` and status 200 (not 302).
+**Solução (SQL a executar no Supabase):**
 
-### No frontend changes needed
-The existing `postMessage` listener and `?meta=success` query param handling already cover both scenarios.
+Atualizar a function para qualificar as chamadas com `extensions.`:
+
+```sql
+CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
+  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
+```
+
+E fazer o mesmo na function `get_decrypted_token`:
+```sql
+  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
+```
+
+### Resumo das Ações
+
+| Ação | Onde | Tipo |
+|------|------|------|
+| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
+| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
+| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
+
+Nenhuma alteração de código frontend ou edge function é necessária.
 
