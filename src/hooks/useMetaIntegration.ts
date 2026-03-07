@@ -9,6 +9,7 @@ interface MetaIntegrationResult {
   isConnected: boolean;
   hasData: boolean;
   isLoading: boolean;
+  isSynced: boolean;
   lastSyncedAt: string | null;
   refetch: () => Promise<void>;
 }
