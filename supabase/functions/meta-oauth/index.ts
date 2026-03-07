@@ -137,7 +137,7 @@ serve(async (req) => {
         p_meta_user_id: meData.id || null,
         p_meta_ad_account_id: adAccountId,
         p_instagram_account_id: igAccountId,
-        p_scopes: ['ads_management', 'ads_read', 'business_management', 'pages_show_list', 'pages_read_engagement', 'public_profile'],
+        p_scopes: ['ads_management', 'ads_read', 'business_management', 'pages_show_list', 'pages_read_engagement', 'public_profile', 'instagram_basic', 'instagram_manage_insights'],
       });
 
       if (upsertError) {
