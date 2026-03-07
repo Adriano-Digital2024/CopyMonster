@@ -100,7 +100,7 @@ serve(async (req) => {
           event_type: 'api_error',
           details: { error: tokenData.error.message, step: 'token_exchange' }
         });
-        return redirectTo(siteUrl, 'error');
+        return buildCallbackHtml(siteUrl, 'error');
       }
 
       // Exchange short-lived token for long-lived token
