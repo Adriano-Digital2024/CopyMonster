@@ -1299,7 +1299,6 @@ const resources = {
           emailSequences: "Email Sequences",
         },
       },
-      },
     },
   },
   pt: {
