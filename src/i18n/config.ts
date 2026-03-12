@@ -1279,7 +1279,8 @@ const resources = {
           },
           legend: "In the Legend plan, you're not just a user, you're a strategic partner with early access to new features and agent training.",
           cta: "Immediate Access"
-        }
+        },
+      },
       chatLanding: {
         headline: "Create High-Converting Copy in Seconds with AI",
         subheadline: "The AI writing assistant built for experts, mentors, and infoproduct creators who want to grow audience and sales faster.",
