@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import Agents from "./pages/dashboard/Agents";
 import AgentChat from "./pages/dashboard/AgentChat";
 import Chat from "./pages/dashboard/Chat";
+import ChatLanding from "./pages/ChatLanding";
 import Billing from "./pages/dashboard/Billing";
 import Performance from "./pages/dashboard/Performance";
 import Settings from "./pages/dashboard/Settings";
@@ -65,6 +66,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Start />} />
                 <Route path="/start" element={<Index />} />
+                <Route path="/chat" element={<ChatLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
