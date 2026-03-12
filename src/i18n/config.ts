@@ -1279,7 +1279,25 @@ const resources = {
           },
           legend: "In the Legend plan, you're not just a user, you're a strategic partner with early access to new features and agent training.",
           cta: "Immediate Access"
-        }
+        },
+      },
+      chatLanding: {
+        headline: "Create High-Converting Copy in Seconds with AI",
+        subheadline: "The AI writing assistant built for experts, mentors, and infoproduct creators who want to grow audience and sales faster.",
+        trustText: "Used by digital creators, experts, and online businesses to generate high-converting content with AI.",
+        prompts: {
+          salesPage: "Write a high-converting sales page...",
+          instagram: "Create an Instagram post that attracts clients...",
+          adCopy: "Generate ad copy for my online course...",
+          emailSequence: "Write an email sequence for a product launch...",
+        },
+        tags: {
+          salesPages: "Sales Pages",
+          adCopy: "Ad Copy",
+          instagramContent: "Instagram Content",
+          launchScripts: "Launch Scripts",
+          emailSequences: "Email Sequences",
+        },
       },
     },
   },
@@ -2560,7 +2578,25 @@ const resources = {
           },
           legend: "No plano Legend, você não é apenas um usuário, você é um parceiro estratégico com acesso antecipado a novos recursos e treinamento de agentes.",
           cta: "Acesso Imediato"
-        }
+        },
+      },
+      chatLanding: {
+        headline: "Crie Copys de Alta Conversão em Segundos com IA",
+        subheadline: "O assistente de escrita com IA feito para experts, mentores e criadores de infoprodutos que querem crescer audiência e vendas mais rápido.",
+        trustText: "Usado por criadores digitais, experts e negócios online para gerar conteúdo de alta conversão com IA.",
+        prompts: {
+          salesPage: "Escreva uma página de vendas de alta conversão...",
+          instagram: "Crie um post para Instagram que atrai clientes...",
+          adCopy: "Gere copy de anúncio para meu curso online...",
+          emailSequence: "Escreva uma sequência de emails para lançamento...",
+        },
+        tags: {
+          salesPages: "Páginas de Vendas",
+          adCopy: "Copy de Anúncios",
+          instagramContent: "Conteúdo Instagram",
+          launchScripts: "Scripts de Lançamento",
+          emailSequences: "Sequências de Email",
+        },
       },
     },
   },
@@ -3841,7 +3877,25 @@ const resources = {
           },
           legend: "En el plan Legend, no eres solo un usuario, eres un socio estratégico con acceso anticipado a nuevas funciones y entrenamiento de agentes.",
           cta: "Acceso Inmediato"
-        }
+        },
+      },
+      chatLanding: {
+        headline: "Crea Copys de Alta Conversión en Segundos con IA",
+        subheadline: "El asistente de escritura con IA hecho para expertos, mentores y creadores de infoproductos que quieren crecer audiencia y ventas más rápido.",
+        trustText: "Usado por creadores digitales, expertos y negocios online para generar contenido de alta conversión con IA.",
+        prompts: {
+          salesPage: "Escribe una página de ventas de alta conversión...",
+          instagram: "Crea un post de Instagram que atrae clientes...",
+          adCopy: "Genera copy de anuncio para mi curso online...",
+          emailSequence: "Escribe una secuencia de emails para lanzamiento...",
+        },
+        tags: {
+          salesPages: "Páginas de Ventas",
+          adCopy: "Copy de Anuncios",
+          instagramContent: "Contenido Instagram",
+          launchScripts: "Scripts de Lanzamiento",
+          emailSequences: "Secuencias de Email",
+        },
       },
     },
   },
