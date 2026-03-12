@@ -422,7 +422,10 @@ export default function Settings() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold">{t('dashboard.settings.integrations.meta.title')}</h4>
+                        <h4 className="font-semibold flex items-center gap-2">
+                          {t('dashboard.settings.integrations.meta.title')}
+                          <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">Em breve</span>
+                        </h4>
                         <p className="text-sm text-muted-foreground">{t('dashboard.settings.integrations.meta.description')}</p>
                       </div>
                     </div>
