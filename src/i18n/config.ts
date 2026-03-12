@@ -2579,7 +2579,8 @@ const resources = {
           },
           legend: "No plano Legend, você não é apenas um usuário, você é um parceiro estratégico com acesso antecipado a novos recursos e treinamento de agentes.",
           cta: "Acesso Imediato"
-        }
+        },
+      },
       chatLanding: {
         headline: "Crie Copys de Alta Conversão em Segundos com IA",
         subheadline: "O assistente de escrita com IA feito para experts, mentores e criadores de infoprodutos que querem crescer audiência e vendas mais rápido.",
