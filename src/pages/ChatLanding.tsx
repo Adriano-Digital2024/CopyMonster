@@ -94,7 +94,7 @@ export default function ChatLanding() {
         <img
           src={logo}
           alt="CopyMonster"
-          className="h-8 cursor-pointer"
+          className="h-14 cursor-pointer"
           onClick={() => navigate('/')}
         />
         <div className="flex items-center gap-2">

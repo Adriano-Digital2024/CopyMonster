@@ -3878,6 +3878,24 @@ const resources = {
           legend: "En el plan Legend, no eres solo un usuario, eres un socio estratégico con acceso anticipado a nuevas funciones y entrenamiento de agentes.",
           cta: "Acceso Inmediato"
         }
+      chatLanding: {
+        headline: "Crea Copys de Alta Conversión en Segundos con IA",
+        subheadline: "El asistente de escritura con IA hecho para expertos, mentores y creadores de infoproductos que quieren crecer audiencia y ventas más rápido.",
+        trustText: "Usado por creadores digitales, expertos y negocios online para generar contenido de alta conversión con IA.",
+        prompts: {
+          salesPage: "Escribe una página de ventas de alta conversión...",
+          instagram: "Crea un post de Instagram que atrae clientes...",
+          adCopy: "Genera copy de anuncio para mi curso online...",
+          emailSequence: "Escribe una secuencia de emails para lanzamiento...",
+        },
+        tags: {
+          salesPages: "Páginas de Ventas",
+          adCopy: "Copy de Anuncios",
+          instagramContent: "Contenido Instagram",
+          launchScripts: "Scripts de Lanzamiento",
+          emailSequences: "Secuencias de Email",
+        },
+      },
       },
     },
   },
