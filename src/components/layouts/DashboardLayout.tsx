@@ -117,6 +117,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 Start
               </span>
             )}
+            {item.comingSoon && (
+              <span className="ml-auto text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                Em breve
+              </span>
+            )}
           </Button>
         ))}
       </nav>
