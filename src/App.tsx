@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import Agents from "./pages/dashboard/Agents";
 import AgentChat from "./pages/dashboard/AgentChat";
 import Chat from "./pages/dashboard/Chat";
+import ChatLanding from "./pages/ChatLanding";
 import Billing from "./pages/dashboard/Billing";
 import Performance from "./pages/dashboard/Performance";
 import Settings from "./pages/dashboard/Settings";
