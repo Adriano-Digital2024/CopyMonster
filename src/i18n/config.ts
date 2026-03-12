@@ -3878,7 +3878,8 @@ const resources = {
           },
           legend: "En el plan Legend, no eres solo un usuario, eres un socio estratégico con acceso anticipado a nuevas funciones y entrenamiento de agentes.",
           cta: "Acceso Inmediato"
-        }
+        },
+      },
       chatLanding: {
         headline: "Crea Copys de Alta Conversión en Segundos con IA",
         subheadline: "El asistente de escritura con IA hecho para expertos, mentores y creadores de infoproductos que quieren crecer audiencia y ventas más rápido.",
@@ -3896,7 +3897,6 @@ const resources = {
           launchScripts: "Scripts de Lanzamiento",
           emailSequences: "Secuencias de Email",
         },
-      },
       },
     },
   },
