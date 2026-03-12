@@ -83,9 +83,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { icon: Trophy, label: t('dashboard.menu.performance'), path: '/dashboard/performance' },
     
     // Intelligence section
-    { icon: BarChart3, label: t('dashboard.menu.adsIntelligence'), path: '/dashboard/ads-intelligence' },
-    { icon: Activity, label: t('dashboard.menu.performanceOverview'), path: '/dashboard/performance-overview' },
-    { icon: Radar, label: t('dashboard.menu.marketRadar'), path: '/dashboard/market-radar' },
+    { icon: BarChart3, label: t('dashboard.menu.adsIntelligence'), path: '/dashboard/ads-intelligence', comingSoon: true },
+    { icon: Activity, label: t('dashboard.menu.performanceOverview'), path: '/dashboard/performance-overview', comingSoon: true },
+    { icon: Radar, label: t('dashboard.menu.marketRadar'), path: '/dashboard/market-radar', comingSoon: true },
     
     { icon: CreditCard, label: t('dashboard.menu.billing'), path: '/dashboard/billing' },
     { icon: Settings, label: t('dashboard.menu.settings'), path: '/dashboard/settings' },
@@ -115,6 +115,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {item.highlight && index === 0 && (
               <span className="ml-auto text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
                 Start
+              </span>
+            )}
+            {item.comingSoon && (
+              <span className="ml-auto text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                Em breve
               </span>
             )}
           </Button>
