@@ -66,6 +66,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Start />} />
                 <Route path="/start" element={<Index />} />
+                <Route path="/chat" element={<ChatLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
