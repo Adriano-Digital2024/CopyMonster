@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.dna-intelligence]
 verify_jwt = false
+
+[functions.sender-sync]
+verify_jwt = false
