@@ -1,48 +1,68 @@
 
 
-## Diagnóstico: Dois problemas encontrados
+## Fix: Signup Broken by Sender.net Trigger
 
-### Problema 1: Meta App em modo Teste (CAUSA PRINCIPAL do erro no Facebook)
+### Root Cause
 
-O app Meta está em modo **Development/Test**. Isso significa que apenas usuários cadastrados como desenvolvedores ou testadores no painel Meta for Developers podem completar o fluxo OAuth. Qualquer outro usuário verá um erro dentro do Facebook.
+The `notify_sender_on_profile_change()` trigger calls `extensions.http_post()` which does not exist. The `pg_net` extension uses the `net` schema, and the function signature is `net.http_post(url, body, params, headers, timeout_milliseconds)`.
 
-**Solução (manual, fora do Lovable):**
-1. Acesse https://developers.facebook.com → seu App
-2. Vá em **App Review** ou **App Mode** e mude para **Live**
-3. Certifique-se que todas as permissões necessárias (`ads_read`, `read_insights`, `instagram_basic`, `instagram_manage_insights`) estão aprovadas ou disponíveis no modo Business
+This trigger fires on every INSERT into `profiles`, which happens inside the `handle_new_user()` auth trigger. The error aborts the entire signup transaction.
 
-### Problema 2: `pgp_sym_encrypt` falha na produção
+### Fix
 
-Os logs do `integration_logs` mostram que um usuário (`9c989c73...`) conseguiu completar o OAuth com o Facebook, mas o token falhou ao ser salvo:
-
-```
-error: "function pgp_sym_encrypt(text, text) does not exist"
-step: "store_token"
-```
-
-A extensão `pgcrypto` existe no banco (confirmado), mas a função `upsert_user_integration` usa `pgp_sym_encrypt` sem qualificar o schema. O `pgcrypto` está instalado no schema `extensions` (OID 16388), não no `public`. Como a function usa `SET search_path TO 'public'`, ela não encontra `pgp_sym_encrypt`.
-
-**Solução (SQL a executar no Supabase):**
-
-Atualizar a function para qualificar as chamadas com `extensions.`:
+Run a migration that replaces the function to use the correct `net.http_post()` call:
 
 ```sql
-CREATE OR REPLACE FUNCTION public.upsert_user_integration(...)
-  -- trocar pgp_sym_encrypt(...) por extensions.pgp_sym_encrypt(...)
+CREATE OR REPLACE FUNCTION public.notify_sender_on_profile_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  _payload jsonb;
+  _event_type text;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    _event_type := 'new_user';
+  ELSIF TG_OP = 'UPDATE' THEN
+    _event_type := 'plan_update';
+  END IF;
+
+  _payload := jsonb_build_object(
+    'type', _event_type,
+    'record', jsonb_build_object(
+      'email', NEW.email,
+      'first_name', NEW.first_name,
+      'phone', COALESCE(NEW.phone, ''),
+      'subscription_status', NEW.subscription_status
+    )
+  );
+
+  -- Use net.http_post (correct pg_net function)
+  PERFORM net.http_post(
+    url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/sender-sync',
+    body := _payload::jsonb,
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYXR1cGx0ZnZnd2VsaHplem5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MjIyNjUsImV4cCI6MjA3Njk5ODI2NX0.naM7i7VVD4RHGCI5FbTunNToZVZ-nDAP881VUa7WJBg'
+    )
+  );
+
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Log but don't block signup if Sender sync fails
+  RAISE WARNING '[sender-sync] Failed to queue HTTP request: %', SQLERRM;
+  RETURN NEW;
+END;
+$$;
 ```
 
-E fazer o mesmo na function `get_decrypted_token`:
-```sql
-  -- trocar pgp_sym_decrypt(...) por extensions.pgp_sym_decrypt(...)
-```
+Key changes:
+1. `extensions.http_post()` → `net.http_post()` (correct schema)
+2. `body` passed as `jsonb` (correct type for pg_net)
+3. Added `EXCEPTION WHEN OTHERS` block so Sender sync failures never block signups
 
-### Resumo das Ações
-
-| Ação | Onde | Tipo |
-|------|------|------|
-| Mudar Meta App para modo **Live** | Meta for Developers | Manual |
-| Corrigir `upsert_user_integration` para usar `extensions.pgp_sym_encrypt` | Supabase SQL | Migration |
-| Corrigir `get_decrypted_token` para usar `extensions.pgp_sym_decrypt` | Supabase SQL | Migration |
-
-Nenhuma alteração de código frontend ou edge function é necessária.
+### Files changed
+- New SQL migration only. No application code changes.
 
