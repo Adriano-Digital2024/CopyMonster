@@ -209,6 +209,36 @@ export default function Settings() {
           description: t('dashboard.settings.integrations.errors.rateLimitedDesc'),
           variant: 'destructive',
         });
+      } else if (data.error === 'not_connected') {
+        toast({
+          title: 'Integração não encontrada',
+          description: 'Sua conta Meta não está conectada ou foi desconectada. Reconecte para sincronizar.',
+          variant: 'destructive',
+        });
+      } else if (data.error === 'token_not_found') {
+        toast({
+          title: 'Token não encontrado',
+          description: 'O token de acesso da Meta não pôde ser recuperado. Reconecte sua conta.',
+          variant: 'destructive',
+        });
+      } else if (data.error === 'token_decrypt_failed') {
+        toast({
+          title: 'Erro de descriptografia',
+          description: `Não foi possível descriptografar o token. ${data.detail ? `Detalhe: ${data.detail}` : 'Reconecte sua conta Meta.'}`,
+          variant: 'destructive',
+        });
+      } else if (data.error === 'Unauthorized' || res.status === 401) {
+        toast({
+          title: 'Sessão expirada',
+          description: 'Faça login novamente e tente sincronizar.',
+          variant: 'destructive',
+        });
+      } else if (data.error === 'internal_error' || res.status === 500) {
+        toast({
+          title: 'Erro interno',
+          description: `Erro no servidor ao sincronizar. ${data.detail ? `Detalhe: ${data.detail}` : ''}`,
+          variant: 'destructive',
+        });
       } else if (data.success) {
         toast({
           title: t('dashboard.settings.integrations.success.synced'),
@@ -216,12 +246,16 @@ export default function Settings() {
         });
         fetchMetaIntegration();
       } else {
-        throw new Error(data.error || 'Sync failed');
+        toast({
+          title: 'Falha na sincronização',
+          description: `Erro: ${data.error || 'desconhecido'}${data.stage ? ` (etapa: ${data.stage})` : ''}${data.detail ? ` — ${data.detail}` : ''}`,
+          variant: 'destructive',
+        });
       }
-    } catch {
+    } catch (err: any) {
       toast({
-        title: t('dashboard.settings.integrations.errors.syncFailed'),
-        description: t('dashboard.settings.integrations.errors.syncFailedDesc'),
+        title: 'Falha na sincronização',
+        description: err?.message || 'Não foi possível sincronizar dados da Meta. Tente novamente.',
         variant: 'destructive',
       });
     } finally {

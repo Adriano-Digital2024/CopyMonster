@@ -170,12 +170,42 @@ serve(async (req) => {
     }
 
     // Get decrypted token
-    const { data: accessToken } = await adminSupabase.rpc('get_decrypted_token' as any, {
-      p_user_id: userId, p_provider: 'meta', p_encryption_key: encryptionKey,
-    });
+    let accessToken: string | null = null;
+    try {
+      const { data, error: rpcError } = await adminSupabase.rpc('get_decrypted_token' as any, {
+        p_user_id: userId, p_provider: 'meta', p_encryption_key: encryptionKey,
+      });
+      if (rpcError) {
+        console.error(`[meta-sync] Token decryption RPC error: ${rpcError.message}`);
+        await adminSupabase.from('integration_logs').insert({
+          user_id: userId, provider: 'meta', event_type: 'token_decrypt_failed',
+          details: { error: rpcError.message, stage: 'token_decrypt' }
+        });
+        return new Response(JSON.stringify({ error: 'token_decrypt_failed', stage: 'token_decrypt', detail: rpcError.message }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      accessToken = data;
+    } catch (decryptErr) {
+      console.error(`[meta-sync] Token decryption exception: ${(decryptErr as Error).message}`);
+      await adminSupabase.from('integration_logs').insert({
+        user_id: userId, provider: 'meta', event_type: 'token_decrypt_failed',
+        details: { error: (decryptErr as Error).message, stage: 'token_decrypt' }
+      });
+      return new Response(JSON.stringify({ error: 'token_decrypt_failed', stage: 'token_decrypt', detail: (decryptErr as Error).message }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     if (!accessToken) {
-      return new Response(JSON.stringify({ error: 'token_not_found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      console.error(`[meta-sync] Token is null/empty after decryption for user ${userId}`);
+      await adminSupabase.from('integration_logs').insert({
+        user_id: userId, provider: 'meta', event_type: 'token_missing',
+        details: { stage: 'token_decrypt', reason: 'decrypted value is null' }
+      });
+      return new Response(JSON.stringify({ error: 'token_not_found', stage: 'token_decrypt' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     let adsCount = 0;
@@ -458,8 +488,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error(`[meta-sync] Unexpected error:`, (error as Error).message);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    const msg = (error as Error).message;
+    console.error(`[meta-sync] Unexpected error:`, msg);
+    return new Response(JSON.stringify({ error: 'internal_error', stage: 'unknown', detail: msg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
