@@ -211,11 +211,13 @@ serve(async (req) => {
 
         // If level=ad returns 0 results, try account-level (no level param) as fallback
         if (!adsData.error && (!adsData.data || adsData.data.length === 0)) {
-          console.log(`[meta-sync] No ad-level data found. Trying account-level fallback (no level param)...`);
+          console.log(`[meta-sync] ⚠️ Ad-level insights returned EMPTY data array (not an error). This means the account has no active/historical ad-level data for date_preset=maximum.`);
+          console.log(`[meta-sync] Trying account-level fallback to confirm the account exists and has any spend...`);
           const accountUrl = `https://graph.facebook.com/v21.0/${integration.meta_ad_account_id}/insights?fields=impressions,spend,clicks&date_preset=maximum&limit=10&access_token=${accessToken}`;
           const accountRes = await fetch(accountUrl);
           const accountRaw = await accountRes.text();
           console.log(`[meta-sync] Account-level fallback response (first 2000 chars): ${accountRaw.substring(0, 2000)}`);
+          console.log(`[meta-sync] NOTE: Existing ads_data records will NOT be deleted since no new data was returned.`);
         }
 
         if (adsData.error) {
