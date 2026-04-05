@@ -16,6 +16,15 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 
+async function getFreshToken() {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error || !data.session) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    return sessionData?.session?.access_token ?? null;
+  }
+  return data.session.access_token;
+}
+
 export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -104,8 +113,7 @@ export default function Settings() {
   const handleConnectMeta = async () => {
     setIsConnecting(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getFreshToken();
       if (!token) throw new Error('No session');
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -135,8 +143,7 @@ export default function Settings() {
 
   const handleDisconnectMeta = async () => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getFreshToken();
       if (!token) throw new Error('No session');
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -166,8 +173,7 @@ export default function Settings() {
   const handleSyncMeta = async () => {
     setIsSyncing(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getFreshToken();
       if (!token) throw new Error('No session');
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
