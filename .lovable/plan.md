@@ -1,64 +1,85 @@
 
 
-## Diagnosis: Meta Data Display Issues
+## Diagnosis: Meta Sync Returns 401
 
-### Finding 1: Ads Data is Real (NOT Mocked)
-The database has exactly 1 record from your Meta account with $9.68 spend, 308 impressions, 10 clicks. This matches the screenshot. The data comes directly from the Meta Ads Insights API with `date_preset=maximum`.
+### Root Cause
+The edge function analytics show the most recent `meta-sync` POST returned **HTTP 401**. This means the user's access token sent to the edge function was expired/invalid.
 
-The reason it looks sparse is that your ad account only has 1 ad with lifetime data (2023-07-21 to 2026-03-06).
+The Settings page uses `supabase.auth.getSession()` to get the token, then manually constructs a `fetch()` call. The problem: `getSession()` can return a **cached, stale token** without triggering a refresh. Supabase's JS client v2 has a known behavior where `getSession()` returns the locally stored session even if the access token JWT has expired, relying on lazy refresh.
 
-### Finding 2: Instagram — Missing OAuth Scopes
-The `meta-sync` function checks for `instagram_basic` or `instagram_manage_insights` scopes before attempting IG sync. Your integration only has: `ads_management, ads_read, business_management, pages_show_list, pages_read_engagement, public_profile`.
+The same issue affects `handleConnectMeta` (also returning 401) and `handleDisconnectMeta`.
 
-**Root cause:** Per Meta's App Review policy (and your existing configuration notes), `instagram_basic` and `instagram_manage_insights` must be approved through the **Meta App Review process** before they can be requested during OAuth. They cannot be passed as URL parameters in API v21.0+.
+### Fix
 
-### Finding 3: Last Sync Returned Zero Records
-The latest sync at 03:18 UTC returned 0 ads and 0 IG posts. This could mean the Meta API returned empty results for that particular call. The existing ads record was preserved because the delete-before-insert logic only deletes when new data is found.
+Replace all three manual `fetch()` calls in Settings.tsx with `supabase.functions.invoke()`, which automatically handles token refresh and auth headers.
 
----
+**File:** `src/pages/dashboard/Settings.tsx`
 
-### Proposed Actions
+#### Change 1: `handleConnectMeta` (lines 107-115)
+```typescript
+// Before
+const { data: sessionData } = await supabase.auth.getSession();
+const token = sessionData?.session?.access_token;
+if (!token) throw new Error('No session');
+const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+const res = await fetch(`https://${projectId}.supabase.co/functions/v1/meta-oauth?action=authorize`, {
+  headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+});
+const data = await res.json();
 
-#### 1. Improve Instagram Section UX (code change)
-Instead of showing a generic "No Instagram data available", show a clear message explaining that Instagram insights require Meta App Review approval, with a link or guidance.
+// After
+const { data, error } = await supabase.functions.invoke('meta-oauth', {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json' },
+  body: null,
+});
+if (error) throw error;
+// Note: meta-oauth uses query param ?action=authorize, so we need a slight adjustment
+```
 
-**File:** `src/pages/dashboard/PerformanceOverview.tsx`
-- Check whether the user's integration has IG scopes
-- If no IG scopes: show "Instagram insights require additional permissions (instagram_basic, instagram_manage_insights) which are pending Meta App Review."
-- If IG scopes exist but no data: show current "No data" message
+Actually, `supabase.functions.invoke` doesn't support query params natively. A better approach is to keep `fetch()` but fix the token freshness issue.
 
-#### 2. Add Sync Resilience for Ads (code change)
-The `meta-sync` function should NOT silently return 0 records when the API might have returned data on a previous run. Add logging to distinguish "API returned empty" from "API error".
+#### Revised approach: Force token refresh before fetch
 
-**File:** `supabase/functions/meta-sync/index.ts`
-- Add a log when insights API returns an empty `data` array vs no `data` field
-- Already has fallback check at account-level — ensure this is logged clearly
+Add a helper that ensures a fresh token:
+```typescript
+async function getFreshToken() {
+  // Force refresh if needed
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error || !data.session) {
+    // Fallback to current session
+    const { data: sessionData } = await supabase.auth.getSession();
+    return sessionData?.session?.access_token ?? null;
+  }
+  return data.session.access_token;
+}
+```
 
-#### 3. Meta App Review (manual action — not a code change)
-Submit your Meta App for review requesting `instagram_basic` and `instagram_manage_insights` permissions. Until approved, Instagram data will remain unavailable for all users.
+Then replace all three occurrences of:
+```typescript
+const { data: sessionData } = await supabase.auth.getSession();
+const token = sessionData?.session?.access_token;
+```
+with:
+```typescript
+const token = await getFreshToken();
+```
 
----
+**Files to modify:**
+- `src/pages/dashboard/Settings.tsx` — add `getFreshToken()` helper, update 3 callsites (`handleConnectMeta`, `handleDisconnectMeta`, `handleSyncMeta`)
 
 ### Technical Details
 
 ```text
-Current user scopes (from DB):
-  ✓ ads_management
-  ✓ ads_read
-  ✓ business_management
-  ✓ pages_show_list
-  ✓ pages_read_engagement
-  ✓ public_profile
-  ✗ instagram_basic          ← requires App Review
-  ✗ instagram_manage_insights ← requires App Review
+Evidence from analytics:
+  POST /functions/v1/meta-sync → 401  (timestamp: 1775362165053)
+  GET  /functions/v1/meta-oauth → 401 (timestamp: 1775361984061)
 
-meta-sync gate (line 125):
-  hasIgScopes = scopes.some(s => ['instagram_basic','instagram_manage_insights'].includes(s))
-  → evaluates to FALSE → IG sync skipped entirely
+Edge function code (line 101-103):
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !userData?.user) → returns 401
+
+DB status: connected, token valid until 2026-06-04
+→ The Meta token is fine; the Supabase JWT (auth token) was stale
 ```
-
-Files to modify:
-- `src/pages/dashboard/PerformanceOverview.tsx` — contextual IG message
-- `src/hooks/useMetaIntegration.ts` — expose `hasIgScopes` flag
-- `supabase/functions/meta-sync/index.ts` — minor logging improvement
 
