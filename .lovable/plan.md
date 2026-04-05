@@ -1,68 +1,64 @@
 
 
-## Fix: Signup Broken by Sender.net Trigger
+## Diagnosis: Meta Data Display Issues
 
-### Root Cause
+### Finding 1: Ads Data is Real (NOT Mocked)
+The database has exactly 1 record from your Meta account with $9.68 spend, 308 impressions, 10 clicks. This matches the screenshot. The data comes directly from the Meta Ads Insights API with `date_preset=maximum`.
 
-The `notify_sender_on_profile_change()` trigger calls `extensions.http_post()` which does not exist. The `pg_net` extension uses the `net` schema, and the function signature is `net.http_post(url, body, params, headers, timeout_milliseconds)`.
+The reason it looks sparse is that your ad account only has 1 ad with lifetime data (2023-07-21 to 2026-03-06).
 
-This trigger fires on every INSERT into `profiles`, which happens inside the `handle_new_user()` auth trigger. The error aborts the entire signup transaction.
+### Finding 2: Instagram — Missing OAuth Scopes
+The `meta-sync` function checks for `instagram_basic` or `instagram_manage_insights` scopes before attempting IG sync. Your integration only has: `ads_management, ads_read, business_management, pages_show_list, pages_read_engagement, public_profile`.
 
-### Fix
+**Root cause:** Per Meta's App Review policy (and your existing configuration notes), `instagram_basic` and `instagram_manage_insights` must be approved through the **Meta App Review process** before they can be requested during OAuth. They cannot be passed as URL parameters in API v21.0+.
 
-Run a migration that replaces the function to use the correct `net.http_post()` call:
+### Finding 3: Last Sync Returned Zero Records
+The latest sync at 03:18 UTC returned 0 ads and 0 IG posts. This could mean the Meta API returned empty results for that particular call. The existing ads record was preserved because the delete-before-insert logic only deletes when new data is found.
 
-```sql
-CREATE OR REPLACE FUNCTION public.notify_sender_on_profile_change()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-DECLARE
-  _payload jsonb;
-  _event_type text;
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    _event_type := 'new_user';
-  ELSIF TG_OP = 'UPDATE' THEN
-    _event_type := 'plan_update';
-  END IF;
+---
 
-  _payload := jsonb_build_object(
-    'type', _event_type,
-    'record', jsonb_build_object(
-      'email', NEW.email,
-      'first_name', NEW.first_name,
-      'phone', COALESCE(NEW.phone, ''),
-      'subscription_status', NEW.subscription_status
-    )
-  );
+### Proposed Actions
 
-  -- Use net.http_post (correct pg_net function)
-  PERFORM net.http_post(
-    url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/sender-sync',
-    body := _payload::jsonb,
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYXR1cGx0ZnZnd2VsaHplem5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MjIyNjUsImV4cCI6MjA3Njk5ODI2NX0.naM7i7VVD4RHGCI5FbTunNToZVZ-nDAP881VUa7WJBg'
-    )
-  );
+#### 1. Improve Instagram Section UX (code change)
+Instead of showing a generic "No Instagram data available", show a clear message explaining that Instagram insights require Meta App Review approval, with a link or guidance.
 
-  RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  -- Log but don't block signup if Sender sync fails
-  RAISE WARNING '[sender-sync] Failed to queue HTTP request: %', SQLERRM;
-  RETURN NEW;
-END;
-$$;
+**File:** `src/pages/dashboard/PerformanceOverview.tsx`
+- Check whether the user's integration has IG scopes
+- If no IG scopes: show "Instagram insights require additional permissions (instagram_basic, instagram_manage_insights) which are pending Meta App Review."
+- If IG scopes exist but no data: show current "No data" message
+
+#### 2. Add Sync Resilience for Ads (code change)
+The `meta-sync` function should NOT silently return 0 records when the API might have returned data on a previous run. Add logging to distinguish "API returned empty" from "API error".
+
+**File:** `supabase/functions/meta-sync/index.ts`
+- Add a log when insights API returns an empty `data` array vs no `data` field
+- Already has fallback check at account-level — ensure this is logged clearly
+
+#### 3. Meta App Review (manual action — not a code change)
+Submit your Meta App for review requesting `instagram_basic` and `instagram_manage_insights` permissions. Until approved, Instagram data will remain unavailable for all users.
+
+---
+
+### Technical Details
+
+```text
+Current user scopes (from DB):
+  ✓ ads_management
+  ✓ ads_read
+  ✓ business_management
+  ✓ pages_show_list
+  ✓ pages_read_engagement
+  ✓ public_profile
+  ✗ instagram_basic          ← requires App Review
+  ✗ instagram_manage_insights ← requires App Review
+
+meta-sync gate (line 125):
+  hasIgScopes = scopes.some(s => ['instagram_basic','instagram_manage_insights'].includes(s))
+  → evaluates to FALSE → IG sync skipped entirely
 ```
 
-Key changes:
-1. `extensions.http_post()` → `net.http_post()` (correct schema)
-2. `body` passed as `jsonb` (correct type for pg_net)
-3. Added `EXCEPTION WHEN OTHERS` block so Sender sync failures never block signups
-
-### Files changed
-- New SQL migration only. No application code changes.
+Files to modify:
+- `src/pages/dashboard/PerformanceOverview.tsx` — contextual IG message
+- `src/hooks/useMetaIntegration.ts` — expose `hasIgScopes` flag
+- `supabase/functions/meta-sync/index.ts` — minor logging improvement
 
