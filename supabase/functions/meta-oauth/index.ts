@@ -64,7 +64,7 @@ serve(async (req) => {
       const state = userData.user.id; // user_id as state for callback
       const scopes = 'ads_management,ads_read,business_management,pages_show_list,pages_read_engagement,public_profile';
 
-      const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code&config_id=${businessConfigId}`;
+      const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&response_type=code&config_id=${businessConfigId}`;
 
       return new Response(JSON.stringify({ url: oauthUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
