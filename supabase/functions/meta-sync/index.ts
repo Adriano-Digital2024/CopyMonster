@@ -112,7 +112,7 @@ serve(async (req) => {
       .select('*')
       .eq('user_id', userId)
       .eq('provider', 'meta')
-      .in('status', ['connected'])
+      .in('status', ['connected', 'permission_revoked'])
       .single();
 
     if (!integration) {
