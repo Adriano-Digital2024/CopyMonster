@@ -17,12 +17,21 @@ import { useTheme } from '@/components/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 
 async function getFreshToken() {
+  // Try refresh first
   const { data, error } = await supabase.auth.refreshSession();
-  if (error || !data.session) {
-    const { data: sessionData } = await supabase.auth.getSession();
-    return sessionData?.session?.access_token ?? null;
+  if (!error && data.session?.access_token) {
+    return data.session.access_token;
   }
-  return data.session.access_token;
+  // If refresh failed, try current session (may be still valid)
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) {
+    console.error('[getFreshToken] No valid token available after refresh attempt', error?.message);
+    return null;
+  }
+  // Log warning - this token might be stale
+  console.warn('[getFreshToken] Using cached session token (refresh failed)', error?.message);
+  return token;
 }
 
 export default function Settings() {
