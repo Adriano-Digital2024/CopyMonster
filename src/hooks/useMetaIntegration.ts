@@ -11,6 +11,8 @@ interface MetaIntegrationResult {
   isLoading: boolean;
   isSynced: boolean;
   lastSyncedAt: string | null;
+  hasIgScopes: boolean;
+  scopes: string[];
   refetch: () => Promise<void>;
 }
 
@@ -20,6 +22,7 @@ export function useMetaIntegration(): MetaIntegrationResult {
   const [hasData, setHasData] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [scopes, setScopes] = useState<string[]>([]);
 
   const fetch = useCallback(async () => {
     if (!user) {
@@ -31,7 +34,7 @@ export function useMetaIntegration(): MetaIntegrationResult {
     const [integrationRes, adsCountRes] = await Promise.all([
       supabase
         .from('user_integrations')
-        .select('status, last_synced_at')
+        .select('status, last_synced_at, scopes')
         .eq('provider', 'meta')
         .eq('user_id', user.id)
         .maybeSingle(),
@@ -45,8 +48,10 @@ export function useMetaIntegration(): MetaIntegrationResult {
       const s = integrationRes.data.status as MetaStatus;
       setStatus(['connected', 'token_expired', 'permission_revoked', 'rate_limited', 'error'].includes(s) ? s : 'disconnected');
       setLastSyncedAt(integrationRes.data.last_synced_at);
+      setScopes((integrationRes.data as any).scopes || []);
     } else {
       setStatus('disconnected');
+      setScopes([]);
     }
 
     setHasData((adsCountRes.count || 0) > 0);
@@ -57,6 +62,8 @@ export function useMetaIntegration(): MetaIntegrationResult {
     fetch();
   }, [fetch]);
 
+  const hasIgScopes = scopes.some(s => ['instagram_basic', 'instagram_manage_insights'].includes(s));
+
   return {
     status,
     isConnected: status === 'connected' || status === 'permission_revoked',
@@ -64,6 +71,8 @@ export function useMetaIntegration(): MetaIntegrationResult {
     isLoading,
     isSynced: lastSyncedAt !== null,
     lastSyncedAt,
+    hasIgScopes,
+    scopes,
     refetch: fetch,
   };
 }
