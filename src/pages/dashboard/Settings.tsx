@@ -113,8 +113,7 @@ export default function Settings() {
   const handleConnectMeta = async () => {
     setIsConnecting(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getFreshToken();
       if (!token) throw new Error('No session');
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -144,8 +143,7 @@ export default function Settings() {
 
   const handleDisconnectMeta = async () => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getFreshToken();
       if (!token) throw new Error('No session');
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -175,8 +173,7 @@ export default function Settings() {
   const handleSyncMeta = async () => {
     setIsSyncing(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      const token = await getFreshToken();
       if (!token) throw new Error('No session');
 
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
