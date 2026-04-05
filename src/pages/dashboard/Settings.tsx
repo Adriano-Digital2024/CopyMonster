@@ -16,6 +16,15 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 
+async function getFreshToken() {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error || !data.session) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    return sessionData?.session?.access_token ?? null;
+  }
+  return data.session.access_token;
+}
+
 export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
