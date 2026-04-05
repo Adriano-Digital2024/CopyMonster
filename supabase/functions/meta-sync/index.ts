@@ -433,7 +433,9 @@ serve(async (req) => {
           user_id: userId, provider: 'meta', event_type: 'api_error',
           details: { error: (igError as Error).message, endpoint: 'instagram_sync' }
         });
-      }
+    } else if (!hasIgScopes) {
+      console.log(`[meta-sync] ⏭️ Instagram sync SKIPPED — missing required scopes (instagram_basic, instagram_manage_insights). Current scopes: ${scopes.join(', ')}`);
+    }
     }
 
     // Update last_synced_at
