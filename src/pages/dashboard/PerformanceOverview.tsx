@@ -168,7 +168,23 @@ export default function PerformanceOverview() {
               </CardHeader>
               <CardContent>
                 {igData.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t('intelligence.performance.noIgData')}</p>
+                  !meta.hasIgScopes ? (
+                    <div className="text-center py-6 space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        {t('intelligence.performance.igScopesMissing', 'Os insights do Instagram requerem permissões adicionais (instagram_basic, instagram_manage_insights) que estão pendentes de aprovação no Meta App Review.')}
+                      </p>
+                      <a
+                        href="https://developers.facebook.com/docs/app-review"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {t('intelligence.performance.learnMoreAppReview', 'Saiba mais sobre o Meta App Review →')}
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">{t('intelligence.performance.noIgData')}</p>
+                  )
                 ) : (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
