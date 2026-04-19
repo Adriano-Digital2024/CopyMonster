@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MailCheck } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 import { useTheme } from '@/components/ThemeProvider';
@@ -57,6 +58,8 @@ const Auth = () => {
     isLoading: isAuthLoading
   } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerifyEmailDialog, setShowVerifyEmailDialog] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -117,8 +120,8 @@ const Auth = () => {
       // Track Meta Pixel CompleteRegistration on successful signup
       trackCompleteRegistration({ status: true });
       
-      toast.success(t('auth.signupSuccess'));
-      toast.info(t('auth.verifyEmailNotice'));
+      setRegisteredEmail(validatedData.email);
+      setShowVerifyEmailDialog(true);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
@@ -220,6 +223,32 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={showVerifyEmailDialog} onOpenChange={setShowVerifyEmailDialog}>
+        <DialogContent className="sm:max-w-md text-center">
+          <DialogHeader>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <MailCheck className="h-8 w-8 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl text-center">
+              {t('auth.signupSuccess')}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              {t('auth.verifyEmailNotice')}
+              {registeredEmail && (
+                <span className="block mt-3 font-medium text-foreground">
+                  {registeredEmail}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center pt-4">
+            <Button onClick={() => setShowVerifyEmailDialog(false)} className="w-full sm:w-auto">
+              {t('common.understood', 'Entendi')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default Auth;
