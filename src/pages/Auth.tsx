@@ -58,6 +58,8 @@ const Auth = () => {
     isLoading: isAuthLoading
   } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerifyEmailDialog, setShowVerifyEmailDialog] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
