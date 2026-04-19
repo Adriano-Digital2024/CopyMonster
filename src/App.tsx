@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
 import { CookieManager } from "@/components/cookie/CookieManager";
 import { MetaPixelTracker } from "@/components/tracking/MetaPixelTracker";
+import { AuthHashHandler } from "@/components/AuthHashHandler";
 import Index from "./pages/Index";
 import Start from "./pages/Start";
 import Auth from "./pages/Auth";
@@ -63,6 +64,7 @@ const App = () => (
             <BrowserRouter>
               <CookieManager />
               <MetaPixelTracker />
+              <AuthHashHandler />
               <Routes>
                 <Route path="/" element={<Start />} />
                 <Route path="/start" element={<Index />} />
