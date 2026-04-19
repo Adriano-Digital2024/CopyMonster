@@ -120,8 +120,8 @@ const Auth = () => {
       // Track Meta Pixel CompleteRegistration on successful signup
       trackCompleteRegistration({ status: true });
       
-      toast.success(t('auth.signupSuccess'));
-      toast.info(t('auth.verifyEmailNotice'));
+      setRegisteredEmail(validatedData.email);
+      setShowVerifyEmailDialog(true);
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
