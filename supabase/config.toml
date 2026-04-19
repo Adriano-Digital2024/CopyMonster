@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.sender-sync]
 verify_jwt = false
+
+[functions.agentes-sync]
+verify_jwt = false
