@@ -223,6 +223,32 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={showVerifyEmailDialog} onOpenChange={setShowVerifyEmailDialog}>
+        <DialogContent className="sm:max-w-md text-center">
+          <DialogHeader>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <MailCheck className="h-8 w-8 text-primary" />
+            </div>
+            <DialogTitle className="text-2xl text-center">
+              {t('auth.signupSuccess')}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              {t('auth.verifyEmailNotice')}
+              {registeredEmail && (
+                <span className="block mt-3 font-medium text-foreground">
+                  {registeredEmail}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center pt-4">
+            <Button onClick={() => setShowVerifyEmailDialog(false)} className="w-full sm:w-auto">
+              {t('common.understood', 'Entendi')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default Auth;
