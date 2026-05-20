@@ -64,17 +64,17 @@ const AdminAgents = () => {
     const Icon = getAgentIcon(agent.icon);
     
     return (
-      <Card key={agent.id} className="hover:shadow-lg transition-shadow">
-        <CardHeader>
+      <Card key={agent.id} className="border-border/60 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated">
+        <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div 
-              className="p-3 rounded-lg"
-              style={{ backgroundColor: `${agent.color}20` }}
+              className="p-2.5 rounded-lg"
+              style={{ backgroundColor: `${agent.color}1f` }}
             >
-              <Icon className="h-6 w-6" style={{ color: agent.color }} />
+              <Icon className="h-5 w-5" style={{ color: agent.color }} />
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={agent.is_active ? "default" : "outline"}>
+              <Badge variant={agent.is_active ? "default" : "outline"} className="text-[10px]">
                 {agent.is_active ? t('admin.agents.active') : t('admin.agents.inactive')}
               </Badge>
               <Switch
@@ -83,18 +83,19 @@ const AdminAgents = () => {
               />
             </div>
           </div>
-          <CardTitle className="mt-4">{agent.name}</CardTitle>
-          <CardDescription className="line-clamp-2">{agent.description}</CardDescription>
+          <CardTitle className="mt-3 text-base font-semibold">{agent.name}</CardTitle>
+          <CardDescription className="line-clamp-2 text-sm">{agent.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-wrap gap-2 text-xs">
-            {agent.is_public && <Badge variant="secondary">Público</Badge>}
-            {agent.is_featured && <Badge variant="secondary">Destaque</Badge>}
-            {agent.category && <Badge variant="outline">{agent.category}</Badge>}
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {agent.is_public && <Badge variant="outline" className="text-[10px]">Público</Badge>}
+            {agent.is_featured && <Badge variant="outline" className="text-[10px]">Destaque</Badge>}
+            {agent.category && <Badge variant="outline" className="text-[10px]">{agent.category}</Badge>}
           </div>
           <Button 
             className="w-full" 
             variant="outline"
+            size="sm"
             onClick={() => navigate(`/admin/agents/${agent.slug}`)}
           >
             <Settings className="mr-2 h-4 w-4" />
