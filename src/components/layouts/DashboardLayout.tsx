@@ -72,23 +72,34 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return null;
   }
 
-  const menuItems = [
-    { icon: Target, label: t('dashboard.menu.positioning'), path: '/dashboard/positioning', highlight: true },
-    
-    { icon: LayoutDashboard, label: t('dashboard.menu.overview'), path: '/dashboard' },
-    { icon: Users, label: t('dashboard.menu.agents'), path: '/dashboard/agents' },
-    { icon: Rocket, label: t('dashboard.menu.campaigns'), path: '/dashboard/campaigns' },
-    { icon: FileText, label: t('dashboard.menu.copyResults'), path: '/dashboard/copy-results' },
-    { icon: Book, label: t('dashboard.menu.library'), path: '/dashboard/library' },
-    { icon: Trophy, label: t('dashboard.menu.performance'), path: '/dashboard/performance' },
-    
-    // Intelligence section
-    { icon: BarChart3, label: t('dashboard.menu.adsIntelligence'), path: '/dashboard/ads-intelligence', comingSoon: true },
-    { icon: Activity, label: t('dashboard.menu.performanceOverview'), path: '/dashboard/performance-overview', comingSoon: true },
-    { icon: Radar, label: t('dashboard.menu.marketRadar'), path: '/dashboard/market-radar', comingSoon: true },
-    
-    { icon: CreditCard, label: t('dashboard.menu.billing'), path: '/dashboard/billing' },
-    { icon: Settings, label: t('dashboard.menu.settings'), path: '/dashboard/settings' },
+  const menuSections = [
+    {
+      label: 'Workspace',
+      items: [
+        { icon: Target, label: t('dashboard.menu.positioning'), path: '/dashboard/positioning', highlight: true },
+        { icon: LayoutDashboard, label: t('dashboard.menu.overview'), path: '/dashboard' },
+        { icon: Users, label: t('dashboard.menu.agents'), path: '/dashboard/agents' },
+        { icon: Rocket, label: t('dashboard.menu.campaigns'), path: '/dashboard/campaigns' },
+        { icon: FileText, label: t('dashboard.menu.copyResults'), path: '/dashboard/copy-results' },
+        { icon: Book, label: t('dashboard.menu.library'), path: '/dashboard/library' },
+        { icon: Trophy, label: t('dashboard.menu.performance'), path: '/dashboard/performance' },
+      ],
+    },
+    {
+      label: 'Intelligence',
+      items: [
+        { icon: BarChart3, label: t('dashboard.menu.adsIntelligence'), path: '/dashboard/ads-intelligence', comingSoon: true },
+        { icon: Activity, label: t('dashboard.menu.performanceOverview'), path: '/dashboard/performance-overview', comingSoon: true },
+        { icon: Radar, label: t('dashboard.menu.marketRadar'), path: '/dashboard/market-radar', comingSoon: true },
+      ],
+    },
+    {
+      label: 'Account',
+      items: [
+        { icon: CreditCard, label: t('dashboard.menu.billing'), path: '/dashboard/billing' },
+        { icon: Settings, label: t('dashboard.menu.settings'), path: '/dashboard/settings' },
+      ],
+    },
   ];
 
   const handleLogout = () => {
@@ -96,45 +107,63 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     navigate('/');
   };
 
+  const isActive = (path: string) => {
+    if (path === '/dashboard') return location.pathname === '/dashboard';
+    return location.pathname.startsWith(path);
+  };
+
   const Sidebar = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border">
-        <img src={theme === 'dark' ? logoDark : logoLight} alt="CopyMonster" className="h-14" />
+    <div className="flex flex-col h-full bg-sidebar-surface">
+      <div className="px-5 py-5 border-b border-border/60">
+        <img src={theme === 'dark' ? logoDark : logoLight} alt="CopyMonster" className="h-10" />
       </div>
-      
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
-        {menuItems.map((item, index) => (
-          <Button 
-            key={item.path} 
-            variant={item.highlight ? "default" : "ghost"} 
-            className={`w-full justify-start ${item.highlight ? 'bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30' : ''}`} 
-            onClick={() => navigate(item.path)}
-          >
-            <item.icon className="mr-2 h-4 w-4" />
-            {item.label}
-            {item.highlight && index === 0 && (
-              <span className="ml-auto text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
-                Start
-              </span>
-            )}
-            {item.comingSoon && (
-              <span className="ml-auto text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">
-                Em breve
-              </span>
-            )}
-          </Button>
+
+      <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar space-y-6">
+        {menuSections.map((section) => (
+          <div key={section.label} className="space-y-1">
+            <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              {section.label}
+            </p>
+            {section.items.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`nav-item ${active ? 'nav-item-active' : ''}`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1 text-left truncate">{item.label}</span>
+                  {item.highlight && (
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-primary border border-primary/40 px-1.5 py-0.5 rounded">
+                      Start
+                    </span>
+                  )}
+                  {item.comingSoon && (
+                    <span className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground border border-border px-1.5 py-0.5 rounded">
+                      Em breve
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         ))}
       </nav>
 
-      <div className="p-4 border-t border-border">
-        <div className="text-sm mb-4">
-          <p className="font-medium">{user?.first_name}</p>
-          <p className="text-muted-foreground">{user?.email}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {user?.credits} {t('dashboard.credits')}
-          </p>
+      <div className="p-3 border-t border-border/60">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
+          <div className="h-9 w-9 rounded-full bg-primary/15 text-primary flex items-center justify-center text-sm font-semibold shrink-0">
+            {user?.first_name?.[0]?.toUpperCase() || 'U'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user?.first_name}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.credits} {t('dashboard.credits')}
+            </p>
+          </div>
         </div>
-        <Button variant="outline" className="w-full" onClick={handleLogout}>
+        <Button variant="ghost" size="sm" className="w-full justify-start mt-1 text-muted-foreground hover:text-foreground" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           {t('dashboard.menu.logout')}
         </Button>
@@ -151,15 +180,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       />
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r border-border bg-card">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col border-r border-border/60">
         <Sidebar />
       </aside>
 
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-border bg-card">
-          <div className="flex h-16 items-center justify-between px-4">
+        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex h-14 items-center justify-between px-4 lg:px-8">
             <Sheet>
               <SheetTrigger asChild className="lg:hidden">
                 <Button variant="ghost" size="icon">
@@ -172,7 +201,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </SheetContent>
             </Sheet>
 
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-1 ml-auto">
               <NotificationBell />
               <LanguageSwitcher />
               <ThemeToggle />
@@ -181,7 +210,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="p-8">
+        <main className="px-4 py-6 lg:px-10 lg:py-10 max-w-7xl mx-auto w-full">
           {children}
         </main>
       </div>

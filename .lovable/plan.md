@@ -1,79 +1,76 @@
+## Objetivo
 
+Evolução **visual premium** do CopyMonster — mais clean, hierarquia melhor, sidebar moderna, cards de agentes mais respiráveis — preservando 100% da lógica, rotas, i18n, integrações, cores da marca (amarelo `51 98% 33%`) e funcionalidades.
 
-## Diagnóstico
+## Escopo (somente camada visual)
 
-Confirmei via SQL e logs:
+Arquivos tocados (apenas estilos/JSX de apresentação):
 
-1. **Trigger ausente**: `SELECT … FROM information_schema.triggers WHERE event_object_table = 'profiles'` retornou **vazio**. Nenhum trigger existe na tabela `profiles`, nem o `trg_agentes_sync_insert`, nem o `trg_agentes_sync_update`, nem o equivalente do `sender-sync`.
-2. **Função existe mas órfã**: `notify_agentes_on_profile_change()` está criada no banco, mas sem trigger não é chamada.
-3. **Logs vazios**: A edge function `agentes-sync` nunca recebeu nenhuma chamada (zero logs). Isso confirma que o trigger nunca disparou.
-4. **Usuário novo não sincronizou**: `emanueleeusou@gmail.com` (criado hoje 19/04) está em `profiles`, mas não chegou em `leads_agentes`.
+1. `src/index.css` — adicionar tokens de profundidade
+2. `src/components/layouts/DashboardLayout.tsx` — sidebar premium
+3. `src/components/layouts/AdminLayout.tsx` — mesmo tratamento
+4. `src/pages/dashboard/Agents.tsx` — grid e cards refinados
+5. `src/pages/admin/AdminAgents.tsx` — cards refinados
+6. `src/pages/Dashboard.tsx` — header/cards (refino leve)
+7. `src/pages/admin/AdminDashboard.tsx` — refino leve
 
-## Causa raiz
+**Não muda:** menuItems, rotas, handlers, hooks, traduções (todas chaves `t(...)` mantidas), permissões, lógica de trial/credits, comportamento dos botões, integrações.
 
-A migration anterior criou a função `notify_agentes_on_profile_change()`, mas os comandos `CREATE TRIGGER` não foram aplicados (provavelmente um erro silencioso na migration ou foram omitidos). Sem o trigger, qualquer INSERT/UPDATE em `profiles` não dispara a chamada HTTP para `agentes-sync`.
+## Mudanças visuais
 
-## Plano de correção
+### Design tokens (`index.css`)
+- Adicionar variáveis sem alterar cores existentes:
+  - `--surface-1`, `--surface-2` para níveis sutis de elevação derivados do `--card`
+  - `--shadow-soft`, `--shadow-elevated` (mais sutis que o atual)
+  - `--sidebar-background` ligeiramente mais escuro que `--card` no dark, mais claro no light
+- Manter LOCKED: `--border`, `--input`, `--primary` (amarelo), `--background`.
 
-### 1. Criar os triggers ausentes em `profiles` (migration)
+### Sidebar (Dashboard + Admin)
+- Largura mantida (w-64); fundo `bg-sidebar` com leve gradiente vertical sutil
+- Logo com padding reduzido e divisor mais sutil
+- **Agrupamento visual** com seções rotuladas (labels minúsculos `text-xs uppercase tracking-wider text-muted-foreground/60`):
+  - Dashboard: "Workspace" (Positioning, Overview, Agents, Campaigns, Copy Results, Library, Performance) / "Intelligence" (Ads, Performance Overview, Market Radar) / "Account" (Billing, Settings)
+  - Admin: "Visão geral" / "Gestão" / "Conteúdo & IA" / "Sistema"
+- Itens: altura 9, `rounded-md`, ícone 4×4, hover `bg-muted/50`, ativo com `bg-primary/10 text-primary` + barra lateral de 2px à esquerda (`before:` pseudo)
+- Badge "Em breve" / "Start" com estilo mais discreto (outline em vez de fundo cheio)
+- Footer do usuário em card compacto (avatar com inicial + nome + créditos), botão logout `ghost` com ícone
+- Scrollbar custom já existe — mantida
 
-```sql
--- Trigger para novos cadastros
-CREATE TRIGGER trg_agentes_sync_insert
-  AFTER INSERT ON public.profiles
-  FOR EACH ROW
-  EXECUTE FUNCTION public.notify_agentes_on_profile_change();
+### Header
+- Altura 14, `backdrop-blur` sutil, borda inferior `border-border/60`
+- Espaçamento melhor entre NotificationBell / LanguageSwitcher / ThemeToggle
 
--- Trigger para mudanças de plano/dados relevantes
-CREATE TRIGGER trg_agentes_sync_update
-  AFTER UPDATE ON public.profiles
-  FOR EACH ROW
-  EXECUTE FUNCTION public.notify_agentes_on_profile_change();
-```
+### Página Agents (user + admin)
+- Header de página: título + subtítulo com mais respiro (mb-8)
+- Grid responsivo: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4` (admin mantém 3 cols para densidade)
+- Cards de agente refinados:
+  - Padding `p-5`, `rounded-xl`, borda `border-border/60`
+  - Hover: leve `translate-y-[-2px]`, `shadow-elevated`, borda `border-primary/40`
+  - Ícone com fundo suave (mantém cor do agente, já existe)
+  - Tipografia: nome `text-base font-semibold`, descrição `text-sm line-clamp-2`
+  - Botão CTA `variant="ghost"` com seta `ArrowRight` em vez de botão sólido full-width (reduz peso visual); admin mantém botão "Configure"
+  - Badge superior direita mais sutil (`variant="outline"`)
+- Separadores entre categorias com label discreto + contagem
 
-A função `notify_agentes_on_profile_change()` já tem a lógica correta:
-- Em INSERT → envia `type: 'new_lead'`
-- Em UPDATE → só dispara se `subscription_status`, `trial_expires_at`, `first_name`, `phone` ou `email` mudaram
+### Conteúdo (`main`)
+- `max-w-7xl mx-auto` + padding `p-6 lg:p-10` para respiração
+- Fundo do `main` com `bg-background`, contraste com sidebar mais notável
 
-### 2. Backfill do usuário existente que não foi sincronizado
+### Microinterações
+- `transition-colors`/`transition-all` 200ms em itens de sidebar e cards
+- Sem framer-motion novo (não introduzir libs)
 
-Após criar os triggers, executar um `UPDATE` no usuário `emanueleeusou@gmail.com` que não passou pela sincronização (toco em um campo que dispara, ex.: `first_name = first_name`) — não, isso não dispara porque o `IS DISTINCT FROM` retorna falso. Vou usar uma abordagem mais segura:
+## O que NÃO muda
 
-```sql
--- Reenviar manualmente via net.http_post para o profile órfão
-SELECT net.http_post(
-  url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/agentes-sync',
-  body := jsonb_build_object(
-    'type', 'new_lead',
-    'record', jsonb_build_object(
-      'id', id, 'email', email, 'first_name', first_name,
-      'phone', COALESCE(phone, ''), 'subscription_status', subscription_status,
-      'created_at', created_at, 'trial_expires_at', trial_expires_at
-    )
-  ),
-  headers := jsonb_build_object(
-    'Content-Type', 'application/json',
-    'Authorization', 'Bearer <anon_key>'
-  )
-)
-FROM public.profiles
-WHERE email = 'emanueleeusou@gmail.com';
-```
+- Nenhum texto exibido: todos os `t('...')` permanecem idênticos
+- menuItems (mesmos itens, mesmas paths, mesmos ícones — só agrupados visualmente)
+- Lógica de `useAuth`, `canUseAgents`, `TrialExpiredModal`, redirecionamentos
+- Cores primárias (amarelo CopyMonster), variáveis LOCKED de borda
+- Estrutura de rotas, hooks, edge functions, banco, i18n
 
-### 3. Validação após aplicar
+## Validação pós-implementação
 
-- Verificar `information_schema.triggers` para confirmar que os 2 triggers aparecem.
-- Cadastrar um novo usuário de teste no CopyMonster.
-- Conferir logs da `agentes-sync` (devem aparecer agora).
-- Conferir logs da `sync-lead` no projeto destino.
-- Confirmar registro na tabela `leads_agentes`.
-
-### Observação sobre o destino
-
-Se mesmo com os triggers funcionando o lead não chegar em `leads_agentes`, o problema estará no projeto destino:
-- Função `sync-lead` pode não estar deployada
-- `AGENTES_SERVICE_ROLE_KEY` pode estar incorreta (precisa ser a `service_role` do projeto `alfedcsoicoheqargisr`, não a do CopyMonster)
-- Tabela `leads_agentes` pode não ter sido criada com os campos esperados
-
-Os logs da `agentes-sync` vão mostrar exatamente qual desses casos é, pois ela loga o status HTTP e o corpo de resposta da `sync-lead`.
-
+- Preview em desktop e mobile (sheet sidebar funciona)
+- Trocar tema dark/light — contraste mantido
+- Navegar entre páginas — itens ativos destacados corretamente
+- Confirmar que badges "Em breve" e bloqueios de agentes seguem aparecendo
