@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useAgents } from '@/hooks/useAgents';
 import { useDnaGuard } from '@/hooks/useDnaGuard';
-import { Loader2, Target, Film, FileText, Rocket, Mail, Megaphone, Newspaper, Clapperboard, ShieldAlert, type LucideIcon } from 'lucide-react';
+import { Loader2, Target, Film, FileText, Rocket, Mail, Megaphone, Newspaper, Clapperboard, ShieldAlert, ArrowRight, type LucideIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -102,24 +102,30 @@ export default function Agents() {
     const { name, description } = getAgentTranslation(agent);
 
     return (
-      <Card 
+      <Card
         key={agent.id}
-        className={`p-6 hover:shadow-lg transition-shadow cursor-pointer group ${!hasDna ? 'opacity-60' : ''}`}
+        className={`p-5 cursor-pointer group border-border/60 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated ${!hasDna ? 'opacity-60' : ''}`}
         onClick={() => handleAgentClick(agent.slug)}
       >
-        <div className="space-y-4">
+        <div className="flex flex-col h-full gap-4">
           <div className="flex items-start justify-between">
-            <div className="p-3 rounded-lg" style={{ backgroundColor: `${agent.color}20` }}>
-              <Icon className="h-8 w-8" style={{ color: agent.color }} />
+            <div className="p-2.5 rounded-lg" style={{ backgroundColor: `${agent.color}1f` }}>
+              <Icon className="h-6 w-6" style={{ color: agent.color }} />
             </div>
-            {badge && <Badge variant="secondary">{badge}</Badge>}
+            {badge && <Badge variant="outline" className="text-[10px] font-medium">{badge}</Badge>}
           </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">{name}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
+          <div className="space-y-1.5 flex-1">
+            <h3 className="text-base font-semibold leading-tight group-hover:text-primary transition-colors">{name}</h3>
+            <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
           </div>
-          <Button className="w-full" onClick={(e) => { e.stopPropagation(); handleAgentClick(agent.slug); }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start px-0 h-auto text-primary hover:text-primary hover:bg-transparent group-hover:gap-3 transition-all"
+            onClick={(e) => { e.stopPropagation(); handleAgentClick(agent.slug); }}
+          >
             {t('agents.page.launchAgent')}
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </Card>
@@ -154,24 +160,28 @@ export default function Agents() {
         )}
 
         {copywritingAgents.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold">{t('agents.categories.copywriting', 'Agentes de Copywriting')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-5">
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-lg font-semibold">{t('agents.categories.copywriting', 'Agentes de Copywriting')}</h2>
+              <span className="text-xs text-muted-foreground">{copywritingAgents.length}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {copywritingAgents.map(renderAgentCard)}
             </div>
           </div>
         )}
 
         {campaignAgents.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-semibold">{t('agents.categories.campaign', 'Agentes de Campanha Completa')}</h2>
-              <Badge variant="secondary" className="text-xs">{t('agents.badge.new', 'Novo')}</Badge>
+          <div className="space-y-5">
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-lg font-semibold">{t('agents.categories.campaign', 'Agentes de Campanha Completa')}</h2>
+              <span className="text-xs text-muted-foreground">{campaignAgents.length}</span>
+              <Badge variant="outline" className="text-[10px]">{t('agents.badge.new', 'Novo')}</Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {t('agents.categories.campaignDescription', 'Campanhas prontas para uso imediato com todos os assets inclusos')}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {campaignAgents.map(renderAgentCard)}
             </div>
           </div>
