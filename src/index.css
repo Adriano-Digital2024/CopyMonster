@@ -45,6 +45,13 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
+    /* Surfaces & sidebar (premium layering) */
+    --sidebar-bg: 240 10% 5%;
+    --surface-1: 240 10% 8%;
+    --surface-2: 240 10% 11%;
+    --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.4), 0 4px 12px hsl(0 0% 0% / 0.25);
+    --shadow-elevated: 0 8px 24px -8px hsl(0 0% 0% / 0.55), 0 2px 4px hsl(0 0% 0% / 0.3);
+
     /* Agent Colors */
     --agent-positioner: 51 98% 33%;
     --agent-vsl: 0 84% 60%;
@@ -99,6 +106,13 @@ All colors MUST be HSL.
     --input: 240 5.9% 85%;
     --ring: 51 98% 33%;
 
+    /* Surfaces & sidebar */
+    --sidebar-bg: 240 5% 98%;
+    --surface-1: 0 0% 100%;
+    --surface-2: 240 5% 96%;
+    --shadow-soft: 0 1px 2px hsl(240 10% 3.9% / 0.04), 0 4px 12px hsl(240 10% 3.9% / 0.06);
+    --shadow-elevated: 0 8px 24px -8px hsl(240 10% 3.9% / 0.12), 0 2px 4px hsl(240 10% 3.9% / 0.05);
+
     /* Gradients for Light Mode */
     --gradient-hero: linear-gradient(135deg, hsl(51 98% 33% / 0.1), hsl(199 89% 48% / 0.1));
     --gradient-card: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 100%));
@@ -152,6 +166,32 @@ All colors MUST be HSL.
 
   .transition-smooth {
     transition: var(--transition-smooth);
+  }
+
+  /* Sidebar premium surface */
+  .bg-sidebar-surface {
+    background-color: hsl(var(--sidebar-bg));
+  }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply relative flex items-center w-full gap-3 h-9 px-3 rounded-md text-sm font-medium text-muted-foreground transition-colors;
+  }
+  .nav-item:hover {
+    @apply bg-muted/60 text-foreground;
+  }
+  .nav-item-active {
+    @apply bg-primary/10 text-primary;
+  }
+  .nav-item-active::before {
+    content: "";
+    @apply absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] bg-primary rounded-r;
   }
 
   /* Phone Input Styling */
