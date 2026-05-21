@@ -4,12 +4,13 @@ services:
   app:
     build:
       context: .
-      # Pass arguments from the .env file to the Dockerfile during build
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
         VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
+
     ports:
-      # Map host port 3030 to container port 3030
       - "3030:3030"
+
     restart: unless-stopped
