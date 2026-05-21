@@ -1,4 +1,3 @@
-# Stage 1: Build the application
 FROM node:18-alpine AS builder
 WORKDIR /app
 
@@ -6,6 +5,10 @@ WORKDIR /app
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_PUBLISHABLE_KEY
 ARG VITE_STRIPE_PUBLISHABLE_KEY
+
+ARG VITE_SUPABASE_PROJECT_ID
+ENV VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID}
+
 
 # Set environment variables from build arguments so Vite can use them
 ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
