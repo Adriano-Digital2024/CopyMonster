@@ -11,7 +11,7 @@ function buildCallbackHtml(siteUrl: string, result: 'success' | 'error'): Respon
   const messageType = result === 'success' ? 'meta-oauth-success' : 'meta-oauth-error';
   const displayMsg = result === 'success' ? 'Conexão realizada! Fechando...' : 'Erro na conexão. Redirecionando...';
 
-  const html = `<!DOCTYPE html><html><head><title>CopyMonster</title></head>
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CopyMonster</title></head>
 <body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
 <div style="text-align:center"><p>${displayMsg}</p></div>
 <script>
