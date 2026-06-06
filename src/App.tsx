@@ -48,6 +48,7 @@ import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import GDPR from "./pages/legal/GDPR";
+import DataDeletionStatus from "./pages/legal/DataDeletionStatus";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
 
@@ -77,6 +78,7 @@ const App = () => (
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/cookie-policy" element={<CookiePolicy />} />
                 <Route path="/gdpr" element={<GDPR />} />
+                <Route path="/legal/data-deletion-status" element={<DataDeletionStatus />} />
                 {/* Dashboard - Protected */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/dashboard" element={<Dashboard />} />
