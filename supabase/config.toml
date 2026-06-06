@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.agentes-sync]
 verify_jwt = false
+
+[functions.meta-token-refresh]
+verify_jwt = false
+
+[functions.meta-webhook]
+verify_jwt = false
