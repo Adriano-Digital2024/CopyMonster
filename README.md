@@ -146,6 +146,19 @@ integration contract.
 | BYO LLM | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Multi-agent (configurable) | ✅ | ⚠️ | ✅ | ❌ | ❌ |
 | Starts at | **$0** | $49 | $49 | $39 | $49 |
+---
+
+| Capability                     | CopyMonster | Jasper | Copy.ai | AdCreative.ai | Anyword |
+| ------------------------------ | ----------- | ------ | ------- | ------------- | ------- |
+| Open Core / MIT                | ✅           | ❌      | ❌       | ❌             | ❌       |
+| Self-hostable                  | ✅           | ❌      | ❌       | ❌             | ❌       |
+| Mandatory strategic onboarding | ✅           | ❌      | ❌       | ❌             | ❌       |
+| Brand memory versioning        | ✅           | ⚠️     | ⚠️      | ❌             | ⚠️      |
+| Real ad feedback loop          | ✅           | ❌      | ❌       | ❌             | ⚠️      |
+| BYO LLM                        | ✅           | ❌      | ❌       | ❌             | ❌       |
+| Multi-agent orchestration      | ✅           | ⚠️     | ✅       | ❌             | ❌       |
+| Strategy before generation     | ✅           | ❌      | ❌       | ❌             | ❌       |
+
 
 ---
 
