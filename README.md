@@ -13,7 +13,7 @@
   <a href="https://copymonster.me">Website</a> · 
   <a href="https://copymonster.me/docs">Docs</a> · 
   <a href="https://app.copymonster.me">Cloud</a> · 
-  <a href="mailto:enterprise@copymonster.me">Enterprise</a></div>
+  <a href="mailto:enterprise@copymonster.me">Enterprise</a></div><br/><br/>
   <img src="./public/og-image.jpg" alt="CopyMonster" width="800"/>
   <br/><br/>
 </div>
