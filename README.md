@@ -1,6 +1,4 @@
 <div align="center">
-  <img src="./public/og-image.jpg" alt="CopyMonster" width="800"/>
-  <br/><br/>
   <h1>🧬 CopyMonster</h1>
   <p><strong>The only open-source AI copy platform that forces you to map your Brand DNA before writing a single word.</strong></p>
   <p><em>Copy that converts — because it's built on strategy, not generic prompts.</em></p>
@@ -15,7 +13,7 @@
   <a href="https://copymonster.me">Website</a> · 
   <a href="https://copymonster.me/docs">Docs</a> · 
   <a href="https://app.copymonster.me">Cloud</a> · 
-  <a href="mailto:enterprise@copymonster.me">Enterprise</a>
+  <a href="mailto:enterprise@copymonster.me">Enterprise</a></div>
   <img src="./public/og-image.jpg" alt="CopyMonster" width="800"/>
   <br/><br/>
 </div>
