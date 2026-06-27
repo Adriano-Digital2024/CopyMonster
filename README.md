@@ -133,20 +133,6 @@ integration contract.
 
 ---
 
-## Comparison
-
-| | CopyMonster | Jasper | Copy.ai | AdCreative.ai | Anyword |
-|---|:-:|:-:|:-:|:-:|:-:|
-| Open Source (MIT) | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Self-hostable | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **DNA-first workflow** (mandatory) | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Brand voice versioning | ✅ | ⚠️ | ⚠️ | ❌ | ⚠️ |
-| Meta Ads integration | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Performance → DNA loop | ✅ | ❌ | ❌ | ❌ | ⚠️ |
-| BYO LLM | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Multi-agent (configurable) | ✅ | ⚠️ | ✅ | ❌ | ❌ |
-| Starts at | **$0** | $49 | $49 | $39 | $49 |
----
 
 | Capability                     | CopyMonster | Jasper | Copy.ai | AdCreative.ai | Anyword |
 | ------------------------------ | ----------- | ------ | ------- | ------------- | ------- |
