@@ -17,7 +17,23 @@ _Copy that converts — because it's built on strategy, not generic prompts._
 
 </div>
 <div align="center">
-  <img src="./public/og-image.jpg" alt="CopyMonster" width="200"/>
+  <img src="./public/og-image.jpg" alt="CopyMonster" width="800"/>
+  <br/><br/>
+  <h1>🧬 CopyMonster</h1>
+  <p><strong>The only open-source AI copy platform that forces you to map your Brand DNA before writing a single word.</strong></p>
+  <p><em>Copy that converts — because it's built on strategy, not generic prompts.</em></p>
+  <br/>
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License MIT"/>
+  <img src="https://img.shields.io/badge/React-18-blue.svg" alt="React 18"/>
+  <img src="https://img.shields.io/badge/Vite-5-646CFF.svg" alt="Vite 5"/>
+  <img src="https://img.shields.io/badge/Supabase-Backend-3FCF8E.svg" alt="Supabase"/>
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED.svg" alt="Docker Ready"/>
+  <img src="https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020.svg" alt="Cloudflare Pages"/>
+  <br/><br/>
+  <a href="https://copymonster.me">Website</a> · 
+  <a href="https://copymonster.me/docs">Docs</a> · 
+  <a href="https://app.copymonster.me">Cloud</a> · 
+  <a href="mailto:enterprise@copymonster.me">Enterprise</a>
 </div>
 ---
 
