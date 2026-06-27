@@ -1,73 +1,213 @@
-# Welcome to your Lovable project
+<div align="center">
 
-## Project info
+# CopyMonster
 
-**URL**: https://lovable.dev/projects/68a23d30-5151-4b54-ad75-58fe8dc7dbea
+**The only open-source AI copy platform that forces you to map your Brand DNA before writing a single word.**
 
-## How can I edit this code?
+_Copy that converts — because it's built on strategy, not generic prompts._
 
-There are several ways of editing your application.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB.svg)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF.svg)](https://vitejs.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Backend-3FCF8E.svg)](https://supabase.com)
+[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com)
+[![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020.svg)](https://pages.cloudflare.com)
 
-**Use Lovable**
+[Website](https://copymonster.me) · [Cloud](https://app.copymonster.me) · [Enterprise](mailto:enterprise@copymonster.me)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/68a23d30-5151-4b54-ad75-58fe8dc7dbea) and start prompting.
+</div>
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## Why CopyMonster?
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Most AI copy tools are closed black boxes that don't know your brand. You
+paste a prompt, get generic output, and tweak it forever. CopyMonster takes
+the opposite path: **you cannot generate a single line of copy until your
+12-block Brand DNA is mapped**. Every agent — Hook, Headline, VSL, Email,
+Ads — reads from that DNA. The result is copy that sounds like your brand,
+because the strategy was defined before the words.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Brand DNA first** — 12 structured blocks (6 structural, 6 adaptive), versioned like code.
+- **Multi-agent system** — specialist agents, each with its own prompt, model, and few-shots.
+- **Meta Ads loop** — connect Meta Ads & Instagram and feed real performance back into the DNA.
+- **MIT licensed** — self-host, fork, audit every prompt.
+- **BYO LLM** — Lovable AI Gateway, OpenAI, Anthropic, OpenRouter, Mistral, or local Ollama.
+- **Multilingual** — PT, EN, ES out of the box.
 
-Follow these steps:
+> The open-source alternative to **Jasper, Copy.ai and AdCreative.ai**.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## DNA First — the core of CopyMonster
 
-# Step 3: Install the necessary dependencies.
-npm i
+CopyMonster is built around a single, opinionated rule:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+> **No DNA → no copy.**
+
+When a user signs up, the app guides them through the **12-block Brand DNA**
+before any agent is unlocked. Each block captures a strategic dimension of
+the brand (voice, audience, offer, mechanism, objections, proof, etc.).
+The DNA is versioned, comparable, and re-usable across every agent.
+
+| Layer | Blocks | Editable by |
+|---|---|---|
+| **Structural** | Voice, Audience, Offer, Mechanism, Promise, Positioning | Human (locked once approved) |
+| **Adaptive**   | Hooks, Objections, Proofs, Angles, CTAs, Tone shifts | Human in Core · AI in Enterprise |
+
+In the **Core**, the user updates the adaptive layer manually.
+In **Enterprise**, the **DNA Intelligence Engine** evolves it automatically
+from real Meta Ads performance (ROAS, CTR, hook retention, etc.).
+
+This is the differentiator no other open-source or commercial tool ships
+today.
+
+---
+
+## Quickstart — Docker
+
+```bash
+git clone https://github.com/YOUR_USER/copymonster.git
+cd copymonster
+cp .env.example .env   # fill in your Supabase keys
+docker compose up -d --build
+# → http://localhost:3030
 ```
 
-**Edit a file directly in GitHub**
+## Quickstart — Cloudflare Pages
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Fork this repo.
+2. Cloudflare Dashboard → Pages → **Connect to Git**.
+3. Build settings:
+   - Framework preset: **Vite**
+   - Build command: `npm run build`
+   - Build output: `dist`
+   - Node version: `18`
+4. Environment variables (Production & Preview):
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+   - `VITE_SUPABASE_PROJECT_ID`
+   - `VITE_STRIPE_PUBLISHABLE_KEY` _(optional)_
+5. Add `public/_redirects` with `/*    /index.html   200` for SPA fallback.
+6. Add your custom domain in Pages → Custom domains.
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Tech Stack
 
-## What technologies are used for this project?
+React 18 · Vite 5 · TypeScript 5 · Tailwind CSS 3 · shadcn/ui (Radix) ·
+TanStack Query · React Hook Form + Zod · i18next · Framer Motion ·
+Lucide Icons · Recharts · Sonner · Supabase (Postgres 15, Auth, Storage,
+Edge Functions) · pg_cron · pg_net · pgcrypto · Stripe · Meta Graph API.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Supported LLM Providers
 
-## How can I deploy this project?
+CopyMonster is **BYO LLM**. Configure providers via Supabase Edge Function
+secrets (never in the committed `.env`).
 
-Simply open [Lovable](https://lovable.dev/projects/68a23d30-5151-4b54-ad75-58fe8dc7dbea) and click on Share -> Publish.
+| Provider | Status | Secret name |
+|---|---|---|
+| Lovable AI Gateway (default, proxies OpenAI/Anthropic/Google) | Wired | `LOVABLE_API_KEY` |
+| OpenAI | Wired | `OPENAI_API_KEY` |
+| Anthropic | Wired | `ANTHROPIC_API_KEY` |
+| OpenRouter | Documented — community PRs welcome | `OPENROUTER_API_KEY` |
+| Mistral | Documented — community PRs welcome | `MISTRAL_API_KEY` |
+| Ollama (local) | Documented — community PRs welcome | `OLLAMA_BASE_URL` |
 
-## Can I connect a custom domain to my Lovable project?
+See [CONTRIBUTING.md](./CONTRIBUTING.md#adding-a-new-llm-provider) for the
+integration contract.
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Comparison
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+| | CopyMonster | Jasper | Copy.ai | AdCreative.ai | Anyword |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Open Source (MIT) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Self-hostable | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **DNA-first workflow** (mandatory) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Brand voice versioning | ✅ | ⚠️ | ⚠️ | ❌ | ⚠️ |
+| Meta Ads integration | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Performance → DNA loop | ✅ | ❌ | ❌ | ❌ | ⚠️ |
+| BYO LLM | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Multi-agent (configurable) | ✅ | ⚠️ | ✅ | ❌ | ❌ |
+| Starts at | **$0** | $49 | $49 | $39 | $49 |
+
+---
+
+## Core vs Enterprise
+
+| Feature | Core (MIT) | Enterprise |
+|---|:-:|:-:|
+| 12-block Brand DNA (mandatory entry point) | ✅ | ✅ |
+| DNA versioning, comparison, export | ✅ | ✅ |
+| All public AI agents | ✅ | ✅ |
+| Chat with agents, Library, Gamification | ✅ | ✅ |
+| i18n (PT / EN / ES) | ✅ | ✅ |
+| BYO LLM (OpenAI / Anthropic / OpenRouter / Mistral / Ollama) | ✅ | ✅ |
+| Basic Meta Ads connection | ✅ | ✅ |
+| **DNA Intelligence Engine** (automatic DNA evolution) | — | ✅ |
+| Additional Intelligence products (A/B variants, more tests) | — | ✅ |
+| **Market Radar** | — | ✅ |
+| Advanced Meta Ads (multi-account, IG insights, deep metrics) | — | ✅ |
+| Multi-tenant / Workspaces | — | ✅ |
+| SSO (Google Workspace, Okta, Azure AD) | — | ✅ |
+| White-label | — | ✅ |
+| Admin Panel (full) | — | ✅ |
+| SLA & priority support | — | ✅ |
+
+---
+
+## Pricing
+
+| Plan | Price | Best for |
+|---|---|---|
+| **Core (MIT)** | **$0** | Devs, indies, self-hosted teams |
+| Starter Cloud | $47/mo | Freelance copywriters |
+| Pro Cloud | $97/mo | Small agencies |
+| Legend Cloud | $197/mo | Mid-size agencies |
+| **Enterprise Cloud** | **$1,500+/mo** | Holdings, in-house teams |
+| **Enterprise Self-Hosted** | **$8k–$20k/yr** | Compliance / data-sensitive orgs |
+
+---
+
+## Roadmap
+
+- [ ] Wire OpenRouter, Mistral, and Ollama providers in edge functions
+- [ ] Plugin SDK for community agents
+- [ ] Google Ads integration
+- [ ] TikTok Ads integration
+- [ ] Headless CLI for DNA generation
+- [ ] Public benchmarks of agent prompts
+
+---
+
+## Community & Support
+
+- Email: hello@copymonster.me
+- Security: security@copymonster.me — see [SECURITY.md](./SECURITY.md)
+- Enterprise: enterprise@copymonster.me
+
+Contributions are welcome — start with [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+---
+
+## Enterprise
+
+Features available in the Enterprise plan:
+- Multi-tenant (multiple workspaces)
+- SSO
+- White-label
+- Automatic DNA evolution
+- Priority support
+
+**Contact:** enterprise@copymonster.me
+
+---
+
+## License
+
+[MIT](./LICENSE) for the Core. Enterprise modules are governed by a
+separate commercial license — see the Enterprise section above.
