@@ -1,22 +1,4 @@
 <div align="center">
-
-# CopyMonster
-
-**The only open-source AI copy platform that forces you to map your Brand DNA before writing a single word.**
-
-_Copy that converts — because it's built on strategy, not generic prompts._
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![React 18](https://img.shields.io/badge/React-18-61DAFB.svg)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF.svg)](https://vitejs.dev)
-[![Supabase](https://img.shields.io/badge/Supabase-Backend-3FCF8E.svg)](https://supabase.com)
-[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com)
-[![Cloudflare Pages](https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020.svg)](https://pages.cloudflare.com)
-
-[Website](https://copymonster.me) · [Cloud](https://app.copymonster.me) · [Enterprise](mailto:enterprise@copymonster.me)
-
-</div>
-<div align="center">
   <img src="./public/og-image.jpg" alt="CopyMonster" width="800"/>
   <br/><br/>
   <h1>🧬 CopyMonster</h1>
@@ -35,11 +17,23 @@ _Copy that converts — because it's built on strategy, not generic prompts._
   <a href="https://app.copymonster.me">Cloud</a> · 
   <a href="mailto:enterprise@copymonster.me">Enterprise</a>
 </div>
+
 ---
 
 ## Why CopyMonster?
 
-Most AI copy tools are closed black boxes that don't know your brand. You
+Most AI copy tools are closed black boxes that don't know your brand. You paste a prompt, get generic output, and tweak it forever.
+
+**CopyMonster takes the opposite path:** you cannot generate a single line of copy until your 12-block Brand DNA is mapped. Every agent — Hook, Headline, VSL, Email, Ads — reads from that DNA.
+
+The result? Copy that sounds like your brand, because the strategy was defined **before** the words.
+
+- 🧬 **Brand DNA first** — 12 structured blocks (6 structural, 6 adaptive), versioned like code.
+- 🤖 **Multi-agent system** — specialist agents, each with its own prompt, model, and few-shots.
+- 📊 **Meta Ads loop** — connect Meta Ads & Instagram and feed real performance back into the DNA.
+---
+
+st AI copy tools are closed black boxes that don't know your brand. You
 paste a prompt, get generic output, and tweak it forever. CopyMonster takes
 the opposite path: **you cannot generate a single line of copy until your
 12-block Brand DNA is mapped**. Every agent — Hook, Headline, VSL, Email,
