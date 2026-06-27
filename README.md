@@ -16,7 +16,9 @@ _Copy that converts — because it's built on strategy, not generic prompts._
 [Website](https://copymonster.me) · [Cloud](https://app.copymonster.me) · [Enterprise](mailto:enterprise@copymonster.me)
 
 </div>
-
+<div align="center">
+  <img src="./public/og-image.jpg" alt="CopyMonster" width="200"/>
+</div>
 ---
 
 ## Why CopyMonster?
