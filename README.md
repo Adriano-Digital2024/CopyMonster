@@ -47,7 +47,7 @@ because the strategy was defined before the words.
 - **BYO LLM** — Lovable AI Gateway, OpenAI, Anthropic, OpenRouter, Mistral, or local Ollama.
 - **Multilingual** — PT, EN, ES out of the box.
 
-> The open-source alternative to **Jasper, Copy.ai and AdCreative.ai**.
+> 98% of professionals work for AI; the other **2% use CopyMonster**. A groundbreaking system that **maps your DNA** and makes **your voice** echo to the four corners of the earth.
 
 ---
 
