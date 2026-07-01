@@ -108,9 +108,13 @@ serve(async (req) => {
       key: encryptionKey,
     });
 
-    if (encryptAccessError || encryptRefreshError) {
-      console.error('[mautic-callback] Encryption failed:', encryptAccessError?.message || encryptRefreshError?.message);
-      return buildCallbackHtml('error', 'Failed to secure tokens');
+    if (encryptAccessError || encryptRefreshError || !encryptedAccess || !encryptedRefresh) {
+      console.error('[mautic-callback] Encryption failed:');
+      console.error('  access error:', encryptAccessError?.message || encryptAccessError);
+      console.error('  refresh error:', encryptRefreshError?.message || encryptRefreshError);
+      console.error('  encryptedAccess is null/empty:', !encryptedAccess);
+      console.error('  encryptedRefresh is null/empty:', !encryptedRefresh);
+      return buildCallbackHtml('error', `Failed to secure tokens: ${encryptAccessError?.message || encryptRefreshError?.message || 'empty encrypted result'}`);
     }
 
     const { error: upsertError } = await adminSupabase
