@@ -8,17 +8,31 @@ const corsHeaders = {
 };
 
 function buildCallbackHtml(result: 'success' | 'error', message?: string): Response {
+  const title = result === 'success' ? 'Mautic Connected' : 'Mautic Connection Failed';
   const displayMsg = result === 'success'
     ? 'Mautic connected successfully! You can close this window.'
     : `Mautic connection failed: ${message || 'Unknown error'}`;
 
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CopyMonster - Mautic Connection</title></head>
-<body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
-<div style="text-align:center;max-width:600px;padding:20px">
-  <h1>${result === 'success' ? '✅ Connected' : '❌ Connection Failed'}</h1>
-  <p>${displayMsg}</p>
-</div>
-</body></html>`;
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    body { background: #1a1a2e; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .container { text-align: center; max-width: 600px; padding: 20px; }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    p { font-size: 1.1rem; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>${result === 'success' ? 'Connected' : 'Connection Failed'}</h1>
+    <p>${displayMsg}</p>
+  </div>
+</body>
+</html>`;
 
   return new Response(html, {
     status: result === 'success' ? 200 : 400,
