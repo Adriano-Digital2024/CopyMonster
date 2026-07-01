@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { resolveProvider, isProviderError } from "../_shared/llm-router.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,49 +60,17 @@ serve(async (req) => {
       presence_penalty,
     } = await req.json();
 
-    // Determine which API to use based on model_id
-    const isMistral = model_id?.startsWith('mistralai/') || model_id?.startsWith('mistral/');
-    
-    let apiUrl: string;
-    let apiKey: string | undefined;
-    let modelName: string;
-    let headers: Record<string, string>;
-
-    if (isMistral) {
-      // Use Mistral API directly
-      apiKey = Deno.env.get('MISTRAL_API_KEY');
-      if (!apiKey) {
-        return new Response(
-          JSON.stringify({ error: 'Mistral API not configured' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-      apiUrl = 'https://api.mistral.ai/v1/chat/completions';
-      modelName = model_id.replace('mistralai/', '').replace('mistral/', '');
-      headers = {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      };
-    } else {
-      // Use OpenRouter for other models
-      apiKey = Deno.env.get('OPENROUTER_API_KEY');
-      if (!apiKey) {
-        return new Response(
-          JSON.stringify({ error: 'OpenRouter API not configured' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-      apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-      modelName = model_id || 'google/gemini-2.5-flash';
-      headers = {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://copymonster.me',
-        'X-Title': 'CopyMonster Admin Test',
-      };
+    const route = resolveProvider(model_id || 'google/gemini-2.5-flash', {
+      title: 'CopyMonster Admin Test',
+    });
+    if (isProviderError(route)) {
+      return new Response(
+        JSON.stringify({ error: route.error }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: route.status }
+      );
     }
-
-    console.log(`[agent-test] Testing with model: ${modelName} via ${isMistral ? 'Mistral' : 'OpenRouter'}`);
+    const { apiUrl, modelName, headers, provider, supportsPenalties } = route;
+    console.log(`[agent-test] Testing with model: ${modelName} via ${provider}`);
 
     const messages = [
       { role: 'system', content: system_prompt },
@@ -118,9 +87,7 @@ serve(async (req) => {
     // Add optional parameters based on provider
     if (temperature !== undefined) requestBody.temperature = temperature;
     if (top_p !== undefined) requestBody.top_p = top_p;
-    
-    // OpenRouter supports these, Mistral may not
-    if (!isMistral) {
+    if (supportsPenalties) {
       if (frequency_penalty !== undefined) requestBody.frequency_penalty = frequency_penalty;
       if (presence_penalty !== undefined) requestBody.presence_penalty = presence_penalty;
     }
