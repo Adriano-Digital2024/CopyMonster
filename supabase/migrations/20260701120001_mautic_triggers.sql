@@ -31,7 +31,7 @@ BEGIN
   );
 
   -- Call mautic-sync edge function via pg_net
-  PERFORM net.http_post(
+  PERFORM extensions.http_post(
     url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/mautic-sync',
     body := _payload::text,
     headers := jsonb_build_object(
