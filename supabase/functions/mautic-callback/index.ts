@@ -76,6 +76,9 @@ serve(async (req) => {
     const redirectUri = `${supabaseUrl}/functions/v1/mautic-callback`;
 
     console.log('[mautic-callback] Exchanging authorization code for tokens');
+    console.log('[mautic-callback] Token URL:', `${mauticBaseUrl}/oauth/v2/token`);
+    console.log('[mautic-callback] Redirect URI:', redirectUri);
+    console.log('[mautic-callback] Client ID:', mauticClientId);
 
     const tokenResponse = await fetch(`${mauticBaseUrl}/oauth/v2/token`, {
       method: 'POST',
@@ -92,11 +95,20 @@ serve(async (req) => {
       }),
     });
 
-    const tokenData = await tokenResponse.json();
+    const responseText = await tokenResponse.text();
+    console.log(`[mautic-callback] Token response status: ${tokenResponse.status}`);
+    console.log(`[mautic-callback] Token response body:`, responseText);
+
+    let tokenData: Record<string, unknown>;
+    try {
+      tokenData = JSON.parse(responseText);
+    } catch {
+      tokenData = {};
+    }
 
     if (!tokenResponse.ok || tokenData.error) {
       console.error('[mautic-callback] Token exchange failed:', JSON.stringify(tokenData));
-      return buildCallbackHtml('error', tokenData.error_description || tokenData.error || 'Token exchange failed');
+      return buildCallbackHtml('error', (tokenData.error_description as string) || (tokenData.error as string) || `Token exchange failed: ${tokenResponse.status}`);
     }
 
     const accessToken = tokenData.access_token;
