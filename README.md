@@ -124,9 +124,26 @@ secrets (never in the committed `.env`).
 | Lovable AI Gateway (default, proxies OpenAI/Anthropic/Google) | Wired | `LOVABLE_API_KEY` |
 | OpenAI | Wired | `OPENAI_API_KEY` |
 | Anthropic | Wired | `ANTHROPIC_API_KEY` |
-| OpenRouter | Documented — community PRs welcome | `OPENROUTER_API_KEY` |
-| Mistral | Documented — community PRs welcome | `MISTRAL_API_KEY` |
-| Ollama (local) | Documented — community PRs welcome | `OLLAMA_BASE_URL` |
+| OpenRouter | Wired (default fallback) | `OPENROUTER_API_KEY` |
+| Mistral | Wired | `MISTRAL_API_KEY` |
+| Ollama (local / self-hosted) | Wired | `OLLAMA_BASE_URL` |
+
+### Bring your own LLM
+
+`chat-stream` and `agent-test` route requests based on the `model_id` prefix
+configured in the admin **Models** page:
+
+| Prefix on `model_id` | Provider | Example model id |
+|---|---|---|
+| `mistralai/` or `mistral/` | Mistral | `mistralai/mistral-large-latest` |
+| `ollama/` | Ollama (self-hosted) | `ollama/llama3.1:8b` |
+| _(anything else)_ | OpenRouter | `google/gemini-2.5-flash` |
+
+To use a local Ollama server (self-hosters only), set the
+`OLLAMA_BASE_URL` edge-function secret (e.g. `http://host.docker.internal:11434`
+or your Ollama URL) and register a model row with an `ollama/…` id. All three
+providers speak the OpenAI-compatible `/v1/chat/completions` streaming API, so
+no client changes are needed.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md#adding-a-new-llm-provider) for the
 integration contract.
