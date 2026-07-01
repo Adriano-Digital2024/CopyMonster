@@ -120,8 +120,8 @@ serve(async (req) => {
       }, { onConflict: 'id' });
 
     if (upsertError) {
-      console.error('[mautic-callback] Failed to store tokens:', upsertError.message);
-      return buildCallbackHtml('error', 'Failed to store tokens');
+      console.error('[mautic-callback] Failed to store tokens:', JSON.stringify(upsertError));
+      return buildCallbackHtml('error', `Failed to store tokens: ${upsertError.message || JSON.stringify(upsertError)}`);
     }
 
     console.log('[mautic-callback] Mautic tokens stored successfully');
