@@ -21,6 +21,8 @@ interface MauticTokenData {
 }
 
 async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: string): Promise<MauticTokenData | null> {
+  console.log('[mautic-sync] Retrieving Mautic tokens from database');
+
   const { data: tokenRow, error: tokenError } = await adminSupabase
     .from('mautic_tokens')
     .select('encrypted_access_token, encrypted_refresh_token, expires_at')
@@ -32,6 +34,8 @@ async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: s
     return null;
   }
 
+  console.log('[mautic-sync] Token row found, expires_at:', tokenRow.expires_at);
+
   const accessToken = await decryptToken(tokenRow.encrypted_access_token, encryptionKey);
   const refreshToken = await decryptToken(tokenRow.encrypted_refresh_token, encryptionKey);
 
@@ -39,6 +43,8 @@ async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: s
     console.error('[mautic-sync] Failed to decrypt tokens');
     return null;
   }
+
+  console.log('[mautic-sync] Tokens decrypted successfully');
 
   return {
     accessToken,
@@ -113,7 +119,10 @@ async function refreshAccessToken(
 }
 
 async function getMauticContactByEmail(mauticBaseUrl: string, accessToken: string, email: string): Promise<{ id: number } | null> {
-  const response = await fetch(`${mauticBaseUrl}/api/contacts?search=${encodeURIComponent(`email:${email}`)}`, {
+  const searchUrl = `${mauticBaseUrl}/api/contacts?search=${encodeURIComponent(`email:${email}`)}`;
+  console.log(`[mautic-sync] Searching contact by email: ${searchUrl}`);
+
+  const response = await fetch(searchUrl, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -122,23 +131,30 @@ async function getMauticContactByEmail(mauticBaseUrl: string, accessToken: strin
   });
 
   if (!response.ok) {
-    console.error(`[mautic-sync] Failed to search contact by email: ${response.status}`);
+    const errorText = await response.text();
+    console.error(`[mautic-sync] Failed to search contact by email: ${response.status}`, errorText);
     return null;
   }
 
   const data = await response.json();
+  console.log('[mautic-sync] Search response:', JSON.stringify(data).substring(0, 500));
+
   const contacts = data.contacts || {};
   const contactIds = Object.keys(contacts);
 
   if (contactIds.length === 0) {
+    console.log('[mautic-sync] No existing contact found');
     return null;
   }
 
   const contact = contacts[contactIds[0]];
+  console.log(`[mautic-sync] Existing contact found: ${contact.id}`);
   return { id: contact.id };
 }
 
 async function createMauticContact(mauticBaseUrl: string, accessToken: string, payload: Record<string, unknown>): Promise<boolean> {
+  console.log('[mautic-sync] Creating Mautic contact with payload:', JSON.stringify(payload));
+
   const response = await fetch(`${mauticBaseUrl}/api/contacts/new`, {
     method: 'POST',
     headers: {
@@ -149,9 +165,11 @@ async function createMauticContact(mauticBaseUrl: string, accessToken: string, p
     body: JSON.stringify(payload),
   });
 
+  const responseText = await response.text();
+  console.log(`[mautic-sync] Create contact response (${response.status}):`, responseText.substring(0, 1000));
+
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[mautic-sync] Failed to create Mautic contact: ${response.status}`, errorText);
+    console.error(`[mautic-sync] Failed to create Mautic contact: ${response.status}`, responseText);
     return false;
   }
 
@@ -160,6 +178,8 @@ async function createMauticContact(mauticBaseUrl: string, accessToken: string, p
 }
 
 async function updateMauticContact(mauticBaseUrl: string, accessToken: string, contactId: number, payload: Record<string, unknown>): Promise<boolean> {
+  console.log(`[mautic-sync] Updating Mautic contact ${contactId} with payload:`, JSON.stringify(payload));
+
   const response = await fetch(`${mauticBaseUrl}/api/contacts/${contactId}/edit`, {
     method: 'PATCH',
     headers: {
@@ -170,9 +190,11 @@ async function updateMauticContact(mauticBaseUrl: string, accessToken: string, c
     body: JSON.stringify(payload),
   });
 
+  const responseText = await response.text();
+  console.log(`[mautic-sync] Update contact response (${response.status}):`, responseText.substring(0, 1000));
+
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[mautic-sync] Failed to update Mautic contact: ${response.status}`, errorText);
+    console.error(`[mautic-sync] Failed to update Mautic contact: ${response.status}`, responseText);
     return false;
   }
 
@@ -255,6 +277,7 @@ serve(async (req) => {
     }
 
     const plan = planMap[record.subscription_status] || 'Free';
+    console.log(`[mautic-sync] Mapped subscription_status '${record.subscription_status}' to plan '${plan}'`);
 
     const contactPayload = {
       firstname: record.first_name || '',
@@ -266,8 +289,10 @@ serve(async (req) => {
     let success = false;
 
     if (type === 'new_user') {
+      console.log('[mautic-sync] Handling new_user event');
       success = await createMauticContact(mauticBaseUrl, accessToken, contactPayload);
     } else if (type === 'plan_update') {
+      console.log('[mautic-sync] Handling plan_update event');
       const existingContact = await getMauticContactByEmail(mauticBaseUrl, accessToken, record.email);
       if (existingContact) {
         success = await updateMauticContact(mauticBaseUrl, accessToken, existingContact.id, contactPayload);
