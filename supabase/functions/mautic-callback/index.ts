@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { encryptToken } from "../_shared/mautic-crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -98,23 +99,14 @@ serve(async (req) => {
     const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Encrypt tokens before storing
-    const { data: encryptedAccess, error: encryptAccessError } = await adminSupabase.rpc('pgp_sym_encrypt', {
-      data: accessToken,
-      key: encryptionKey,
-    });
-
-    const { data: encryptedRefresh, error: encryptRefreshError } = await adminSupabase.rpc('pgp_sym_encrypt', {
-      data: refreshToken,
-      key: encryptionKey,
-    });
-
-    if (encryptAccessError || encryptRefreshError || !encryptedAccess || !encryptedRefresh) {
-      console.error('[mautic-callback] Encryption failed:');
-      console.error('  access error:', encryptAccessError?.message || encryptAccessError);
-      console.error('  refresh error:', encryptRefreshError?.message || encryptRefreshError);
-      console.error('  encryptedAccess is null/empty:', !encryptedAccess);
-      console.error('  encryptedRefresh is null/empty:', !encryptedRefresh);
-      return buildCallbackHtml('error', `Failed to secure tokens: ${encryptAccessError?.message || encryptRefreshError?.message || 'empty encrypted result'}`);
+    let encryptedAccess: string;
+    let encryptedRefresh: string;
+    try {
+      encryptedAccess = await encryptToken(accessToken, encryptionKey);
+      encryptedRefresh = await encryptToken(refreshToken, encryptionKey);
+    } catch (encryptError) {
+      console.error('[mautic-callback] Encryption failed:', (encryptError as Error).message);
+      return buildCallbackHtml('error', `Failed to secure tokens: ${(encryptError as Error).message}`);
     }
 
     const { error: upsertError } = await adminSupabase

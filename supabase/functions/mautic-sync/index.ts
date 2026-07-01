@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { decryptToken, encryptToken } from "../_shared/mautic-crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,18 +32,11 @@ async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: s
     return null;
   }
 
-  const { data: accessToken, error: decryptAccessError } = await adminSupabase.rpc('pgp_sym_decrypt', {
-    data: tokenRow.encrypted_access_token,
-    key: encryptionKey,
-  });
+  const accessToken = await decryptToken(tokenRow.encrypted_access_token, encryptionKey);
+  const refreshToken = await decryptToken(tokenRow.encrypted_refresh_token, encryptionKey);
 
-  const { data: refreshToken, error: decryptRefreshError } = await adminSupabase.rpc('pgp_sym_decrypt', {
-    data: tokenRow.encrypted_refresh_token,
-    key: encryptionKey,
-  });
-
-  if (decryptAccessError || decryptRefreshError || !accessToken || !refreshToken) {
-    console.error('[mautic-sync] Failed to decrypt tokens:', decryptAccessError?.message || decryptRefreshError?.message);
+  if (!accessToken || !refreshToken) {
+    console.error('[mautic-sync] Failed to decrypt tokens');
     return null;
   }
 
@@ -89,18 +83,13 @@ async function refreshAccessToken(
   const expiresIn = data.expires_in;
   const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
 
-  const { data: encryptedAccess, error: encryptAccessError } = await adminSupabase.rpc('pgp_sym_encrypt', {
-    data: newAccessToken,
-    key: encryptionKey,
-  });
-
-  const { data: encryptedRefresh, error: encryptRefreshError } = await adminSupabase.rpc('pgp_sym_encrypt', {
-    data: newRefreshToken,
-    key: encryptionKey,
-  });
-
-  if (encryptAccessError || encryptRefreshError) {
-    console.error('[mautic-sync] Failed to encrypt refreshed tokens');
+  let encryptedAccess: string;
+  let encryptedRefresh: string;
+  try {
+    encryptedAccess = await encryptToken(newAccessToken, encryptionKey);
+    encryptedRefresh = await encryptToken(newRefreshToken, encryptionKey);
+  } catch (encryptError) {
+    console.error('[mautic-sync] Failed to encrypt refreshed tokens:', (encryptError as Error).message);
     return null;
   }
 
