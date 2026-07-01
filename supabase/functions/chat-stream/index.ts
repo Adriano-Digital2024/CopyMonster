@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { resolveProvider, isProviderError } from "../_shared/llm-router.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -334,10 +335,6 @@ serve(async (req) => {
       }
     }
     
-    // Get API keys
-    const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
-    const mistralApiKey = Deno.env.get('MISTRAL_API_KEY');
-
     // Language detection strategy:
     // 1. Priority: agent's configured language (most reliable)
     // 2. Fallback: detect from first user message in conversation (session consistency)
@@ -507,47 +504,20 @@ serve(async (req) => {
       }
     }
 
-    // Determine which API to use
-    const isMistral = selectedModel?.startsWith('mistralai/') || selectedModel?.startsWith('mistral/');
-    
-    let apiUrl: string;
-    let apiKey: string | undefined;
-    let modelName: string;
-    let headers: Record<string, string>;
-
-    if (isMistral) {
-      apiKey = mistralApiKey;
-      if (!apiKey) {
-        return new Response(
-          JSON.stringify({ error: 'Mistral API not configured. Please contact support.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
+    // Resolve provider (Mistral / Ollama / OpenRouter) from model id
+    const route = resolveProvider(selectedModel);
+    if (isProviderError(route)) {
+      // Refund credit on config error
+      if (!isAdmin) {
+        await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
       }
-      apiUrl = 'https://api.mistral.ai/v1/chat/completions';
-      modelName = selectedModel.replace('mistralai/', '').replace('mistral/', '');
-      headers = {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      };
-    } else {
-      apiKey = openRouterApiKey;
-      if (!apiKey) {
-        return new Response(
-          JSON.stringify({ error: 'OpenRouter API not configured. Please contact support.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
-      apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-      modelName = selectedModel;
-      headers = {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://copymonster.me',
-        'X-Title': 'CopyMonster',
-      };
+      return new Response(
+        JSON.stringify({ error: route.error }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: route.status }
+      );
     }
-
-    console.log(`[chat-stream] Using model: ${modelName} via ${isMistral ? 'Mistral' : 'OpenRouter'}`);
+    const { apiUrl, modelName, headers, provider } = route;
+    console.log(`[chat-stream] Using model: ${modelName} via ${provider}`);
 
     // Handle auto-start
     let processedMessages = messages;
