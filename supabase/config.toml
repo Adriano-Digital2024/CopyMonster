@@ -30,6 +30,12 @@ verify_jwt = false
 [functions.sender-sync]
 verify_jwt = false
 
+[functions.mautic-callback]
+verify_jwt = false
+
+[functions.mautic-sync]
+verify_jwt = false
+
 [functions.agentes-sync]
 verify_jwt = false
 
