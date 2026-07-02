@@ -129,6 +129,16 @@ export const Navbar = () => {
                 </Button> : <Button className="w-full gradient-primary" onClick={() => navigate('/auth')}>
                   {t('nav.startTrial')}
                 </Button>}
+              <a
+                href="https://github.com/Adriano-Digital2024/CopyMonster"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Github className="h-4 w-4" />
+                GitHub
+              </a>
             </div>
           </motion.div>}
       </AnimatePresence>
