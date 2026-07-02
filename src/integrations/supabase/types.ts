@@ -862,6 +862,33 @@ export type Database = {
         }
         Relationships: []
       }
+      mautic_tokens: {
+        Row: {
+          created_at: string | null
+          encrypted_access_token: string
+          encrypted_refresh_token: string
+          expires_at: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          encrypted_access_token: string
+          encrypted_refresh_token: string
+          expires_at: string
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          encrypted_access_token?: string
+          encrypted_refresh_token?: string
+          expires_at?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
