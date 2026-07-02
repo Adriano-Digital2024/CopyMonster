@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Github } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 import { useTheme } from '@/components/ThemeProvider';
@@ -54,6 +54,21 @@ const UpdatePassword = () => {
       <div className="absolute top-4 right-4 flex gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          asChild
+        >
+          <a
+            href="https://github.com/Adriano-Digital2024/CopyMonster"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub Repository"
+          >
+            <Github className="h-5 w-5" />
+          </a>
+        </Button>
       </div>
       
       <Card className="w-full max-w-md card-shadow">

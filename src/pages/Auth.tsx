@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { toast } from 'sonner';
-import { Loader2, MailCheck } from 'lucide-react';
+import { Loader2, MailCheck, Github } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
 import { useTheme } from '@/components/ThemeProvider';
@@ -149,6 +149,21 @@ const Auth = () => {
       <div className="absolute top-4 right-4 flex gap-2">
         <LanguageSwitcher />
         <ThemeToggle />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          asChild
+        >
+          <a
+            href="https://github.com/Adriano-Digital2024/CopyMonster"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub Repository"
+          >
+            <Github className="h-5 w-5" />
+          </a>
+        </Button>
       </div>
       
       <Card className="w-full max-w-md card-shadow">

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Github } from 'lucide-react';
 import logoLight from '@/assets/logo-light.png';
 import logoDark from '@/assets/logo-dark.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -59,6 +59,22 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
             <LanguageSwitcher />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              asChild
+            >
+              <a
+                href="https://github.com/Adriano-Digital2024/CopyMonster"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub Repository"
+              >
+                <Github className="h-4 w-4" />
+                <span>GitHub</span>
+              </a>
+            </Button>
             {isAuthenticated ? <Button className="gradient-primary" onClick={() => navigate('/dashboard')}>
                 {t('nav.dashboard')}
               </Button> : <Button className="gradient-primary" onClick={() => navigate('/auth')}>
@@ -70,6 +86,21 @@ export const Navbar = () => {
           <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
             <LanguageSwitcher />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              asChild
+            >
+              <a
+                href="https://github.com/Adriano-Digital2024/CopyMonster"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub Repository"
+              >
+                <Github className="h-5 w-5" />
+              </a>
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -98,6 +129,16 @@ export const Navbar = () => {
                 </Button> : <Button className="w-full gradient-primary" onClick={() => navigate('/auth')}>
                   {t('nav.startTrial')}
                 </Button>}
+              <a
+                href="https://github.com/Adriano-Digital2024/CopyMonster"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Github className="h-4 w-4" />
+                GitHub
+              </a>
             </div>
           </motion.div>}
       </AnimatePresence>
