@@ -1,79 +1,67 @@
-## Goal
+## Diagnóstico
 
-Turn the existing hard-coded provider fork in `chat-stream` and `agent-test` into a proper multi-provider router that supports OpenRouter, Mistral (already partly wired) and Ollama (self-hosted, BYO LLM). This unlocks the Open-Core promise of "bring your own LLM" for self-hosters without breaking the SaaS defaults.
+A trigger `trg_mautic_sync_insert` dispara em novos cadastros, mas a função `notify_mautic_on_profile_change()` chama `extensions.http_post(...)` — que pertence à extensão `http`, **que não está instalada** neste projeto (só `pg_net` está). A chamada lança exceção, é engolida pelo `EXCEPTION WHEN OTHERS`, e a Edge Function `mautic-sync` nunca é invocada. Por isso os logs dela estão vazios.
 
-Nothing else changes: credits, DNA guard, rate limits, streaming shape, agent admin UI, model catalog, and i18n stay identical.
+As triggers do Sender e do Agentes funcionam porque usam `net.http_post` (pg_net), que está disponível.
 
-## Current state
+## Correção
 
-- `chat-stream/index.ts` and `agent-test/index.ts` each have an inline `isMistral = model.startsWith('mistralai/'|'mistral/')` branch and otherwise fall through to OpenRouter. No Ollama support. Duplicated logic in both files.
-- Env already has `OPENROUTER_API_KEY` and `MISTRAL_API_KEY`. `OLLAMA_BASE_URL` is documented in `.env.example` but not read anywhere.
-- Model IDs come from the `agents.model_id` column (admin picks them in the Models page) and are OpenAI-chat-compatible strings.
+Recriar `public.notify_mautic_on_profile_change()` trocando `extensions.http_post` por `net.http_post`, mantendo exatamente o mesmo payload, a mesma URL (`.../functions/v1/mautic-sync`) e o mesmo header `Authorization: Bearer <anon key>`. Nenhuma trigger é recriada — só a função. Nada mais no projeto muda.
 
-## Design
+### SQL a executar
 
-### 1. Shared provider router
+```sql
+CREATE OR REPLACE FUNCTION public.notify_mautic_on_profile_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+DECLARE
+  _payload jsonb;
+  _event_type text;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    _event_type := 'new_user';
+  ELSIF TG_OP = 'UPDATE' THEN
+    _event_type := 'plan_update';
+  END IF;
 
-Create `supabase/functions/_shared/llm-router.ts` with a single pure function:
+  _payload := jsonb_build_object(
+    'type', _event_type,
+    'record', jsonb_build_object(
+      'email', NEW.email,
+      'first_name', NEW.first_name,
+      'phone', COALESCE(NEW.phone, ''),
+      'subscription_status', NEW.subscription_status
+    )
+  );
 
-```ts
-resolveProvider(modelId: string): {
-  provider: "mistral" | "ollama" | "openrouter";
-  apiUrl: string;
-  modelName: string;
-  headers: Record<string,string>;
-  supportsPenalties: boolean;
-} | { error: string; status: number }
+  PERFORM net.http_post(
+    url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/mautic-sync',
+    body := _payload,
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYXR1cGx0ZnZnd2VsaHplem5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MjIyNjUsImV4cCI6MjA3Njk5ODI2NX0.naM7i7VVD4RHGCI5FbTunNToZVZ-nDAP881VUa7WJBg'
+    )
+  );
+
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE WARNING '[mautic-sync] Failed to queue HTTP request: %', SQLERRM;
+  RETURN NEW;
+END;
+$function$;
 ```
 
-Routing rules (prefix-based, deterministic, no behavior change for existing IDs):
+## Validação
 
-| Prefix on `model_id` | Provider | Endpoint | Key env |
-|---|---|---|---|
-| `mistralai/` or `mistral/` | Mistral | `https://api.mistral.ai/v1/chat/completions` | `MISTRAL_API_KEY` |
-| `ollama/` | Ollama | `${OLLAMA_BASE_URL}/v1/chat/completions` | none (self-hosted) |
-| anything else (default) | OpenRouter | `https://openrouter.ai/api/v1/chat/completions` | `OPENROUTER_API_KEY` |
+1. Cadastrar um usuário de teste no CopyMonster.
+2. Ler os logs da Edge Function `mautic-sync` — deve aparecer `Event type: new_user` seguido de `Mautic contact created successfully`.
+3. Conferir no Mautic se o contato apareceu com o campo `plan = Free`.
 
-Ollama exposes an OpenAI-compatible `/v1/chat/completions` endpoint that already supports `stream: true`, so no client changes are needed — we just strip the `ollama/` prefix from `modelName` (e.g. `ollama/llama3.1:8b` → `llama3.1:8b`). If `OLLAMA_BASE_URL` is missing when an `ollama/` model is selected, return a clean 500 with `error: "Ollama base URL not configured"` instead of crashing.
+Se `mautic-sync` responder com `Mautic not connected` (tabela `mautic_tokens` vazia) ou 401, aí é outro problema (OAuth ainda não concluído) e trato em seguida — mas o motivo do silêncio atual é 100% a chamada `extensions.http_post`.
 
-`supportsPenalties` stays true only for OpenRouter (same rule already in `agent-test`), so Mistral/Ollama calls skip `frequency_penalty` / `presence_penalty`.
+## Riscos
 
-### 2. Refactor `chat-stream/index.ts`
-
-- Replace the `if (isMistral) … else …` block (lines ~510–548) with `const route = resolveProvider(selectedModel)`.
-- Bail out early with the current 500 shape if `route.error` is set (missing key or missing Ollama URL) and refund the credit exactly like the existing API-error branch already does.
-- Use `route.apiUrl`, `route.headers`, `route.modelName` in the existing `fetch`. Streaming response path is unchanged — Mistral, OpenRouter, and Ollama all speak OpenAI SSE.
-- Keep the existing `X-Credits-Remaining` header, DNA guard, rate limit, and auto-start logic untouched.
-
-### 3. Refactor `agent-test/index.ts`
-
-- Same swap: replace the inline `isMistral` block with `resolveProvider(model_id)`.
-- Keep admin-only guard, streaming passthrough, and the `supportsPenalties` gate for `frequency_penalty` / `presence_penalty`.
-
-### 4. Env & docs
-
-- Add `OLLAMA_BASE_URL` to the list of edge function secrets the code reads. It stays optional; SaaS deployments simply never set it and never expose an `ollama/` model. Self-hosters set it (typical value `http://host.docker.internal:11434` from a Supabase edge runtime container, or the public URL of their Ollama server).
-- `.env.example` already lists `OPENROUTER_API_KEY`, `MISTRAL_API_KEY`, `OLLAMA_BASE_URL` — no change needed.
-- Append a short "Bring your own LLM" section to `README.md` (English) documenting the three provider prefixes and how to register an Ollama model in `admin/Models` (just enter e.g. `ollama/llama3.1:8b` as the model id).
-
-### 5. Not in scope (explicitly)
-
-- No change to the `models` DB table, the admin Models page, the agent config UI, or the frontend chat.
-- No new provider beyond the three above (no direct OpenAI, no direct Anthropic — OpenRouter already fronts them).
-- No token-usage accounting change; `usage_logs` still logs `model_used = modelName`.
-- No Lovable AI Gateway migration on these two functions (that would be a separate roadmap item).
-
-## Validation
-
-1. Deploy `chat-stream` and `agent-test`.
-2. In admin Models, keep an existing OpenRouter model (e.g. `google/gemini-2.5-flash`) → send a chat message → confirm stream + credit debit are unchanged (regression check).
-3. Keep an existing Mistral model (e.g. `mistralai/mistral-large-latest`) → confirm streaming still works.
-4. (Optional, self-host only) Add a model row with id `ollama/llama3.1:8b`, set `OLLAMA_BASE_URL`, and confirm the same chat flow streams tokens from the local Ollama server.
-5. Check edge function logs for the new `[chat-stream] Using model: X via ollama|mistral|openrouter` line.
-
-## Files touched
-
-- **New:** `supabase/functions/_shared/llm-router.ts`
-- **Edit:** `supabase/functions/chat-stream/index.ts` (provider selection block only)
-- **Edit:** `supabase/functions/agent-test/index.ts` (provider selection block only)
-- **Edit:** `README.md` (add "Bring your own LLM" subsection)
+Zero para o resto do sistema: só substitui uma função. Triggers, `sender-sync`, `agentes-sync` e frontend não são tocados.
