@@ -67,8 +67,9 @@ const App = () => (
               <MetaPixelTracker />
               <AuthHashHandler />
               <Routes>
-                <Route path="/" element={<Start />} />
+                <Route path="/" element={<ChatLanding />} />
                 <Route path="/start" element={<Index />} />
+                <Route path="/home" element={<Start />} />
                 <Route path="/chat" element={<ChatLanding />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
