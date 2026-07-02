@@ -100,6 +100,37 @@ export default function ChatLanding() {
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 hidden sm:inline-flex"
+            asChild
+          >
+            <a
+              href="https://github.com/Adriano-Digital2024/CopyMonster"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub Repository"
+            >
+              <Github className="h-4 w-4" />
+              <span>GitHub</span>
+            </a>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="sm:hidden"
+            asChild
+          >
+            <a
+              href="https://github.com/Adriano-Digital2024/CopyMonster"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub Repository"
+            >
+              <Github className="h-5 w-5" />
+            </a>
+          </Button>
         </div>
       </header>
 
