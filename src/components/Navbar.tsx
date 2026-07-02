@@ -86,6 +86,21 @@ export const Navbar = () => {
           <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
             <LanguageSwitcher />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              asChild
+            >
+              <a
+                href="https://github.com/Adriano-Digital2024/CopyMonster"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub Repository"
+              >
+                <Github className="h-5 w-5" />
+              </a>
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
