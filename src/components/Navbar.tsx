@@ -59,6 +59,22 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
             <LanguageSwitcher />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              asChild
+            >
+              <a
+                href="https://github.com/Adriano-Digital2024/CopyMonster"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub Repository"
+              >
+                <Github className="h-4 w-4" />
+                <span>GitHub</span>
+              </a>
+            </Button>
             {isAuthenticated ? <Button className="gradient-primary" onClick={() => navigate('/dashboard')}>
                 {t('nav.dashboard')}
               </Button> : <Button className="gradient-primary" onClick={() => navigate('/auth')}>
