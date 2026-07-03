@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 
 interface ProtectedRouteProps {
   requireAdmin?: boolean;
@@ -25,5 +26,9 @@ export function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <OnboardingProvider>
+      <Outlet />
+    </OnboardingProvider>
+  );
 }
