@@ -1038,6 +1038,7 @@ export type Database = {
           credits: number
           email: string
           first_name: string
+          has_completed_onboarding: boolean
           id: string
           internal_role: string | null
           level: number
@@ -1054,6 +1055,7 @@ export type Database = {
           credits?: number
           email: string
           first_name: string
+          has_completed_onboarding?: boolean
           id: string
           internal_role?: string | null
           level?: number
@@ -1070,6 +1072,7 @@ export type Database = {
           credits?: number
           email?: string
           first_name?: string
+          has_completed_onboarding?: boolean
           id?: string
           internal_role?: string | null
           level?: number
