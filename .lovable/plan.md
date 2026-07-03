@@ -1,67 +1,88 @@
-## Diagnóstico
+# Onboarding Interativo para Novos Usuários
 
-A trigger `trg_mautic_sync_insert` dispara em novos cadastros, mas a função `notify_mautic_on_profile_change()` chama `extensions.http_post(...)` — que pertence à extensão `http`, **que não está instalada** neste projeto (só `pg_net` está). A chamada lança exceção, é engolida pelo `EXCEPTION WHEN OTHERS`, e a Edge Function `mautic-sync` nunca é invocada. Por isso os logs dela estão vazios.
+Sequência guiada de 4 passos (spotlight + tooltip) exibida no primeiro login, traduzida em EN/PT/ES, com persistência no Supabase.
 
-As triggers do Sender e do Agentes funcionam porque usam `net.http_post` (pg_net), que está disponível.
+## 1. Banco de dados
 
-## Correção
+Adicionar coluna em `profiles`:
 
-Recriar `public.notify_mautic_on_profile_change()` trocando `extensions.http_post` por `net.http_post`, mantendo exatamente o mesmo payload, a mesma URL (`.../functions/v1/mautic-sync`) e o mesmo header `Authorization: Bearer <anon key>`. Nenhuma trigger é recriada — só a função. Nada mais no projeto muda.
+- `has_completed_onboarding boolean not null default false`
 
-### SQL a executar
+Nenhuma outra alteração de schema. RLS existente já permite ao usuário atualizar o próprio perfil.
 
-```sql
-CREATE OR REPLACE FUNCTION public.notify_mautic_on_profile_change()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $function$
-DECLARE
-  _payload jsonb;
-  _event_type text;
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    _event_type := 'new_user';
-  ELSIF TG_OP = 'UPDATE' THEN
-    _event_type := 'plan_update';
-  END IF;
+## 2. Traduções (i18n)
 
-  _payload := jsonb_build_object(
-    'type', _event_type,
-    'record', jsonb_build_object(
-      'email', NEW.email,
-      'first_name', NEW.first_name,
-      'phone', COALESCE(NEW.phone, ''),
-      'subscription_status', NEW.subscription_status
-    )
-  );
+Adicionar chaves em `src/i18n/config.ts` (EN/PT/ES) sob `onboarding.*`:
 
-  PERFORM net.http_post(
-    url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/mautic-sync',
-    body := _payload,
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYXR1cGx0ZnZnd2VsaHplem5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MjIyNjUsImV4cCI6MjA3Njk5ODI2NX0.naM7i7VVD4RHGCI5FbTunNToZVZ-nDAP881VUa7WJBg'
-    )
-  );
+- `step1.title/body` — "Start here. This is where your Brand DNA is born."
+- `step2.title/body` — "Answer 12 questions..."
+- `step3.title/body` — "Click Save. Your DNA is now stored..."
+- `step4.title/body` — "Now pick any agent, type ok..."
+- `next`, `skip`, `finish`, `progress` (ex.: "Passo {{current}} de {{total}}")
 
-  RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  RAISE WARNING '[mautic-sync] Failed to queue HTTP request: %', SQLERRM;
-  RETURN NEW;
-END;
-$function$;
-```
+Idioma vem automaticamente de `useTranslation()` (já configurado).
 
-## Validação
+## 3. Componente de Onboarding
 
-1. Cadastrar um usuário de teste no CopyMonster.
-2. Ler os logs da Edge Function `mautic-sync` — deve aparecer `Event type: new_user` seguido de `Mautic contact created successfully`.
-3. Conferir no Mautic se o contato apareceu com o campo `plan = Free`.
+Novo diretório `src/components/onboarding/`:
 
-Se `mautic-sync` responder com `Mautic not connected` (tabela `mautic_tokens` vazia) ou 401, aí é outro problema (OAuth ainda não concluído) e trato em seguida — mas o motivo do silêncio atual é 100% a chamada `extensions.http_post`.
+- `OnboardingProvider.tsx` — context provider montado dentro de `ProtectedRoute` que:
+  - Lê `user.has_completed_onboarding` do `AuthContext`
+  - Se `false`, ativa o tour após montagem do dashboard
+  - Expõe `startTour()`, `skip()`, `complete()`, `next()`, `currentStep`
+- `OnboardingTour.tsx` — overlay que renderiza:
+  - Backdrop escuro semi-transparente com "buraco" (spotlight) no elemento alvo, calculado via `getBoundingClientRect()` do target
+  - Card tooltip posicionado próximo ao alvo (usa componentes shadcn `Card` + `Button`), com animações `animate-fade-in` / `animate-scale-in`
+  - Botões `Next` / `Skip` (ou `Finish` no último passo) traduzidos
+  - Indicador de progresso (1/4, 2/4…)
+  - Fechamento por ESC dispara `skip`
+- `useOnboardingTarget.ts` — hook utilitário que registra refs por `data-onboarding-id`
 
-## Riscos
+Os passos são configurados por seletor `data-onboarding-id`:
 
-Zero para o resto do sistema: só substitui uma função. Triggers, `sender-sync`, `agentes-sync` e frontend não são tocados.
+1. `sidebar-positioning` → item "Positioning Start" no `DashboardLayout`
+2. `positioning-questions` → área de perguntas na página `/dashboard/positioning`
+3. `positioning-save` → botão Save no topo do chat de positioning
+4. `sidebar-agents` → item "Agents" no menu lateral
+
+Se o usuário não estiver na rota do passo, o tour navega automaticamente para a rota correspondente antes de exibir o tooltip. Se o alvo não existir após timeout curto, pula esse passo.
+
+## 4. Instrumentação
+
+Adicionar atributo `data-onboarding-id="..."` (sem alterar visual/lógica) em:
+
+- `src/components/layouts/DashboardLayout.tsx` — itens "Positioning" e "Agents" do menu
+- `src/pages/dashboard/Positioning.tsx` — container das perguntas e botão Save
+
+## 5. Persistência
+
+Ao concluir ou pular:
+
+- `UPDATE profiles SET has_completed_onboarding = true WHERE id = auth.uid()`
+- Atualizar `user` local via `updateUser()` do `AuthContext`
+- `AuthContext` passa a incluir `has_completed_onboarding` no perfil carregado
+
+## 6. Integração no App
+
+Montar `<OnboardingProvider>` dentro de `ProtectedRoute` (ou envolvendo `DashboardLayout`) para só rodar em rotas autenticadas. Não impacta rotas públicas.
+
+## 7. Responsividade e estilo
+
+- Card tooltip com `max-w-sm`, padding responsivo
+- Em telas < `sm`, tooltip vira modal centralizado (spotlight ainda destaca o alvo quando visível)
+- Cores via tokens (`bg-card`, `text-foreground`, `border-border`, `bg-primary`)
+- Ícones Lucide (`ChevronRight`, `X`)
+- Animações via classes `animate-fade-in`, `animate-scale-in` já existentes
+
+## Detalhes técnicos
+
+- Sem novas dependências (sem `react-joyride`); implementação nativa com portal + `ResizeObserver` para reposicionar
+- Spotlight: `box-shadow: 0 0 0 9999px rgba(0,0,0,.6)` no elemento clonado posicionado sobre o target
+- Fluxo do passo 3 requer que o usuário complete o formulário; o tour aguarda o botão Save existir no DOM (polling curto, timeout ~15s → skip do passo)
+- `has_completed_onboarding` é escrito uma única vez; nunca reexibido depois
+
+## Fora de escopo
+
+- Não altera o fluxo de positioning, chat ou agentes
+- Não adiciona tracking analítico novo
+- Não reabre o tour manualmente (pode ser adicionado depois via botão em Settings)
