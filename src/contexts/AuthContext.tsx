@@ -13,6 +13,7 @@ interface UserProfile {
   xp: number;
   level: number;
   trial_expires_at: string | null;
+  has_completed_onboarding: boolean;
 }
 
 interface User extends UserProfile {
@@ -110,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 xp: profile.xp,
                 level: profile.level,
                 trial_expires_at: profile.trial_expires_at,
+                has_completed_onboarding: (profile as any).has_completed_onboarding ?? false,
                 isAdmin: roles && roles.length > 0,
               });
               
