@@ -1299,6 +1299,28 @@ const resources = {
           emailSequences: "Email Sequences",
         },
       },
+      onboarding: {
+        skip: 'Skip',
+        next: 'Next',
+        finish: 'Finish',
+        progress: 'Step {{current}} of {{total}}',
+        step1: {
+          title: 'Your Brand DNA starts here',
+          body: 'Start here. This is where your Brand DNA is born.',
+        },
+        step2: {
+          title: '12 questions',
+          body: 'Answer 12 questions. The DNA Agent will analyze your brand deeply.',
+        },
+        step3: {
+          title: 'Save your DNA',
+          body: 'Click Save. Your DNA is now stored and ready to power all your copies.',
+        },
+        step4: {
+          title: 'Generate your first copy',
+          body: 'Now pick any agent, type ok, and generate your first copy.',
+        },
+      },
     },
   },
   pt: {
@@ -2598,6 +2620,28 @@ const resources = {
           emailSequences: "Sequências de Email",
         },
       },
+      onboarding: {
+        skip: 'Pular',
+        next: 'Próximo',
+        finish: 'Concluir',
+        progress: 'Passo {{current}} de {{total}}',
+        step1: {
+          title: 'O DNA da sua marca começa aqui',
+          body: 'Comece aqui. É aqui que o DNA da sua marca nasce.',
+        },
+        step2: {
+          title: '12 perguntas',
+          body: 'Responda 12 perguntas. O Agente de DNA vai analisar sua marca profundamente.',
+        },
+        step3: {
+          title: 'Salve seu DNA',
+          body: 'Clique em Salvar. Seu DNA está armazenado e pronto para alimentar todas as suas copies.',
+        },
+        step4: {
+          title: 'Gere sua primeira copy',
+          body: 'Agora escolha qualquer agente, digite ok e gere sua primeira copy.',
+        },
+      },
     },
   },
   es: {
@@ -3895,6 +3939,28 @@ const resources = {
           instagramContent: "Contenido Instagram",
           launchScripts: "Scripts de Lanzamiento",
           emailSequences: "Secuencias de Email",
+        },
+      },
+      onboarding: {
+        skip: 'Saltar',
+        next: 'Siguiente',
+        finish: 'Finalizar',
+        progress: 'Paso {{current}} de {{total}}',
+        step1: {
+          title: 'El ADN de tu marca empieza aquí',
+          body: 'Comienza aquí. Aquí es donde nace el ADN de tu marca.',
+        },
+        step2: {
+          title: '12 preguntas',
+          body: 'Responde 12 preguntas. El Agente de ADN analizará tu marca en profundidad.',
+        },
+        step3: {
+          title: 'Guarda tu ADN',
+          body: 'Haz clic en Guardar. Tu ADN está almacenado y listo para potenciar todas tus copys.',
+        },
+        step4: {
+          title: 'Genera tu primera copy',
+          body: 'Ahora elige cualquier agente, escribe ok y genera tu primera copy.',
         },
       },
     },
