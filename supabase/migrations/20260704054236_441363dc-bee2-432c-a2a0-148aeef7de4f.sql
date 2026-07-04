@@ -1,1 +1,0 @@
-UPDATE public.profiles SET subscription_status = 'free', trial_expires_at = NOW() + INTERVAL '7 days', credits = 20 WHERE email IN ('wahojav876@exespay.com','thedaringcoach@gmail.com','civalo8816@muncloud.com','barbosailson68@gmail.com','babi.neves23@gmail.com');
