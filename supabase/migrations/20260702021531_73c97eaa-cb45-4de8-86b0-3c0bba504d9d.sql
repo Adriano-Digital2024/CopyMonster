@@ -10,6 +10,10 @@ DECLARE
   _auth text;
   _headers jsonb;
   _result bigint;
+  _email text;
+  _first_name text;
+  _phone text;
+  _status text;
 BEGIN
   IF TG_OP = 'INSERT' THEN
     _event_type := 'new_user';
@@ -17,15 +21,20 @@ BEGIN
     _event_type := 'plan_update';
   END IF;
 
+  _email := NEW.email;
+  _first_name := NEW.first_name;
+  _phone := COALESCE(NEW.phone, '');
+  _status := NEW.subscription_status;
+
   _auth := 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYXR1cGx0ZnZnd2VsaHplem5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MjIyNjUsImV4cCI6MjA3Njk5ODI2NX0.naM7i7VVD4RHGCI5FbTunNToZVZ-nDAP881VUa7WJBg';
 
   _payload := jsonb_build_object(
     'type', _event_type,
     'record', jsonb_build_object(
-      'email', NEW.email,
-      'first_name', NEW.first_name,
-      'phone', COALESCE(NEW.phone, ''),
-      'subscription_status', NEW.subscription_status
+      'email', _email,
+      'first_name', _first_name,
+      'phone', _phone,
+      'subscription_status', _status
     )
   );
 
