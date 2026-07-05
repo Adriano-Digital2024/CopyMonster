@@ -1,88 +1,87 @@
-# Onboarding Interativo para Novos Usuários
+## Objetivo
 
-Sequência guiada de 4 passos (spotlight + tooltip) exibida no primeiro login, traduzida em EN/PT/ES, com persistência no Supabase.
+Isolar exatamente em qual etapa o valor do campo `plan` é perdido no fluxo Supabase → `mautic-sync` → API do Mautic. Nenhuma função será removida, nenhum código será refatorado nesta etapa. Apenas diagnóstico ao vivo com evidências.
 
-## 1. Banco de dados
+## Regras desta fase
 
-Adicionar coluna em `profiles`:
+- Não excluir `reset-trial`.
+- Não excluir `mautic-bulk-sync`.
+- Não alterar `mautic-sync`, `mautic-callback`, triggers ou migrations.
+- Nenhuma mudança de arquitetura.
+- Todas as observações vêm de execução real, não suposição.
 
-- `has_completed_onboarding boolean not null default false`
+## Passos de diagnóstico
 
-Nenhuma outra alteração de schema. RLS existente já permite ao usuário atualizar o próprio perfil.
+1. **Escolher um contato de teste real**
+   - Usar um dos 5 emails já sincronizados (por padrão, `wahojav876@exespay.com`).
+   - Confirmar no `profiles` o `subscription_status` atual (esperado `free`).
 
-## 2. Traduções (i18n)
+2. **Disparar `mautic-sync` de forma controlada (sem alterar dados)**
+   - Chamar diretamente o endpoint deployado com:
+     ```json
+     {
+       "type": "plan_update",
+       "record": {
+         "email": "<email de teste>",
+         "first_name": "<nome atual>",
+         "phone": "<telefone atual>",
+         "subscription_status": "free"
+       }
+     }
+     ```
+   - Capturar:
+     - status HTTP retornado por `mautic-sync`;
+     - corpo completo da resposta da função.
 
-Adicionar chaves em `src/i18n/config.ts` (EN/PT/ES) sob `onboarding.*`:
+3. **Coletar os logs desta execução em `mautic-sync`**
+   - Buscar as linhas do log correspondentes a esse email, incluindo:
+     - `Event type` recebido;
+     - `Mapped subscription_status ... to plan ...`;
+     - payload enviado ao Mautic (`Creating/Updating Mautic contact with payload`);
+     - resposta bruta da API do Mautic (`Create/Update contact response`).
 
-- `step1.title/body` — "Start here. This is where your Brand DNA is born."
-- `step2.title/body` — "Answer 12 questions..."
-- `step3.title/body` — "Click Save. Your DNA is now stored..."
-- `step4.title/body` — "Now pick any agent, type ok..."
-- `next`, `skip`, `finish`, `progress` (ex.: "Passo {{current}} de {{total}}")
+4. **Ler o contato diretamente do Mautic para confirmar persistência**
+   - Fazer uma segunda chamada usando o mesmo caminho já implementado (`GET /api/contacts?search=email:<email>`), aproveitando o mesmo token OAuth já armazenado.
+   - Extrair da resposta:
+     - `id` do contato;
+     - valor real do campo customizado `plan`;
+     - valores atuais de `firstname`, `email`, `phone`.
+   - Comparar com o que a função disse ter enviado.
 
-Idioma vem automaticamente de `useTranslation()` (já configurado).
+5. **Repetir o teste para um segundo estado**
+   - Simular um `plan_update` com `subscription_status = "pro"` (somente no payload da chamada de teste — sem alterar `profiles`).
+   - Executar os passos 2 a 4 novamente.
+   - Verificar se o Mautic passa a mostrar `plan = Pro` para o contato, ou se permanece no valor anterior.
 
-## 3. Componente de Onboarding
+6. **Comparar com o gatilho automático via banco**
+   - Consultar as respostas recentes em `net._http_response` para confirmar que chamadas oriundas dos triggers `trg_mautic_sync_insert` / `trg_mautic_sync_update` estão realmente chegando em `mautic-sync` com status 2xx.
+   - Cruzar com os logs da função para o mesmo timestamp.
 
-Novo diretório `src/components/onboarding/`:
+## O que a análise vai responder de forma objetiva
 
-- `OnboardingProvider.tsx` — context provider montado dentro de `ProtectedRoute` que:
-  - Lê `user.has_completed_onboarding` do `AuthContext`
-  - Se `false`, ativa o tour após montagem do dashboard
-  - Expõe `startTour()`, `skip()`, `complete()`, `next()`, `currentStep`
-- `OnboardingTour.tsx` — overlay que renderiza:
-  - Backdrop escuro semi-transparente com "buraco" (spotlight) no elemento alvo, calculado via `getBoundingClientRect()` do target
-  - Card tooltip posicionado próximo ao alvo (usa componentes shadcn `Card` + `Button`), com animações `animate-fade-in` / `animate-scale-in`
-  - Botões `Next` / `Skip` (ou `Finish` no último passo) traduzidos
-  - Indicador de progresso (1/4, 2/4…)
-  - Fechamento por ESC dispara `skip`
-- `useOnboardingTarget.ts` — hook utilitário que registra refs por `data-onboarding-id`
+- Se `mautic-sync` está efetivamente sendo executado (sim/não, com evidência).
+- Qual é o payload exato enviado ao Mautic (com o campo `plan` e seu valor).
+- Qual é a resposta bruta da API do Mautic (status + corpo).
+- Se, na leitura seguinte do contato, o campo `plan` foi realmente persistido.
+- Em qual etapa exata o valor de `plan` se perde:
+  - a) `mautic-sync` não é chamado;
+  - b) `mautic-sync` é chamado mas envia `plan` errado/vazio;
+  - c) `mautic-sync` envia `plan` correto, mas a API do Mautic responde erro/ignora;
+  - d) A API aceita, mas o campo customizado não é o `plan` correto (alias divergente, campo desativado, etc.);
+  - e) Update por email não encontra o contato e o comportamento cai em `create` ineficaz.
 
-Os passos são configurados por seletor `data-onboarding-id`:
+## Entrega desta fase
 
-1. `sidebar-positioning` → item "Positioning Start" no `DashboardLayout`
-2. `positioning-questions` → área de perguntas na página `/dashboard/positioning`
-3. `positioning-save` → botão Save no topo do chat de positioning
-4. `sidebar-agents` → item "Agents" no menu lateral
+Um relatório com:
+- Email testado.
+- Requisição enviada a `mautic-sync`.
+- Resposta de `mautic-sync`.
+- Logs relevantes de `mautic-sync`.
+- Payload real enviado ao Mautic.
+- Resposta bruta da API do Mautic.
+- Leitura pós-sync do contato no Mautic com o valor real de `plan`.
+- Conclusão apontando a etapa exata da falha.
 
-Se o usuário não estiver na rota do passo, o tour navega automaticamente para a rota correspondente antes de exibir o tooltip. Se o alvo não existir após timeout curto, pula esse passo.
+## Próxima fase (somente após sua aprovação da causa raiz)
 
-## 4. Instrumentação
-
-Adicionar atributo `data-onboarding-id="..."` (sem alterar visual/lógica) em:
-
-- `src/components/layouts/DashboardLayout.tsx` — itens "Positioning" e "Agents" do menu
-- `src/pages/dashboard/Positioning.tsx` — container das perguntas e botão Save
-
-## 5. Persistência
-
-Ao concluir ou pular:
-
-- `UPDATE profiles SET has_completed_onboarding = true WHERE id = auth.uid()`
-- Atualizar `user` local via `updateUser()` do `AuthContext`
-- `AuthContext` passa a incluir `has_completed_onboarding` no perfil carregado
-
-## 6. Integração no App
-
-Montar `<OnboardingProvider>` dentro de `ProtectedRoute` (ou envolvendo `DashboardLayout`) para só rodar em rotas autenticadas. Não impacta rotas públicas.
-
-## 7. Responsividade e estilo
-
-- Card tooltip com `max-w-sm`, padding responsivo
-- Em telas < `sm`, tooltip vira modal centralizado (spotlight ainda destaca o alvo quando visível)
-- Cores via tokens (`bg-card`, `text-foreground`, `border-border`, `bg-primary`)
-- Ícones Lucide (`ChevronRight`, `X`)
-- Animações via classes `animate-fade-in`, `animate-scale-in` já existentes
-
-## Detalhes técnicos
-
-- Sem novas dependências (sem `react-joyride`); implementação nativa com portal + `ResizeObserver` para reposicionar
-- Spotlight: `box-shadow: 0 0 0 9999px rgba(0,0,0,.6)` no elemento clonado posicionado sobre o target
-- Fluxo do passo 3 requer que o usuário complete o formulário; o tour aguarda o botão Save existir no DOM (polling curto, timeout ~15s → skip do passo)
-- `has_completed_onboarding` é escrito uma única vez; nunca reexibido depois
-
-## Fora de escopo
-
-- Não altera o fluxo de positioning, chat ou agentes
-- Não adiciona tracking analítico novo
-- Não reabre o tour manualmente (pode ser adicionado depois via botão em Settings)
+Só depois deste diagnóstico, e com sua aprovação explícita, será proposta a correção definitiva. Nesta fase nenhuma função é removida e nenhum código é alterado.
