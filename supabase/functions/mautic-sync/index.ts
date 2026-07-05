@@ -223,7 +223,51 @@ serve(async (req) => {
       });
     }
 
-    const { type, record } = await req.json();
+    // ── INÍCIO INSTRUMENTAÇÃO TEMPORÁRIA ──
+    const rawBody = await req.text();
+    const diagContentType = req.headers.get('Content-Type') || 'não informado';
+    const diagUserAgent = req.headers.get('User-Agent') || 'não informado';
+    const diagMethod = req.method;
+    const diagTimestamp = new Date().toISOString();
+
+    console.log('═══════════════════════════════════════════');
+    console.log('[DIAG] Timestamp:', diagTimestamp);
+    console.log('[DIAG] HTTP Method:', diagMethod);
+    console.log('[DIAG] Content-Type:', diagContentType);
+    console.log('[DIAG] User-Agent:', diagUserAgent);
+    console.log('[DIAG] Body length:', rawBody.length);
+    console.log('[DIAG] Body (raw):', rawBody);
+    console.log('[DIAG] First 5 chars (charCodes):',
+      Array.from(rawBody.substring(0, 5)).map(c => c.charCodeAt(0)));
+    console.log('═══════════════════════════════════════════');
+
+    let type: string;
+    let record: { email: string; first_name: string; phone: string; subscription_status: string };
+
+    try {
+      const parsed = JSON.parse(rawBody);
+      type = parsed.type;
+      record = parsed.record;
+      console.log('[DIAG] JSON parse OK. type:', type, 'email:', record?.email);
+    } catch (parseError) {
+      console.error('[DIAG] JSON PARSE FAILED!');
+      console.error('[DIAG] Parse error:', (parseError as Error).message);
+      console.error('[DIAG] Raw body was:', rawBody);
+      return new Response(JSON.stringify({
+        error: 'Invalid JSON body',
+        diag: {
+          contentType: diagContentType,
+          bodyLength: rawBody.length,
+          firstChars: Array.from(rawBody.substring(0, 10)).map(c => c.charCodeAt(0)),
+          rawBodyPreview: rawBody.substring(0, 200),
+        }
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    // ── FIM INSTRUMENTAÇÃO TEMPORÁRIA ──
+
     console.log(`[mautic-sync] Event type: ${type}, email: ${record?.email}`);
 
     if (!record?.email) {
