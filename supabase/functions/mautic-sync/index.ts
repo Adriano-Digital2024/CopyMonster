@@ -20,6 +20,24 @@ interface MauticTokenData {
   expiresAt: string | null;
 }
 
+async function logSync(
+  adminSupabase: SupabaseClient,
+  entry: {
+    email?: string | null;
+    event_type: string;
+    status: string;
+    http_status?: number | null;
+    mautic_contact_id?: number | null;
+    error?: string | null;
+  }
+) {
+  try {
+    await adminSupabase.from('mautic_sync_log').insert(entry);
+  } catch (e) {
+    console.error('[mautic-sync] Failed to write audit log:', (e as Error).message);
+  }
+}
+
 async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: string): Promise<MauticTokenData | null> {
   console.log('[mautic-sync] Retrieving Mautic tokens from database');
 
