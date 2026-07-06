@@ -20,6 +20,24 @@ interface MauticTokenData {
   expiresAt: string | null;
 }
 
+async function logSync(
+  adminSupabase: SupabaseClient,
+  entry: {
+    email?: string | null;
+    event_type: string;
+    status: string;
+    http_status?: number | null;
+    mautic_contact_id?: number | null;
+    error?: string | null;
+  }
+) {
+  try {
+    await adminSupabase.from('mautic_sync_log').insert(entry);
+  } catch (e) {
+    console.error('[mautic-sync] Failed to write audit log:', (e as Error).message);
+  }
+}
+
 async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: string): Promise<MauticTokenData | null> {
   console.log('[mautic-sync] Retrieving Mautic tokens from database');
 
@@ -207,119 +225,241 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mauticBaseUrl = Deno.env.get('MAUTIC_BASE_URL')!;
-    const mauticClientId = Deno.env.get('MAUTIC_CLIENT_ID')!;
-    const mauticClientSecret = Deno.env.get('MAUTIC_CLIENT_SECRET')!;
-    const encryptionKey = Deno.env.get('ENCRYPTION_KEY')!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const mauticBaseUrl = Deno.env.get('MAUTIC_BASE_URL')!;
+  const mauticClientId = Deno.env.get('MAUTIC_CLIENT_ID')!;
+  const mauticClientSecret = Deno.env.get('MAUTIC_CLIENT_SECRET')!;
+  const encryptionKey = Deno.env.get('ENCRYPTION_KEY')!;
 
-    if (!supabaseUrl || !supabaseServiceKey || !mauticBaseUrl || !mauticClientId || !mauticClientSecret || !encryptionKey) {
-      console.error('[mautic-sync] Missing required environment variables');
-      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+  if (!supabaseUrl || !supabaseServiceKey || !mauticBaseUrl || !mauticClientId || !mauticClientSecret || !encryptionKey) {
+    console.error('[mautic-sync] Missing required environment variables');
+    return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
-    const { type, record } = await req.json();
-    console.log(`[mautic-sync] Event type: ${type}, email: ${record?.email}`);
+  const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    if (!record?.email) {
-      console.error('[mautic-sync] Missing email in record');
-      return new Response(JSON.stringify({ error: 'Missing email' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (type !== 'new_user' && type !== 'plan_update') {
-      console.error(`[mautic-sync] Unknown event type: ${type}`);
-      return new Response(JSON.stringify({ error: 'Unknown event type' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
-
+  const ensureAccessToken = async (forceRefresh = false): Promise<string | null> => {
     const tokenData = await getDecryptedToken(adminSupabase, encryptionKey);
-    if (!tokenData) {
-      return new Response(JSON.stringify({ error: 'Mautic not connected' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    if (!tokenData) return null;
+    let accessToken = tokenData.accessToken;
+    const needsRefresh = forceRefresh
+      || !tokenData.expiresAt
+      || (new Date(tokenData.expiresAt).getTime() - Date.now() < 5 * 60 * 1000);
+    if (needsRefresh) {
+      const refreshed = await refreshAccessToken(
+        adminSupabase, mauticBaseUrl, mauticClientId, mauticClientSecret,
+        tokenData.refreshToken, encryptionKey,
+      );
+      if (!refreshed) return null;
+      accessToken = refreshed;
+    }
+    return accessToken;
+  };
+
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { type, record } = body ?? {};
+  console.log(`[mautic-sync] Event type: ${type}`);
+
+  try {
+    // ---- Healthcheck ----
+    if (type === 'ping') {
+      const accessToken = await ensureAccessToken();
+      if (!accessToken) {
+        await logSync(adminSupabase, { event_type: 'ping', status: 'error', error: 'Mautic not connected or refresh failed' });
+        return new Response(JSON.stringify({ ok: false, error: 'Mautic not connected or refresh failed' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const res = await fetch(`${mauticBaseUrl}/api/contacts?limit=1`, {
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
+      });
+      const text = await res.text();
+      await logSync(adminSupabase, {
+        event_type: 'ping',
+        status: res.ok ? 'success' : 'error',
+        http_status: res.status,
+        error: res.ok ? null : text.substring(0, 500),
+      });
+      return new Response(JSON.stringify({ ok: res.ok, status: res.status, mauticBaseUrl }), {
+        status: res.ok ? 200 : 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    let accessToken = tokenData.accessToken;
-
-    // Refresh token if expired or about to expire (5 minute buffer)
-    if (tokenData.expiresAt) {
-      const expiresAt = new Date(tokenData.expiresAt).getTime();
-      if (expiresAt - Date.now() < 5 * 60 * 1000) {
-        const refreshedToken = await refreshAccessToken(
-          adminSupabase,
-          mauticBaseUrl,
-          mauticClientId,
-          mauticClientSecret,
-          tokenData.refreshToken,
-          encryptionKey
-        );
-        if (!refreshedToken) {
-          return new Response(JSON.stringify({ error: 'Failed to refresh Mautic token' }), {
-            status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-        accessToken = refreshedToken;
+    // ---- Backfill ----
+    if (type === 'backfill') {
+      const accessToken = await ensureAccessToken();
+      if (!accessToken) {
+        return new Response(JSON.stringify({ error: 'Mautic not connected' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
+      const { data: profiles, error } = await adminSupabase
+        .from('profiles')
+        .select('email, first_name, phone, subscription_status');
+      if (error || !profiles) {
+        return new Response(JSON.stringify({ error: 'Failed to load profiles' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      let ok = 0, fail = 0;
+      for (const p of profiles) {
+        if (!p.email) { fail++; continue; }
+        const plan = planMap[p.subscription_status as string] || 'Free';
+        const payload = { firstname: p.first_name || '', email: p.email, phone: p.phone || '', plan };
+        const existing = await getMauticContactByEmail(mauticBaseUrl, accessToken, p.email);
+        const success = existing
+          ? await updateMauticContact(mauticBaseUrl, accessToken, existing.id, payload)
+          : await createMauticContact(mauticBaseUrl, accessToken, payload);
+        await logSync(adminSupabase, {
+          email: p.email, event_type: 'backfill',
+          status: success ? 'success' : 'error',
+          mautic_contact_id: existing?.id ?? null,
+        });
+        success ? ok++ : fail++;
+      }
+      return new Response(JSON.stringify({ ok: true, processed: profiles.length, success: ok, failed: fail }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ---- Normal events ----
+    if (!record?.email) {
+      return new Response(JSON.stringify({ error: 'Missing email' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (type !== 'new_user' && type !== 'plan_update') {
+      return new Response(JSON.stringify({ error: 'Unknown event type' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    let accessToken = await ensureAccessToken();
+    if (!accessToken) {
+      await logSync(adminSupabase, { email: record.email, event_type: type, status: 'error', error: 'Mautic not connected / refresh failed' });
+      return new Response(JSON.stringify({ error: 'Mautic not connected' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const plan = planMap[record.subscription_status] || 'Free';
-    console.log(`[mautic-sync] Mapped subscription_status '${record.subscription_status}' to plan '${plan}'`);
-
     const contactPayload = {
       firstname: record.first_name || '',
       email: record.email,
       phone: record.phone || '',
-      plan: plan,
+      plan,
+    };
+
+    // Retry-on-401 wrapper
+    const runWithRetry = async (op: (token: string) => Promise<Response>): Promise<Response> => {
+      let res = await op(accessToken!);
+      if (res.status === 401) {
+        console.log('[mautic-sync] 401 received, forcing token refresh and retrying');
+        const refreshed = await ensureAccessToken(true);
+        if (refreshed) {
+          accessToken = refreshed;
+          res = await op(accessToken);
+        }
+      }
+      return res;
     };
 
     let success = false;
+    let httpStatus: number | null = null;
+    let contactId: number | null = null;
+    let lastError: string | null = null;
 
     if (type === 'new_user') {
-      console.log('[mautic-sync] Handling new_user event');
-      success = await createMauticContact(mauticBaseUrl, accessToken, contactPayload);
-    } else if (type === 'plan_update') {
-      console.log('[mautic-sync] Handling plan_update event');
-      const existingContact = await getMauticContactByEmail(mauticBaseUrl, accessToken, record.email);
-      if (existingContact) {
-        success = await updateMauticContact(mauticBaseUrl, accessToken, existingContact.id, contactPayload);
+      const res = await runWithRetry((tok) =>
+        fetch(`${mauticBaseUrl}/api/contacts/new`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(contactPayload),
+        })
+      );
+      httpStatus = res.status;
+      const txt = await res.text();
+      success = res.ok;
+      if (!success) lastError = txt.substring(0, 500);
+      else {
+        try { contactId = JSON.parse(txt)?.contact?.id ?? null; } catch { /* ignore */ }
+      }
+    } else {
+      const existing = await getMauticContactByEmail(mauticBaseUrl, accessToken, record.email);
+      if (existing) {
+        contactId = existing.id;
+        const res = await runWithRetry((tok) =>
+          fetch(`${mauticBaseUrl}/api/contacts/${existing.id}/edit`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(contactPayload),
+          })
+        );
+        httpStatus = res.status;
+        const txt = await res.text();
+        success = res.ok;
+        if (!success) lastError = txt.substring(0, 500);
       } else {
-        console.log('[mautic-sync] Contact not found for plan_update, creating new contact');
-        success = await createMauticContact(mauticBaseUrl, accessToken, contactPayload);
+        const res = await runWithRetry((tok) =>
+          fetch(`${mauticBaseUrl}/api/contacts/new`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(contactPayload),
+          })
+        );
+        httpStatus = res.status;
+        const txt = await res.text();
+        success = res.ok;
+        if (!success) lastError = txt.substring(0, 500);
+        else {
+          try { contactId = JSON.parse(txt)?.contact?.id ?? null; } catch { /* ignore */ }
+        }
       }
     }
 
+    await logSync(adminSupabase, {
+      email: record.email,
+      event_type: type,
+      status: success ? 'success' : 'error',
+      http_status: httpStatus,
+      mautic_contact_id: contactId,
+      error: lastError,
+    });
+
     if (!success) {
-      return new Response(JSON.stringify({ error: 'Mautic API error' }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: 'Mautic API error', http_status: httpStatus, detail: lastError }), {
+        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`[mautic-sync] Successfully synced ${record.email} (type: ${type}, plan: ${plan})`);
-
-    return new Response(JSON.stringify({ success: true, type, email: record.email, plan, provider: 'mautic' }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ success: true, type, email: record.email, plan, contact_id: contactId, provider: 'mautic' }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('[mautic-sync] Unexpected error:', (error as Error).message);
+    const msg = (error as Error).message;
+    console.error('[mautic-sync] Unexpected error:', msg);
+    try {
+      await logSync(adminSupabase, {
+        email: record?.email ?? null,
+        event_type: type ?? 'unknown',
+        status: 'error',
+        error: msg.substring(0, 500),
+      });
+    } catch { /* ignore */ }
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

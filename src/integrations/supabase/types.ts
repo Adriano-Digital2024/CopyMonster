@@ -862,6 +862,39 @@ export type Database = {
         }
         Relationships: []
       }
+      mautic_sync_log: {
+        Row: {
+          created_at: string
+          email: string | null
+          error: string | null
+          event_type: string
+          http_status: number | null
+          id: string
+          mautic_contact_id: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          error?: string | null
+          event_type: string
+          http_status?: number | null
+          id?: string
+          mautic_contact_id?: number | null
+          status: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          error?: string | null
+          event_type?: string
+          http_status?: number | null
+          id?: string
+          mautic_contact_id?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
       mautic_tokens: {
         Row: {
           created_at: string | null
