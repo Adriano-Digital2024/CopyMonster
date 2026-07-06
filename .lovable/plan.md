@@ -1,87 +1,67 @@
-## Objetivo
+## Diagnóstico
 
-Isolar exatamente em qual etapa o valor do campo `plan` é perdido no fluxo Supabase → `mautic-sync` → API do Mautic. Nenhuma função será removida, nenhum código será refatorado nesta etapa. Apenas diagnóstico ao vivo com evidências.
+A trigger `trg_mautic_sync_insert` dispara em novos cadastros, mas a função `notify_mautic_on_profile_change()` chama `extensions.http_post(...)` — que pertence à extensão `http`, **que não está instalada** neste projeto (só `pg_net` está). A chamada lança exceção, é engolida pelo `EXCEPTION WHEN OTHERS`, e a Edge Function `mautic-sync` nunca é invocada. Por isso os logs dela estão vazios.
 
-## Regras desta fase
+As triggers do Sender e do Agentes funcionam porque usam `net.http_post` (pg_net), que está disponível.
 
-- Não excluir `reset-trial`.
-- Não excluir `mautic-bulk-sync`.
-- Não alterar `mautic-sync`, `mautic-callback`, triggers ou migrations.
-- Nenhuma mudança de arquitetura.
-- Todas as observações vêm de execução real, não suposição.
+## Correção
 
-## Passos de diagnóstico
+Recriar `public.notify_mautic_on_profile_change()` trocando `extensions.http_post` por `net.http_post`, mantendo exatamente o mesmo payload, a mesma URL (`.../functions/v1/mautic-sync`) e o mesmo header `Authorization: Bearer <anon key>`. Nenhuma trigger é recriada — só a função. Nada mais no projeto muda.
 
-1. **Escolher um contato de teste real**
-   - Usar um dos 5 emails já sincronizados (por padrão, `wahojav876@exespay.com`).
-   - Confirmar no `profiles` o `subscription_status` atual (esperado `free`).
+### SQL a executar
 
-2. **Disparar `mautic-sync` de forma controlada (sem alterar dados)**
-   - Chamar diretamente o endpoint deployado com:
-     ```json
-     {
-       "type": "plan_update",
-       "record": {
-         "email": "<email de teste>",
-         "first_name": "<nome atual>",
-         "phone": "<telefone atual>",
-         "subscription_status": "free"
-       }
-     }
-     ```
-   - Capturar:
-     - status HTTP retornado por `mautic-sync`;
-     - corpo completo da resposta da função.
+```sql
+CREATE OR REPLACE FUNCTION public.notify_mautic_on_profile_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+DECLARE
+  _payload jsonb;
+  _event_type text;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    _event_type := 'new_user';
+  ELSIF TG_OP = 'UPDATE' THEN
+    _event_type := 'plan_update';
+  END IF;
 
-3. **Coletar os logs desta execução em `mautic-sync`**
-   - Buscar as linhas do log correspondentes a esse email, incluindo:
-     - `Event type` recebido;
-     - `Mapped subscription_status ... to plan ...`;
-     - payload enviado ao Mautic (`Creating/Updating Mautic contact with payload`);
-     - resposta bruta da API do Mautic (`Create/Update contact response`).
+  _payload := jsonb_build_object(
+    'type', _event_type,
+    'record', jsonb_build_object(
+      'email', NEW.email,
+      'first_name', NEW.first_name,
+      'phone', COALESCE(NEW.phone, ''),
+      'subscription_status', NEW.subscription_status
+    )
+  );
 
-4. **Ler o contato diretamente do Mautic para confirmar persistência**
-   - Fazer uma segunda chamada usando o mesmo caminho já implementado (`GET /api/contacts?search=email:<email>`), aproveitando o mesmo token OAuth já armazenado.
-   - Extrair da resposta:
-     - `id` do contato;
-     - valor real do campo customizado `plan`;
-     - valores atuais de `firstname`, `email`, `phone`.
-   - Comparar com o que a função disse ter enviado.
+  PERFORM net.http_post(
+    url := 'https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/mautic-sync',
+    body := _payload,
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjYXR1cGx0ZnZnd2VsaHplem5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MjIyNjUsImV4cCI6MjA3Njk5ODI2NX0.naM7i7VVD4RHGCI5FbTunNToZVZ-nDAP881VUa7WJBg'
+    )
+  );
 
-5. **Repetir o teste para um segundo estado**
-   - Simular um `plan_update` com `subscription_status = "pro"` (somente no payload da chamada de teste — sem alterar `profiles`).
-   - Executar os passos 2 a 4 novamente.
-   - Verificar se o Mautic passa a mostrar `plan = Pro` para o contato, ou se permanece no valor anterior.
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE WARNING '[mautic-sync] Failed to queue HTTP request: %', SQLERRM;
+  RETURN NEW;
+END;
+$function$;
+```
 
-6. **Comparar com o gatilho automático via banco**
-   - Consultar as respostas recentes em `net._http_response` para confirmar que chamadas oriundas dos triggers `trg_mautic_sync_insert` / `trg_mautic_sync_update` estão realmente chegando em `mautic-sync` com status 2xx.
-   - Cruzar com os logs da função para o mesmo timestamp.
+## Validação
 
-## O que a análise vai responder de forma objetiva
+1. Cadastrar um usuário de teste no CopyMonster.
+2. Ler os logs da Edge Function `mautic-sync` — deve aparecer `Event type: new_user` seguido de `Mautic contact created successfully`.
+3. Conferir no Mautic se o contato apareceu com o campo `plan = Free`.
 
-- Se `mautic-sync` está efetivamente sendo executado (sim/não, com evidência).
-- Qual é o payload exato enviado ao Mautic (com o campo `plan` e seu valor).
-- Qual é a resposta bruta da API do Mautic (status + corpo).
-- Se, na leitura seguinte do contato, o campo `plan` foi realmente persistido.
-- Em qual etapa exata o valor de `plan` se perde:
-  - a) `mautic-sync` não é chamado;
-  - b) `mautic-sync` é chamado mas envia `plan` errado/vazio;
-  - c) `mautic-sync` envia `plan` correto, mas a API do Mautic responde erro/ignora;
-  - d) A API aceita, mas o campo customizado não é o `plan` correto (alias divergente, campo desativado, etc.);
-  - e) Update por email não encontra o contato e o comportamento cai em `create` ineficaz.
+Se `mautic-sync` responder com `Mautic not connected` (tabela `mautic_tokens` vazia) ou 401, aí é outro problema (OAuth ainda não concluído) e trato em seguida — mas o motivo do silêncio atual é 100% a chamada `extensions.http_post`.
 
-## Entrega desta fase
+## Riscos
 
-Um relatório com:
-- Email testado.
-- Requisição enviada a `mautic-sync`.
-- Resposta de `mautic-sync`.
-- Logs relevantes de `mautic-sync`.
-- Payload real enviado ao Mautic.
-- Resposta bruta da API do Mautic.
-- Leitura pós-sync do contato no Mautic com o valor real de `plan`.
-- Conclusão apontando a etapa exata da falha.
-
-## Próxima fase (somente após sua aprovação da causa raiz)
-
-Só depois deste diagnóstico, e com sua aprovação explícita, será proposta a correção definitiva. Nesta fase nenhuma função é removida e nenhum código é alterado.
+Zero para o resto do sistema: só substitui uma função. Triggers, `sender-sync`, `agentes-sync` e frontend não são tocados.

@@ -130,13 +130,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  data-onboarding-id={
-                    item.path === '/dashboard/positioning'
-                      ? 'sidebar-positioning'
-                      : item.path === '/dashboard/agents'
-                      ? 'sidebar-agents'
-                      : undefined
-                  }
                   className={`nav-item ${active ? 'nav-item-active' : ''}`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />

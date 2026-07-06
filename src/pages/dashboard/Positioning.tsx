@@ -311,7 +311,6 @@ export default function Positioning() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleSave(messages)}
-                  data-onboarding-id="positioning-save"
                   className="gap-2"
                 >
                   <Save className="h-4 w-4" />
@@ -323,7 +322,7 @@ export default function Positioning() {
         </div>
 
         {/* Chat Interface - Full Height with Auto-Start */}
-        <Card data-onboarding-id="positioning-questions" className="flex-1 min-h-[600px] flex flex-col overflow-hidden">
+        <Card className="flex-1 min-h-[600px] flex flex-col overflow-hidden">
           <ChatInterface
             agentName={t(`agents.list.${AGENT_CONFIG.tKey}.name`)}
             agentColor={AGENT_CONFIG.color}
