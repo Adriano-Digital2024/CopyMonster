@@ -98,8 +98,9 @@ const App = () => (
                   <Route path="/dashboard/library/updates" element={<DnaUpdates />} />
                   <Route path="/dashboard/ads-intelligence" element={<AdsIntelligence />} />
                   <Route path="/dashboard/performance-overview" element={<PerformanceOverview />} />
-                  <Route path="/dashboard/market-radar" element={<MarketRadar />} />
-                </Route>
+                   <Route path="/dashboard/market-radar" element={<MarketRadar />} />
+                   <Route path="/dashboard/partners" element={<PartnersDashboard />} />
+                 </Route>
                 {/* Admin - Protected + Admin Required */}
                 <Route element={<ProtectedRoute requireAdmin />}>
                   <Route path="/admin" element={<AdminDashboard />} />
