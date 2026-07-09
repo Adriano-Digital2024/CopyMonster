@@ -112,8 +112,9 @@ const App = () => (
                   
                   <Route path="/admin/discounts" element={<AdminDiscounts />} />
                   <Route path="/admin/agents" element={<AdminAgents />} />
-                  <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
-                  <Route path="/admin/settings" element={<AdminSettings />} />
+                   <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
+                   <Route path="/admin/partners" element={<AdminPartners />} />
+                   <Route path="/admin/settings" element={<AdminSettings />} />
                   <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
                   <Route path="/admin/models" element={<AdminModels />} />
                 </Route>
@@ -128,4 +129,4 @@ const App = () => (
   </AuthProvider>
 );
 
-export default App;
+export default App;ault App;
