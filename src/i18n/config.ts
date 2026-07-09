@@ -3897,6 +3897,29 @@ const resources = {
           emailSequences: "Secuencias de Email",
         },
       },
+      partners: {
+        title: "Programa de Partners",
+        kyc_alert: "Su cuenta está pendiente de verificación. Las comisiones se rastrearán una vez que se apruebe su KYC.",
+        stats: {
+          holding: "En Retención",
+          available: "Saldo Disponible",
+          paid: "Total Pagado"
+        },
+        transparency: {
+          title: "Centro de Transparencia",
+          description: "Seguimiento en tiempo real de sus comisiones.",
+          col_date: "Fecha",
+          col_amount: "Monto",
+          col_status: "Estado",
+          col_release: "Fecha de Liberación",
+          days_left: "Faltan {{days}} días",
+          ready: "Listo para Retiro"
+        },
+        wallet: {
+          withdraw: "Solicitar Retiro",
+          paypal_hint: "Los pagos se envían a su correo electrónico de PayPal."
+        }
+      }
     },
   },
 };
@@ -3912,4 +3935,4 @@ i18n
     },
   });
 
-export default i18n;
+export default i18n;8n;

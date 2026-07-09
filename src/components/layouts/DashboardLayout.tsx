@@ -96,6 +96,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     {
       label: 'Account',
       items: [
+        { icon: Users, label: t('partners.title'), path: '/dashboard/partners' },
         { icon: CreditCard, label: t('dashboard.menu.billing'), path: '/dashboard/billing' },
         { icon: Settings, label: t('dashboard.menu.settings'), path: '/dashboard/settings' },
       ],

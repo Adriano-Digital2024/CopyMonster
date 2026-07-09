@@ -1,0 +1,25 @@
+{
+  "partners": {
+    "title": "Programa de Parceiros",
+    "kyc_alert": "Sua conta está pendente de verificação. As comissões serão rastreadas assim que seu KYC for aprovado.",
+    "stats": {
+      "holding": "Em Retenção",
+      "available": "Saldo Disponível",
+      "paid": "Total Pago"
+    },
+    "transparency": {
+      "title": "Centro de Transparência",
+      "description": "Acompanhamento em tempo real das suas comissões.",
+      "col_date": "Data",
+      "col_amount": "Valor",
+      "col_status": "Status",
+      "col_release": "Data de Liberação",
+      "days_left": "Faltam {{days}} dias",
+      "ready": "Pronto para Saque"
+    },
+    "wallet": {
+      "withdraw": "Solicitar Saque",
+      "paypal_hint": "Os pagamentos são enviados para o seu e-mail do PayPal."
+    }
+  }
+}

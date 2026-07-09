@@ -49,6 +49,8 @@ import TermsOfService from "./pages/legal/TermsOfService";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import GDPR from "./pages/legal/GDPR";
 import DataDeletionStatus from "./pages/legal/DataDeletionStatus";
+import PartnersDashboard from "./pages/dashboard/partners/PartnersDashboard";
+import AdminPartners from "./pages/admin/partners/Index";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
 

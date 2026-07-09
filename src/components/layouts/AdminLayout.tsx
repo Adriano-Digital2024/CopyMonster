@@ -74,6 +74,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Users, label: t('admin.menu.users'), path: '/admin/users' },
         { icon: CreditCard, label: 'Assinaturas', path: '/admin/subscriptions' },
         { icon: Percent, label: t('admin.menu.discounts'), path: '/admin/discounts' },
+        { icon: Users, label: 'Partners', path: '/admin/partners' },
         { icon: Megaphone, label: 'Campanhas', path: '/admin/campaigns' },
         { icon: FileText, label: 'Copy Results', path: '/admin/copy-results' },
         { icon: Target, label: 'Mapeamentos', path: '/admin/mappings' },

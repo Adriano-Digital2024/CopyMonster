@@ -1,0 +1,25 @@
+{
+  "partners": {
+    "title": "Partners Program",
+    "kyc_alert": "Your account is pending verification. Commissions will be tracked once your KYC is approved.",
+    "stats": {
+      "holding": "In Holding",
+      "available": "Available Balance",
+      "paid": "Total Paid Out"
+    },
+    "transparency": {
+      "title": "Transparency Center",
+      "description": "Real-time roadmap for your commissions.",
+      "col_date": "Date",
+      "col_amount": "Amount",
+      "col_status": "Status",
+      "col_release": "Release Date",
+      "days_left": "{{days}} days left",
+      "ready": "Ready to Withdraw"
+    },
+    "wallet": {
+      "withdraw": "Request Payout",
+      "paypal_hint": "Payouts are sent to your PayPal email."
+    }
+  }
+}
