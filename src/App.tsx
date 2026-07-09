@@ -98,9 +98,9 @@ const App = () => (
                   <Route path="/dashboard/library/updates" element={<DnaUpdates />} />
                   <Route path="/dashboard/ads-intelligence" element={<AdsIntelligence />} />
                   <Route path="/dashboard/performance-overview" element={<PerformanceOverview />} />
-                   <Route path="/dashboard/market-radar" element={<MarketRadar />} />
-                   <Route path="/dashboard/partners" element={<PartnersDashboard />} />
-                 </Route>
+                  <Route path="/dashboard/market-radar" element={<MarketRadar />} />
+                  <Route path="/dashboard/partners" element={<PartnersDashboard />} />
+                </Route>
                 {/* Admin - Protected + Admin Required */}
                 <Route element={<ProtectedRoute requireAdmin />}>
                   <Route path="/admin" element={<AdminDashboard />} />
@@ -113,9 +113,9 @@ const App = () => (
                   
                   <Route path="/admin/discounts" element={<AdminDiscounts />} />
                   <Route path="/admin/agents" element={<AdminAgents />} />
-                   <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
-                   <Route path="/admin/partners" element={<AdminPartners />} />
-                   <Route path="/admin/settings" element={<AdminSettings />} />
+                  <Route path="/admin/agents/:slug" element={<AdminAgentConfig />} />
+                  <Route path="/admin/partners" element={<AdminPartners />} />
+                  <Route path="/admin/settings" element={<AdminSettings />} />
                   <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
                   <Route path="/admin/models" element={<AdminModels />} />
                 </Route>
