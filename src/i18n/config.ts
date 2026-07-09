@@ -1299,41 +1299,45 @@ const resources = {
           emailSequences: "Email Sequences",
         },
       },
+      partners: {
+        title: "Programa de Partners",
+        kyc_alert: "Su cuenta está pendiente de verificación. Las comisiones se rastrearán una vez que se apruebe su KYC.",
+        stats: {
+          holding: "En Retención",
+          available: "Saldo Disponible",
+          paid: "Total Pagado"
+        },
+        transparency: {
+          title: "Centro de Transparencia",
+          description: "Seguimiento en tiempo real de sus comisiones.",
+          col_date: "Fecha",
+          col_amount: "Monto",
+          col_status: "Estado",
+          col_release: "Fecha de Liberación",
+          days_left: "Faltan {{days}} días",
+          ready: "Listo para Retiro"
+        },
+        wallet: {
+          withdraw: "Solicitar Retiro",
+          paypal_hint: "Los pagos se envían a su correo electrónico de PayPal."
+        }
+      }
     },
   },
-  pt: {
-    translation: {
-      date: {
-        locale: 'pt-BR',
-      },
-      common: {
-        save: 'Salvar',
-        cancel: 'Cancelar',
-        create: 'Criar',
-        delete: 'Excluir',
-        notFound: 'Não Encontrado',
-        goBack: 'Voltar',
-        back: 'Voltar',
-        level: 'Nível',
-      },
-      nav: {
-        features: 'Funcionalidades',
-        pricing: 'Preços',
-        testimonials: 'Depoimentos',
-        dashboard: 'Painel',
-        startTrial: 'Começar Teste Gratuito',
-      },
-      hero: {
-        badge: 'Potencializado por IA & Especialistas em Copywriting',
-        title: 'Seu Copywriter com IA',
-        titleHighlight: 'Que Entende o Seu Negócio',
-        titleEnd: 'Profundamente',
-        subtitle: 'CopyMonster é a primeira plataforma de IA que combina o DNA do seu negócio com agentes especializados para criar copy de alta conversão em minutos.',
-        cta: {
-          primary: 'Comece seu Teste Gratuito de 7 Dias',
-          secondary: 'Veja Como Funciona',
-        },
-        trust: 'Confiado por mais de 1.000 empreendedores',
+};
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: 'en', // Default language
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false,
+    },
+  });
+
+export default i18n;8n;r mais de 1.000 empreendedores',
         rating: '4.9/5.0 de mais de 200 avaliações',
         stats: {
           agents: 'Agentes Especializados',
@@ -2598,6 +2602,29 @@ const resources = {
           emailSequences: "Sequências de Email",
         },
       },
+      partners: {
+        title: "Programa de Parceiros",
+        kyc_alert: "Sua conta está pendente de verificação. As comissões serão rastreadas assim que seu KYC for aprovado.",
+        stats: {
+          holding: "Em Retenção",
+          available: "Saldo Disponível",
+          paid: "Total Pago"
+        },
+        transparency: {
+          title: "Centro de Transparência",
+          description: "Acompanhamento em tempo real das suas comissões.",
+          col_date: "Data",
+          col_amount: "Valor",
+          col_status: "Status",
+          col_release: "Data de Liberação",
+          days_left: "Faltam {{days}} dias",
+          ready: "Pronto para Saque"
+        },
+        wallet: {
+          withdraw: "Solicitar Saque",
+          paypal_hint: "Os pagamentos são enviados para o seu e-mail do PayPal."
+        }
+      }
     },
   },
   es: {
