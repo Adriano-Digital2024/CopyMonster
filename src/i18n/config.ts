@@ -908,6 +908,29 @@ const resources = {
             data: 'Data/BI',
           },
         },
+        partners: {
+          payout_queue: {
+            title: "Payout Approval Queue",
+            description: "Approve and execute payments via PayPal API.",
+            col_affiliate: "Affiliate",
+            col_amount: "Amount",
+            col_paypal: "PayPal Email",
+            col_risk: "Risk Score",
+            high_risk: "Manual Review Required",
+            btn_approve: "Approve & Pay",
+            success_payout: "Payout executed successfully"
+          },
+          rule_engine: {
+            title: "Commission Rule Engine",
+            description: "Configure global commission strategies (No-Deploy).",
+            form_version: "Version Name",
+            form_percent: "Percentage (%)",
+            form_retention: "Retention Days",
+            btn_publish: "Publish New Strategy",
+            history: "Strategy History",
+            success_publish: "New rule published successfully"
+          }
+        },
         analytics: {
           title: 'Analytics',
           subtitle: 'Detailed platform usage statistics.',
@@ -3888,38 +3911,6 @@ const resources = {
           instagram: "Crea un post de Instagram que atrae clientes...",
           adCopy: "Genera copy de anuncio para mi curso online...",
           emailSequence: "Escribe una secuencia de emails para lanzamiento...",
-        },
-        tags: {
-          salesPages: "Páginas de Ventas",
-          adCopy: "Copy de Anuncios",
-          instagramContent: "Contenido Instagram",
-          launchScripts: "Scripts de Lanzamiento",
-          emailSequences: "Secuencias de Email",
-        },
-      },
-      partners: {
-        title: "Programa de Partners",
-        kyc_alert: "Su cuenta está pendiente de verificación. Las comisiones se rastrearán una vez que se apruebe su KYC.",
-        stats: {
-          holding: "En Retención",
-          available: "Saldo Disponible",
-          paid: "Total Pagado"
-        },
-        transparency: {
-          title: "Centro de Transparencia",
-          description: "Seguimiento en tiempo real de sus comisiones.",
-          col_date: "Fecha",
-          col_amount: "Monto",
-          col_status: "Estado",
-          col_release: "Fecha de Liberación",
-          days_left: "Faltan {{days}} días",
-          ready: "Listo para Retiro"
-        },
-        wallet: {
-          withdraw: "Solicitar Retiro",
-          paypal_hint: "Los pagos se envían a su correo electrónico de PayPal."
-        }
-      }
     },
   },
 };
