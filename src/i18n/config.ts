@@ -2230,6 +2230,29 @@ const resources = {
             data: 'Dados/BI',
           },
         },
+        partners: {
+          payout_queue: {
+            title: "Fila de Aprovação de Saques",
+            description: "Aprove e execute pagamentos via API do PayPal.",
+            col_affiliate: "Afiliado",
+            col_amount: "Valor",
+            col_paypal: "E-mail PayPal",
+            col_risk: "Score de Risco",
+            high_risk: "Revisão Manual Necessária",
+            btn_approve: "Aprovar e Pagar",
+            success_payout: "Pagamento executado com sucesso"
+          },
+          rule_engine: {
+            title: "Motor de Regras de Comissão",
+            description: "Configure estratégias globais de comissão (Sem Deploy).",
+            form_version: "Nome da Versão",
+            form_percent: "Porcentagem (%)",
+            form_retention: "Dias de Retenção",
+            btn_publish: "Publicar Nova Estratégia",
+            history: "Histórico de Estratégias",
+            success_publish: "Nova regra publicada com sucesso"
+          }
+        },
         analytics: {
           title: 'Analytics',
           subtitle: 'Estatísticas detalhadas de uso da plataforma.',
