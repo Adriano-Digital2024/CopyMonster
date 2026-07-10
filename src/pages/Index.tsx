@@ -13,6 +13,14 @@ const Index = () => {
 
   useEffect(() => {
     trackViewContent({ content_name: 'Landing Page', content_category: 'page' });
+    
+    // Captura e armazena o ID do afiliado da URL (?ref=ID)
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    if (ref) {
+      localStorage.setItem('copymonster_affiliate_id', ref);
+      console.log('Afiliado detectado e salvo:', ref);
+    }
   }, [trackViewContent]);
 
   return (
