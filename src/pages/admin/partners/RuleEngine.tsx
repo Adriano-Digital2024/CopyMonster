@@ -36,13 +36,25 @@ const RuleEngine = () => {
         .eq("is_current", true);
       
       // Step B: Insert new rule
-      const { error } = await supabase.from("affiliate.commission_rules").insert({
+      const { data: newRule, error: ruleError } = await supabase.from("affiliate.commission_rules").insert({
         version_name: values.version_name,
         percentage: Number(values.percentage),
         retention_days: Number(values.retention_days),
         is_current: true
+      }).select().single();
+      
+      if (ruleError) throw ruleError;
+
+      // Step C: Auditoria (Regra de Ouro)
+      await supabase.from("affiliate.audit_logs").insert({
+        action: 'RULE_CHANGE',
+        reason: `Nova estratégia publicada: ${values.version_name}`,
+        metadata: { 
+          version: values.version_name, 
+          percentage: values.percentage, 
+          retention: values.retention_days 
+        }
       });
-      if (error) throw error;
     },
     onSuccess: () => {
       toast.success(t("admin.partners.rule_engine.success_publish"));

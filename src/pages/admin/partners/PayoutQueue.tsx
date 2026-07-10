@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
@@ -6,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, DollarSign } from "lucide-react";
 
 const PayoutQueue = () => {
   const { t } = useTranslation();
@@ -20,6 +19,8 @@ const PayoutQueue = () => {
         .select(`
           *,
           affiliate:affiliate_id (
+            full_name,
+            cpf_cnpj,
             paypal_email
           )
         `)
@@ -31,66 +32,80 @@ const PayoutQueue = () => {
   });
 
   const payoutMutation = useMutation({
-    mutationFn: async (payoutId: string) => {
+    mutationFn: async ({ payoutId, amount, partnerData }: any) => {
+      // 1. Executa o Payout (Via Edge Function)
       const { data, error } = await supabase.functions.invoke("payout-executor", {
         body: { payoutId },
       });
       if (error) throw error;
+
+      // 2. Registra o Snapshot Fiscal e Auditoria
+      await supabase
+        .from("affiliate.audit_logs")
+        .insert({
+          action: 'PAYOUT_APPROVAL',
+          reason: 'Aprovação manual administrativa',
+          metadata: {
+            payout_id: payoutId,
+            amount: amount,
+            recipient: partnerData
+          }
+        });
+      
       return data;
     },
     onSuccess: () => {
-      toast.success(t("admin.partners.payout_queue.success_payout"));
+      toast.success("Pagamento aprovado e disparado via PayPal!");
       queryClient.invalidateQueries({ queryKey: ["admin-payouts"] });
     },
-    onError: (err: any) => {
-      toast.error(`Payout Failed: ${err.message}`);
-    },
+    onError: (err: any) => toast.error(`Erro no Pagamento: ${err.message}`),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-semibold">{t("admin.partners.payout_queue.title")}</h2>
-        <p className="text-sm text-muted-foreground">{t("admin.partners.payout_queue.description")}</p>
+        <h2 className="text-xl font-semibold">Fila de Aprovação de Saques</h2>
+        <p className="text-sm text-muted-foreground">O dinheiro já está no Fundo PayPal. Clique para enviar ao afiliado.</p>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("admin.partners.payout_queue.col_affiliate")}</TableHead>
-            <TableHead>{t("admin.partners.payout_queue.col_amount")}</TableHead>
-            <TableHead>{t("admin.partners.payout_queue.col_paypal")}</TableHead>
-            <TableHead>{t("admin.partners.payout_queue.col_risk")}</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Afiliado (Dados Fiscais)</TableHead>
+            <TableHead>Valor</TableHead>
+            <TableHead>E-mail PayPal</TableHead>
+            <TableHead>Score de Risco</TableHead>
+            <TableHead className="text-right">Ação</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {payouts?.map((payout) => (
             <TableRow key={payout.id}>
-              <TableCell className="font-mono text-xs">{payout.affiliate_id.slice(0, 8)}...</TableCell>
-              <TableCell className="font-bold">${Number(payout.amount).toFixed(2)}</TableCell>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="font-medium">{payout.affiliate?.full_name || "N/A"}</span>
+                  <span className="text-xs text-muted-foreground">{payout.affiliate?.cpf_cnpj || "CPF não informado"}</span>
+                </div>
+              </TableCell>
+              <TableCell className="font-bold text-green-600">${Number(payout.amount).toFixed(2)}</TableCell>
               <TableCell>{payout.paypal_email_snapshot}</TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  <span className={payout.risk_score > 60 ? "text-destructive font-bold" : ""}>
-                    {payout.risk_score}
-                  </span>
-                  {payout.risk_score > 60 && (
-                    <Badge variant="destructive" className="gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {t("admin.partners.payout_queue.high_risk")}
-                    </Badge>
-                  )}
-                </div>
+                <Badge variant={payout.risk_score > 60 ? "destructive" : "outline"}>
+                  {payout.risk_score} {payout.risk_score > 60 ? "- ALTO RISCO" : ""}
+                </Badge>
               </TableCell>
               <TableCell className="text-right">
                 <Button 
                   size="sm" 
                   disabled={payoutMutation.isPending}
-                  onClick={() => payoutMutation.mutate(payout.id)}
+                  onClick={() => payoutMutation.mutate({ 
+                    payoutId: payout.id, 
+                    amount: payout.amount,
+                    partnerData: payout.affiliate 
+                  })}
                 >
-                  {payoutMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t("admin.partners.payout_queue.btn_approve")}
+                  {payoutMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <DollarSign className="h-4 w-4 mr-1" />}
+                  Aprovar e Pagar
                 </Button>
               </TableCell>
             </TableRow>
@@ -98,7 +113,7 @@ const PayoutQueue = () => {
           {(!payouts || payouts.length === 0) && !isLoading && (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                No pending payout requests.
+                Nenhuma solicitação de saque pendente.
               </TableCell>
             </TableRow>
           )}
