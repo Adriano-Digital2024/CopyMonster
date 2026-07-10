@@ -1,0 +1,69 @@
+{
+  "date": {
+    "locale": "pt-BR"
+  },
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "create": "Criar",
+    "delete": "Excluir",
+    "notFound": "Não Encontrado",
+    "goBack": "Voltar",
+    "back": "Voltar",
+    "level": "Nível"
+  },
+  "nav": {
+    "features": "Funcionalidades",
+    "pricing": "Preços",
+    "testimonials": "Depoimentos",
+    "dashboard": "Painel",
+    "startTrial": "Começar Teste Gratuito"
+  },
+  "hero": {
+    "badge": "Potencializado por IA & Especialistas em Copywriting",
+    "title": "Seu Copywriter com IA",
+    "titleHighlight": "Que Entende o Seu Negócio",
+    "titleEnd": "Profundamente",
+    "subtitle": "CopyMonster é a primeira plataforma de IA que combina o DNA do seu negócio com agentes especializados para criar copy de alta conversão em minutos.",
+    "cta": {
+      "primary": "Comece seu Teste Gratuito de 7 Dias",
+      "secondary": "Veja Como Funciona"
+    },
+    "trust": "Confiado por mais de 1.000 empreendedores",
+    "rating": "4.9/5.0 de mais de 200 avaliações",
+    "stats": {
+      "agents": "Agentes Especializados",
+      "dna": "DNA da Marca"
+    }
+  },
+  "dashboard": {
+    "menu": {
+      "overview": "Visão Geral",
+      "agents": "Agentes",
+      "positioning": "Posicionamento",
+      "campaigns": "Campanhas",
+      "copyResults": "Minhas Copys",
+      "library": "Biblioteca DNA",
+      "billing": "Faturamento",
+      "performance": "Performance",
+      "settings": "Configurações",
+      "logout": "Sair",
+      "dnaUpdates": "Atualizações DNA",
+      "adsIntelligence": "Ads Intelligence",
+      "performanceOverview": "Visão de Performance",
+      "marketRadar": "Radar de Mercado"
+    },
+    "welcome": "Bem-vindo de volta",
+    "subtitle": "Pronto para criar uma copy incrível? Vamos começar!",
+    "credits": "Créditos",
+    "creditsAvailable": "créditos disponíveis",
+    "plan": "Plano Atual",
+    "upgrade": "Fazer upgrade",
+    "level": "Seu Nível",
+    "quickAccess": "Acesso Rápido",
+    "launch": "Iniciar Agente",
+    "recentActivity": "Atividade Recente",
+    "recentActivityDescription": "Aqui está no que você tem trabalhado.",
+    "noActivity": "Nenhuma atividade recente ainda. Comece iniciando um agente!"
+  }
+}

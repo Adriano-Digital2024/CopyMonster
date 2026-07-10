@@ -1,7 +1,12 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// Modular Partners Translations
+// Base App Translations
+import enApp from './locales/en/app.json';
+import ptApp from './locales/pt/app.json';
+import esApp from './locales/es/app.json';
+
+// Partners Module
 import enPartners from './locales/en/partners.json';
 import ptPartners from './locales/pt/partners.json';
 import esPartners from './locales/es/partners.json';
@@ -9,23 +14,20 @@ import esPartners from './locales/es/partners.json';
 const resources = {
   en: {
     translation: {
-      ...enPartners,
-      nav: { dashboard: "Dashboard" },
-      dashboard: { menu: { billing: "Billing", settings: "Settings" } }
+      ...enApp,
+      ...enPartners
     },
   },
   pt: {
     translation: {
-      ...ptPartners,
-      nav: { dashboard: "Painel" },
-      dashboard: { menu: { billing: "Faturamento", settings: "Configurações" } }
+      ...ptApp,
+      ...ptPartners
     },
   },
   es: {
     translation: {
-      ...esPartners,
-      nav: { dashboard: "Panel" },
-      dashboard: { menu: { billing: "Facturación", settings: "Configuración" } }
+      ...esApp,
+      ...esPartners
     },
   },
 };

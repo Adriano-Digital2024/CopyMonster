@@ -1,0 +1,69 @@
+{
+  "date": {
+    "locale": "en-US"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "notFound": "Not Found",
+    "goBack": "Go Back",
+    "back": "Back",
+    "level": "Level"
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "dashboard": "Dashboard",
+    "startTrial": "Start Free Trial"
+  },
+  "hero": {
+    "badge": "Powered by AI & Copywriting Experts",
+    "title": "Your AI Copywriter",
+    "titleHighlight": "That Understands Your Business",
+    "titleEnd": "Deeply",
+    "subtitle": "CopyMonster is the first AI platform that combines your business DNA with specialized agents to create high-converting copy in minutes.",
+    "cta": {
+      "primary": "Start Your 7-Day Free Trial",
+      "secondary": "See How It Works"
+    },
+    "trust": "Trusted by over 1,000 entrepreneurs",
+    "rating": "4.9/5.0 from 200+ reviews",
+    "stats": {
+      "agents": "Specialized Agents",
+      "dna": "Brand DNA"
+    }
+  },
+  "dashboard": {
+    "menu": {
+      "overview": "Overview",
+      "agents": "Agents",
+      "positioning": "Positioning",
+      "campaigns": "Campaigns",
+      "copyResults": "My Copies",
+      "library": "DNA Library",
+      "billing": "Billing",
+      "performance": "Performance",
+      "settings": "Settings",
+      "logout": "Logout",
+      "dnaUpdates": "DNA Updates",
+      "adsIntelligence": "Ads Intelligence",
+      "performanceOverview": "Performance Overview",
+      "marketRadar": "Market Radar"
+    },
+    "welcome": "Welcome back",
+    "subtitle": "Ready to create some amazing copy? Let's get started!",
+    "credits": "Credits",
+    "creditsAvailable": "credits available",
+    "plan": "Current Plan",
+    "upgrade": "Upgrade plan",
+    "level": "Your Level",
+    "quickAccess": "Quick Access",
+    "launch": "Launch Agent",
+    "recentActivity": "Recent Activity",
+    "recentActivityDescription": "Here is what you have been working on.",
+    "noActivity": "No recent activity yet. Start by launching an agent!"
+  }
+}
