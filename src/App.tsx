@@ -53,6 +53,15 @@ import PartnersDashboard from "./pages/dashboard/partners/PartnersDashboard";
 import AdminPartners from "./pages/admin/partners/Index";
 import NotFound from "./pages/NotFound";
 import './i18n/config';
+import i18n from 'i18next';
+import enPartners from './i18n/locales/en/partners.json';
+import ptPartners from './i18n/locales/pt/partners.json';
+import esPartners from './i18n/locales/es/partners.json';
+
+// Injetando as traduções de parceiros de forma segura no i18n principal
+i18n.addResourceBundle('en', 'translation', enPartners, true, true);
+i18n.addResourceBundle('pt', 'translation', ptPartners, true, true);
+i18n.addResourceBundle('es', 'translation', esPartners, true, true);
 
 const queryClient = new QueryClient();
 
