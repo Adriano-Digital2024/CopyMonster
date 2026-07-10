@@ -21,5 +21,30 @@
       "withdraw": "Request Payout",
       "paypal_hint": "Payouts are sent to your PayPal email."
     }
+  },
+  "admin": {
+    "partners": {
+      "payout_queue": {
+        "title": "Payout Approval Queue",
+        "description": "Approve and execute payments via PayPal API.",
+        "col_affiliate": "Affiliate",
+        "col_amount": "Amount",
+        "col_paypal": "PayPal Email",
+        "col_risk": "Risk Score",
+        "high_risk": "Manual Review Required",
+        "btn_approve": "Approve & Pay",
+        "success_payout": "Payout executed successfully"
+      },
+      "rule_engine": {
+        "title": "Commission Rule Engine",
+        "description": "Configure global commission strategies (No-Deploy).",
+        "form_version": "Version Name",
+        "form_percent": "Percentage (%)",
+        "form_retention": "Retention Days",
+        "btn_publish": "Publish New Strategy",
+        "history": "Strategy History",
+        "success_publish": "New rule published successfully"
+      }
+    }
   }
 }

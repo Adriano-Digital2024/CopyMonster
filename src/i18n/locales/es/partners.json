@@ -21,5 +21,30 @@
       "withdraw": "Solicitar Retiro",
       "paypal_hint": "Los pagos se envían a su correo electrónico de PayPal."
     }
+  },
+  "admin": {
+    "partners": {
+      "payout_queue": {
+        "title": "Fila de Aprobación de Retiros",
+        "description": "Aprobar y ejecutar pagos a través de la API de PayPal.",
+        "col_affiliate": "Afiliado",
+        "col_amount": "Monto",
+        "col_paypal": "Correo PayPal",
+        "col_risk": "Score de Riesgo",
+        "high_risk": "Revisión Manual Necesaria",
+        "btn_approve": "Aprobar y Pagar",
+        "success_payout": "Pago ejecutado con éxito"
+      },
+      "rule_engine": {
+        "title": "Motor de Reglas de Comisión",
+        "description": "Configure estrategias globales de comisión (Sin Deploy).",
+        "form_version": "Nombre de la Versión",
+        "form_percent": "Porcentaje (%)",
+        "form_retention": "Días de Retención",
+        "btn_publish": "Publicar Nueva Estrategia",
+        "history": "Historial de Estrategias",
+        "success_publish": "Nueva regla publicada con éxito"
+      }
+    }
   }
 }
