@@ -20,6 +20,17 @@
     "wallet": {
       "withdraw": "Request Payout",
       "paypal_hint": "Payouts are sent to your PayPal email."
+    },
+    "registration": {
+      "title": "Become a CopyMonster Partner",
+      "subtitle": "Earn recurring commissions by referring the best AI Copywriting tool on the market.",
+      "why_join": "Why become a partner?",
+      "benefit_comm": "<strong>{{percent}}% Commission:</strong> Earn on every payment made by your referrals.",
+      "benefit_payout": "<strong>Fast Payouts:</strong> Receive via PayPal as soon as you reach the minimum amount.",
+      "benefit_dash": "<strong>Transparent Dashboard:</strong> Track every sale and your balance release date.",
+      "cta": "Join Now",
+      "pending_title": "Account Under Review",
+      "pending_desc": "Your registration is being reviewed. You will be able to generate commissions as soon as the administrator approves your profile in the management panel."
     }
   },
   "admin": {

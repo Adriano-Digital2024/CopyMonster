@@ -20,6 +20,17 @@
     "wallet": {
       "withdraw": "Solicitar Saque",
       "paypal_hint": "Os pagamentos são enviados para o seu e-mail do PayPal."
+    },
+    "registration": {
+      "title": "Seja um Parceiro CopyMonster",
+      "subtitle": "Ganhe comissões recorrentes indicando a melhor ferramenta de IA para Copywriting do mercado.",
+      "why_join": "Por que se tornar um parceiro?",
+      "benefit_comm": "<strong>{{percent}}% de Comissão:</strong> Ganhe sobre cada pagamento realizado pelos seus indicados.",
+      "benefit_payout": "<strong>Saques Rápidos:</strong> Receba via PayPal assim que atingir o valor mínimo.",
+      "benefit_dash": "<strong>Dashboard Transparente:</strong> Acompanhe cada venda e a data de liberação do seu saldo.",
+      "cta": "Quero me cadastrar agora",
+      "pending_title": "Conta em Análise",
+      "pending_desc": "Seu cadastro está sendo revisado. Você poderá gerar comissões assim que o administrador aprovar seu perfil no painel de gestão."
     }
   },
   "admin": {

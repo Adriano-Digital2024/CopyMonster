@@ -20,6 +20,17 @@
     "wallet": {
       "withdraw": "Solicitar Retiro",
       "paypal_hint": "Los pagos se envían a su correo electrónico de PayPal."
+    },
+    "registration": {
+      "title": "Conviértase en Partner de CopyMonster",
+      "subtitle": "Gane comisiones recurrentes recomendando la mejor herramienta de IA para Copywriting del mercado.",
+      "why_join": "¿Por qué convertirse en partner?",
+      "benefit_comm": "<strong>{{percent}}% de Comisión:</strong> Gane por cada pago realizado por sus referidos.",
+      "benefit_payout": "<strong>Retiros Rápidos:</strong> Reciba a través de PayPal tan pronto como alcance el monto mínimo.",
+      "benefit_dash": "<strong>Dashboard Transparente:</strong> Realice un seguimiento de cada venta y la fecha de liberación de su saldo.",
+      "cta": "Unirse Ahora",
+      "pending_title": "Cuenta en Revisión",
+      "pending_desc": "Su registro está siendo revisado. Podrá generar comisiones tan pronto como el administrador apruebe su perfil en el panel de gestión."
     }
   },
   "admin": {
@@ -42,7 +53,7 @@
         "form_percent": "Porcentaje (%)",
         "form_retention": "Días de Retención",
         "btn_publish": "Publicar Nueva Estrategia",
-        "history": "Historial de Estrategias",
+        "history": "Historial de Estratégias",
         "success_publish": "Nueva regla publicada con éxito"
       }
     }
