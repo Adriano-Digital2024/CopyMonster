@@ -1,26 +1,26 @@
 {
+  "dashboard": {
+    "partners": {
+      "title": "Partners Program",
+      "kyc_alert": "Your account is pending verification. Commissions will be tracked once your KYC is approved.",
+      "stats": {
+        "holding": "In Holding",
+        "available": "Available Balance",
+        "paid": "Total Paid Out"
+      },
+      "transparency": {
+        "title": "Transparency Center",
+        "description": "Real-time roadmap for your commissions.",
+        "col_date": "Date",
+        "col_amount": "Amount",
+        "col_status": "Status",
+        "col_release": "Release Date",
+        "days_left": "{{days}} days left",
+        "ready": "Ready to Withdraw"
+      }
+    }
+  },
   "partners": {
-    "title": "Partners Program",
-    "kyc_alert": "Your account is pending verification. Commissions will be tracked once your KYC is approved.",
-    "stats": {
-      "holding": "In Holding",
-      "available": "Available Balance",
-      "paid": "Total Paid Out"
-    },
-    "transparency": {
-      "title": "Transparency Center",
-      "description": "Real-time roadmap for your commissions.",
-      "col_date": "Date",
-      "col_amount": "Amount",
-      "col_status": "Status",
-      "col_release": "Release Date",
-      "days_left": "{{days}} days left",
-      "ready": "Ready to Withdraw"
-    },
-    "wallet": {
-      "withdraw": "Request Payout",
-      "paypal_hint": "Payouts are sent to your PayPal email."
-    },
     "registration": {
       "title": "Become a CopyMonster Partner",
       "subtitle": "Earn recurring commissions by referring the best AI Copywriting tool on the market.",
@@ -41,6 +41,35 @@
         "state": "State",
         "terms_label": "I agree to the <a href='/terms-of-service' target='_blank' class='underline'>Partnership Terms</a> and <a href='/privacy-policy' target='_blank' class='underline'>Privacy Policy</a>.",
         "submit": "Submit and Accept Terms"
+      }
+    },
+    "wallet": {
+      "withdraw": "Request Payout",
+      "paypal_hint": "Payouts are sent to your PayPal email."
+    }
+  },
+  "admin": {
+    "partners": {
+      "payout_queue": {
+        "title": "Payout Approval Queue",
+        "description": "Approve and execute payments via PayPal API.",
+        "col_affiliate": "Affiliate",
+        "col_amount": "Amount",
+        "col_paypal": "PayPal Email",
+        "col_risk": "Risk Score",
+        "high_risk": "Manual Review Required",
+        "btn_approve": "Approve & Pay",
+        "success_payout": "Payout executed successfully"
+      },
+      "rule_engine": {
+        "title": "Commission Rule Engine",
+        "description": "Configure global commission strategies (No-Deploy).",
+        "form_version": "Version Name",
+        "form_percent": "Percentage (%)",
+        "form_retention": "Retention Days",
+        "btn_publish": "Publish New Strategy",
+        "history": "Strategy History",
+        "success_publish": "New rule published successfully"
       }
     }
   }

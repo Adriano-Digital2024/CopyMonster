@@ -1,26 +1,26 @@
 {
+  "dashboard": {
+    "partners": {
+      "title": "Programa de Partners",
+      "kyc_alert": "Su cuenta está pendiente de verificación. Las comisiones se rastrearán una vez que se apruebe su KYC.",
+      "stats": {
+        "holding": "En Retención",
+        "available": "Saldo Disponible",
+        "paid": "Total Pagado"
+      },
+      "transparency": {
+        "title": "Centro de Transparencia",
+        "description": "Seguimiento en tiempo real de sus comisiones.",
+        "col_date": "Fecha",
+        "col_amount": "Monto",
+        "col_status": "Estado",
+        "col_release": "Fecha de Liberación",
+        "days_left": "Faltan {{days}} días",
+        "ready": "Listo para Retiro"
+      }
+    }
+  },
   "partners": {
-    "title": "Programa de Partners",
-    "kyc_alert": "Su cuenta está pendiente de verificación. Las comisiones se rastrearán una vez que se apruebe su KYC.",
-    "stats": {
-      "holding": "En Retención",
-      "available": "Saldo Disponible",
-      "paid": "Total Pagado"
-    },
-    "transparency": {
-      "title": "Centro de Transparencia",
-      "description": "Seguimiento en tiempo real de sus comisiones.",
-      "col_date": "Fecha",
-      "col_amount": "Monto",
-      "col_status": "Estado",
-      "col_release": "Fecha de Liberación",
-      "days_left": "Faltan {{days}} días",
-      "ready": "Listo para Retiro"
-    },
-    "wallet": {
-      "withdraw": "Solicitar Retiro",
-      "paypal_hint": "Los pagos se envían a su correo electrónico de PayPal."
-    },
     "registration": {
       "title": "Conviértase en Partner de CopyMonster",
       "subtitle": "Gane comisiones recurrentes recomendando la mejor herramienta de IA para Copywriting del mercado.",
@@ -39,8 +39,37 @@
         "paypal_email": "E-mail de Cobro PayPal",
         "city": "Ciudad",
         "state": "Estado",
-        "terms_label": "Acepto los <a href='/terms-of-service' target='_blank' class='underline'>Términos de Asociación</a> y la <a href='/privacy-policy' target='_blank' class='underline'>Política de Privacidad</a>.",
+        "terms_label": "Acepto los <a href='/terms-of-service' target='_blank' class='underline'>Términos de Asociación</a> y la <a href='/privacy-policy' target='_blank' class='underline'>Política de Privacidade</a>.",
         "submit": "Registrar y Aceptar Términos"
+      }
+    },
+    "wallet": {
+      "withdraw": "Solicitar Retiro",
+      "paypal_hint": "Los pagos se envían a su correo electrónico de PayPal."
+    }
+  },
+  "admin": {
+    "partners": {
+      "payout_queue": {
+        "title": "Fila de Aprobación de Retiros",
+        "description": "Aprobar y ejecutar pagos a través de la API de PayPal.",
+        "col_affiliate": "Afiliado",
+        "col_amount": "Monto",
+        "col_paypal": "Correo PayPal",
+        "col_risk": "Score de Riesgo",
+        "high_risk": "Revisión Manual Necesaria",
+        "btn_approve": "Aprobar y Pagar",
+        "success_payout": "Pago ejecutado con éxito"
+      },
+      "rule_engine": {
+        "title": "Motor de Reglas de Comisión",
+        "description": "Configure estrategias globales de comisión (Sin Deploy).",
+        "form_version": "Nombre de la Versión",
+        "form_percent": "Porcentaje (%)",
+        "form_retention": "Días de Retención",
+        "btn_publish": "Publicar Nueva Estrategia",
+        "history": "Historial de Estrategias",
+        "success_publish": "Nueva regla publicada con éxito"
       }
     }
   }
