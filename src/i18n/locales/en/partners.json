@@ -30,7 +30,17 @@
       "benefit_dash": "<strong>Transparent Dashboard:</strong> Track every sale and your balance release date.",
       "cta": "Join Now",
       "pending_title": "Account Under Review",
-      "pending_desc": "Your registration is being reviewed. You will be able to generate commissions as soon as the administrator approves your profile in the management panel."
+      "pending_desc": "Your registration is being reviewed. You will be able to generate commissions as soon as the administrator approves your profile in the management panel.",
+      "form": {
+        "title": "Fiscal Information",
+        "description": "Provide your details to receive payments.",
+        "full_name": "Full Name",
+        "cpf_cnpj": "CPF or CNPJ",
+        "paypal_email": "PayPal Email",
+        "city": "City",
+        "state": "State",
+        "submit": "Complete Registration"
+      }
     }
   },
   "admin": {

@@ -10,10 +10,15 @@ import { Wallet, Timer, CheckCircle, ShieldAlert, Loader2, UserPlus, Copy } from
 import { format, differenceInDays, parseISO } from "date-fns";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 const PartnersDashboard = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [isRegModalOpen, setIsRegModalOpen] = useState(false);
 
   // 1. Perfil e KYC
   const { data: profile, isLoading: isLoadingProfile } = useQuery({
@@ -25,21 +30,27 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 2. Criar Perfil (Cadastrar-se)
+  // 2. Criar Perfil (Cadastrar-se com dados fiscais)
   const createProfileMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (formData: any) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
       const { error } = await supabase.schema('affiliate').from("profiles").insert({
         user_id: user.id,
+        full_name: formData.full_name,
+        cpf_cnpj: formData.cpf_cnpj,
+        paypal_email: formData.paypal_email,
+        address_city: formData.city,
+        address_state: formData.state,
         kyc_status: "PENDING",
         active: true
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Solicitação enviada!");
+      toast.success("Cadastro realizado com sucesso! Aguarde a aprovação.");
+      setIsRegModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["partner-profile"] });
     },
     onError: (err: any) => toast.error(`Erro ao se cadastrar: ${err.message}`),
@@ -79,6 +90,13 @@ const PartnersDashboard = () => {
     },
   });
 
+  const handleRegistration = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    createProfileMutation.mutate(data);
+  };
+
   const copyReferralLink = () => {
     const link = `${window.location.origin}/chat?ref=${profile?.id}`;
     navigator.clipboard.writeText(link);
@@ -87,6 +105,7 @@ const PartnersDashboard = () => {
 
   if (isLoadingProfile) return <DashboardLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div></DashboardLayout>;
 
+  // TELA DE CADASTRO
   if (!profile) {
     return (
       <DashboardLayout>
@@ -97,49 +116,71 @@ const PartnersDashboard = () => {
           </div>
           
           <Card className="border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle>{t("partners.registration.why_join")}</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>{t("partners.registration.why_join")}</CardTitle></CardHeader>
             <CardContent className="grid gap-4 text-left">
-              <div className="flex gap-3">
-                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                <p dangerouslySetInnerHTML={{ __html: t("partners.registration.benefit_comm", { percent: rule?.percentage || 30 }) }} />
-              </div>
-              <div className="flex gap-3">
-                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                <p dangerouslySetInnerHTML={{ __html: t("partners.registration.benefit_payout") }} />
-              </div>
-              <div className="flex gap-3">
-                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                <p dangerouslySetInnerHTML={{ __html: t("partners.registration.benefit_dash") }} />
-              </div>
+              <div className="flex gap-3"><CheckCircle className="h-6 w-6 text-primary flex-shrink-0" /><p dangerouslySetInnerHTML={{ __html: t("partners.registration.benefit_comm", { percent: rule?.percentage || 30 }) }} /></div>
+              <div className="flex gap-3"><CheckCircle className="h-6 w-6 text-primary flex-shrink-0" /><p dangerouslySetInnerHTML={{ __html: t("partners.registration.benefit_payout") }} /></div>
+              <div className="flex gap-3"><CheckCircle className="h-6 w-6 text-primary flex-shrink-0" /><p dangerouslySetInnerHTML={{ __html: t("partners.registration.benefit_dash") }} /></div>
             </CardContent>
           </Card>
 
-          <Button size="lg" className="px-12 h-14 text-lg" onClick={() => createProfileMutation.mutate()} disabled={createProfileMutation.isPending}>
-            {createProfileMutation.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <UserPlus className="mr-2 h-5 w-5" />}
-            {t("partners.registration.cta")}
-          </Button>
+          <Dialog open={isRegModalOpen} onOpenChange={setIsRegModalOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="px-12 h-14 text-lg"><UserPlus className="mr-2 h-5 w-5" />{t("partners.registration.cta")}</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <form onSubmit={handleRegistration}>
+                <DialogHeader>
+                  <DialogTitle>{t("partners.registration.form.title")}</DialogTitle>
+                  <DialogDescription>{t("partners.registration.form.description")}</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="full_name">{t("partners.registration.form.full_name")}</Label>
+                    <Input id="full_name" name="full_name" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="cpf_cnpj">{t("partners.registration.form.cpf_cnpj")}</Label>
+                    <Input id="cpf_cnpj" name="cpf_cnpj" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="paypal_email">{t("partners.registration.form.paypal_email")}</Label>
+                    <Input id="paypal_email" name="paypal_email" type="email" required />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="city">{t("partners.registration.form.city")}</Label>
+                      <Input id="city" name="city" required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="state">{t("partners.registration.form.state")}</Label>
+                      <Input id="state" name="state" required />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" className="w-full" disabled={createProfileMutation.isPending}>
+                    {createProfileMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {t("partners.registration.form.submit")}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </DashboardLayout>
     );
   }
 
+  // TELA DO DASHBOARD REAL
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1>
-            <p className="text-muted-foreground">ID: {profile.id}</p>
-          </div>
+          <div><h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1><p className="text-muted-foreground">ID: {profile.id}</p></div>
           <div className="flex gap-2 w-full md:w-auto">
-            <Button variant="outline" className="flex-1 md:flex-none" onClick={copyReferralLink}>
-              <Copy className="mr-2 h-4 w-4" /> Link
-            </Button>
-            <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>
-              {t("partners.wallet.withdraw")}
-            </Button>
+            <Button variant="outline" className="flex-1 md:flex-none" onClick={copyReferralLink}><Copy className="mr-2 h-4 w-4" /> Link</Button>
+            <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>{t("partners.wallet.withdraw")}</Button>
           </div>
         </div>
 
@@ -152,32 +193,14 @@ const PartnersDashboard = () => {
         )}
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.holding")}</CardTitle>
-              <Timer className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${commissions?.filter(c => c.status === 'HOLDING').reduce((acc, c) => acc + Number(c.commission_amount), 0).toFixed(2)}</div>
-            </CardContent>
+          <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.holding")}</CardTitle><Timer className="h-4 w-4 text-muted-foreground" /></CardHeader>
+            <CardContent><div className="text-2xl font-bold">${commissions?.filter(c => c.status === 'HOLDING').reduce((acc, c) => acc + Number(c.commission_amount), 0).toFixed(2)}</div></CardContent>
           </Card>
-          <Card className="border-primary/50">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.available")}</CardTitle>
-              <Wallet className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">${(financialData?.available || 0).toFixed(2)}</div>
-            </CardContent>
+          <Card className="border-primary/50"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.available")}</CardTitle><Wallet className="h-4 w-4 text-primary" /></CardHeader>
+            <CardContent><div className="text-2xl font-bold text-primary">${(financialData?.available || 0).toFixed(2)}</div></CardContent>
           </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.paid")}</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-muted-foreground">${(financialData?.paid || 0).toFixed(2)}</div>
-            </CardContent>
+          <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.paid")}</CardTitle><CheckCircle className="h-4 w-4 text-muted-foreground" /></CardHeader>
+            <CardContent><div className="text-2xl font-bold text-muted-foreground">${(financialData?.paid || 0).toFixed(2)}</div></CardContent>
           </Card>
         </div>
 

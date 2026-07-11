@@ -30,7 +30,17 @@
       "benefit_dash": "<strong>Dashboard Transparente:</strong> Realice un seguimiento de cada venta y la fecha de liberación de su saldo.",
       "cta": "Unirse Ahora",
       "pending_title": "Cuenta en Revisión",
-      "pending_desc": "Su registro está siendo revisado. Podrá generar comisiones tan pronto como el administrador apruebe su perfil en el panel de gestión."
+      "pending_desc": "Su registro está siendo revisado. Podrá generar comisiones tan pronto como el administrador apruebe su perfil en el panel de gestión.",
+      "form": {
+        "title": "Información Fiscal",
+        "description": "Proporcione sus datos para recibir pagos.",
+        "full_name": "Nombre Completo",
+        "cpf_cnpj": "CPF o CNPJ",
+        "paypal_email": "Correo de PayPal",
+        "city": "Ciudad",
+        "state": "Estado",
+        "submit": "Completar Registro"
+      }
     }
   },
   "admin": {

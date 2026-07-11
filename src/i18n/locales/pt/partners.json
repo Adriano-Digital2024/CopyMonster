@@ -30,7 +30,17 @@
       "benefit_dash": "<strong>Dashboard Transparente:</strong> Acompanhe cada venda e a data de liberação do seu saldo.",
       "cta": "Quero me cadastrar agora",
       "pending_title": "Conta em Análise",
-      "pending_desc": "Seu cadastro está sendo revisado. Você poderá gerar comissões assim que o administrador aprovar seu perfil no painel de gestão."
+      "pending_desc": "Seu cadastro está sendo revisado. Você poderá gerar comissões assim que o administrador aprovar seu perfil no painel de gestão.",
+      "form": {
+        "title": "Informações Fiscais",
+        "description": "Forneça seus dados para recebimento de pagamentos.",
+        "full_name": "Nome Completo",
+        "cpf_cnpj": "CPF ou CNPJ",
+        "paypal_email": "E-mail do PayPal",
+        "city": "Cidade",
+        "state": "Estado",
+        "submit": "Concluir Cadastro"
+      }
     }
   },
   "admin": {
