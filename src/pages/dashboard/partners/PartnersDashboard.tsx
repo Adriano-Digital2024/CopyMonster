@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Wallet, Timer, CheckCircle, ShieldAlert, Loader2 } from "lucide-react";
+import { Wallet, Timer, CheckCircle, ShieldAlert, Loader2, UserPlus, Link as LinkIcon, Copy } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ const PartnersDashboard = () => {
   const queryClient = useQueryClient();
 
   // 1. Perfil e KYC
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ["partner-profile"],
     queryFn: async () => {
       const { data, error } = await supabase.from("affiliate.profiles").select("*").maybeSingle();
@@ -25,7 +25,27 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 2. Regra Atual (Saque Mínimo)
+  // 2. Criar Perfil (Cadastrar-se)
+  const createProfileMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const { error } = await supabase.from("affiliate.profiles").insert({
+        user_id: user.id,
+        kyc_status: "PENDING",
+        active: true
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Solicitação de parceria enviada! Aguarde a aprovação administrativa.");
+      queryClient.invalidateQueries({ queryKey: ["partner-profile"] });
+    },
+    onError: (err: any) => toast.error(`Erro ao se cadastrar: ${err.message}`),
+  });
+
+  // 3. Regra Atual
   const { data: rule } = useQuery({
     queryKey: ["current-rule"],
     queryFn: async () => {
@@ -35,9 +55,10 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 3. Saldo Real via Ledger
+  // 4. Saldo Real
   const { data: financialData } = useQuery({
     queryKey: ["partner-financials"],
+    enabled: !!profile,
     queryFn: async () => {
       const { data, error } = await supabase.from("finance.ledger_entries").select("amount, entry_type, reference_type");
       if (error) throw error;
@@ -47,9 +68,10 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 4. Todas as Comissões (Transparência)
+  // 5. Comissões
   const { data: commissions } = useQuery({
     queryKey: ["partner-commissions"],
+    enabled: !!profile,
     queryFn: async () => {
       const { data, error } = await supabase.from("affiliate.commissions").select("*").order("created_at", { ascending: false });
       if (error) throw error;
@@ -57,47 +79,79 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 5. Solicitação de Saque
-  const payoutMutation = useMutation({
-    mutationFn: async () => {
-      if (!profile?.paypal_email) throw new Error("PayPal email not configured");
-      const { error } = await supabase.from("finance.payout_requests").insert({
-        affiliate_id: profile.id,
-        amount: financialData?.available || 0,
-        paypal_email_snapshot: profile.paypal_email,
-        status: "REQUESTED"
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Solicitação de saque enviada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["partner-financials"] });
-    },
-    onError: (err: any) => toast.error(err.message),
-  });
+  const copyReferralLink = () => {
+    const link = `${window.location.origin}/chat?ref=${profile?.id}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Link de indicação copiado!");
+  };
 
-  const canWithdraw = (financialData?.available || 0) >= (rule?.min_payout_amount || 100) && profile?.kyc_status === "APPROVED";
+  if (isLoadingProfile) return <DashboardLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div></DashboardLayout>;
 
+  // TELA DE CADASTRO (Se não for parceiro ainda)
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto text-center space-y-8 py-12">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-extrabold tracking-tight">Seja um Parceiro CopyMonster</h1>
+            <p className="text-xl text-muted-foreground">Ganhe comissões recorrentes indicando a melhor ferramenta de IA para Copywriting do mercado.</p>
+          </div>
+          
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle>Por que se tornar um parceiro?</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 text-left">
+              <div className="flex gap-3">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                <p><strong>{rule?.percentage}% de Comissão:</strong> Ganhe sobre cada pagamento realizado pelos seus indicados.</p>
+              </div>
+              <div className="flex gap-3">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                <p><strong>Saques Rápidos:</strong> Receba via PayPal assim que atingir o valor mínimo.</p>
+              </div>
+              <div className="flex gap-3">
+                <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+                <p><strong>Dashboard Transparente:</strong> Acompanhe cada venda e a data de liberação do seu saldo.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button size="lg" className="px-12 h-14 text-lg" onClick={() => createProfileMutation.mutate()} disabled={createProfileMutation.isPending}>
+            {createProfileMutation.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <UserPlus className="mr-2 h-5 w-5" />}
+            Quero me cadastrar agora
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // TELA DO DASHBOARD REAL (Se já for parceiro)
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1>
-          <Button 
-            onClick={() => payoutMutation.mutate()} 
-            disabled={!canWithdraw || payoutMutation.isPending}
-            className="w-full md:w-auto"
-          >
-            {payoutMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t("dashboard.partners.wallet.withdraw")} (Min ${Number(rule?.min_payout_amount || 100).toFixed(2)})
-          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1>
+            <p className="text-muted-foreground">ID do Parceiro: {profile.id}</p>
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <Button variant="outline" className="flex-1 md:flex-none" onClick={copyReferralLink}>
+              <Copy className="mr-2 h-4 w-4" /> Link de Indicação
+            </Button>
+            <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>
+              Solicitar Saque
+            </Button>
+          </div>
         </div>
 
-        {(!profile || profile.kyc_status !== "APPROVED") && (
-          <Alert variant="destructive">
+        {profile.kyc_status !== "APPROVED" && (
+          <Alert variant="destructive" className="bg-destructive/10">
             <ShieldAlert className="h-4 w-4" />
-            <AlertTitle>KYC Required</AlertTitle>
-            <AlertDescription>{t("dashboard.partners.kyc_alert")}</AlertDescription>
+            <AlertTitle>Conta em Análise</AlertTitle>
+            <AlertDescription>
+              Seu cadastro está sendo revisado. Você poderá gerar comissões assim que o administrador aprovar seu perfil no painel de gestão.
+            </AlertDescription>
           </Alert>
         )}
 
@@ -132,20 +186,10 @@ const PartnersDashboard = () => {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>{t("dashboard.partners.transparency.title")}</CardTitle>
-            <p className="text-sm text-muted-foreground">{t("dashboard.partners.transparency.description")}</p>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("dashboard.partners.transparency.title")}</CardTitle><p className="text-sm text-muted-foreground">{t("dashboard.partners.transparency.description")}</p></CardHeader>
           <CardContent>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("dashboard.partners.transparency.col_date")}</TableHead>
-                  <TableHead>{t("dashboard.partners.transparency.col_amount")}</TableHead>
-                  <TableHead>{t("dashboard.partners.transparency.col_status")}</TableHead>
-                  <TableHead className="w-[200px]">{t("dashboard.partners.transparency.col_release")}</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHeader><TableRow><TableHead>{t("dashboard.partners.transparency.col_date")}</TableHead><TableHead>{t("dashboard.partners.transparency.col_amount")}</TableHead><TableHead>{t("dashboard.partners.transparency.col_status")}</TableHead><TableHead className="w-[200px] text-right">{t("dashboard.partners.transparency.col_release")}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {commissions?.map((commission) => {
                   const daysLeft = Math.max(0, differenceInDays(parseISO(commission.eligible_at), new Date()));
@@ -154,27 +198,11 @@ const PartnersDashboard = () => {
                     <TableRow key={commission.id}>
                       <TableCell>{format(parseISO(commission.created_at), "dd/MM/yyyy")}</TableCell>
                       <TableCell className="font-medium">${Number(commission.commission_amount).toFixed(2)}</TableCell>
-                      <TableCell>
-                        {commission.status === "HOLDING" ? (
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs text-muted-foreground">{t("dashboard.partners.transparency.days_left", { days: daysLeft })}</span>
-                            <Progress value={progress} className="h-1 w-24" />
-                          </div>
-                        ) : (
-                          <span className="text-primary font-semibold">{t("dashboard.partners.transparency.ready")}</span>
-                        )}
-                      </TableCell>
-                      <TableCell>{format(parseISO(commission.eligible_at), "dd/MM/yyyy")}</TableCell>
+                      <TableCell>{commission.status === "HOLDING" ? (<div className="flex flex-col gap-1"><span className="text-xs text-muted-foreground">{t("dashboard.partners.transparency.days_left", { days: daysLeft })}</span><Progress value={progress} className="h-1 w-24" /></div>) : (<span className="text-primary font-semibold">{t("dashboard.partners.transparency.ready")}</span>)}</TableCell>
+                      <TableCell className="text-right">{format(parseISO(commission.eligible_at), "dd/MM/yyyy")}</TableCell>
                     </TableRow>
                   );
                 })}
-                {(!commissions || commissions.length === 0) && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                      No transactions found.
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </CardContent>
