@@ -32,39 +32,15 @@
       "pending_title": "Conta em Análise",
       "pending_desc": "Seu cadastro está sendo revisado. Você poderá gerar comissões assim que o administrador aprovar seu perfil no painel de gestão.",
       "form": {
-        "title": "Informações Fiscais",
-        "description": "Forneça seus dados para recebimento de pagamentos.",
+        "title": "Cadastro de Parceiro",
+        "description": "Forneça seus dados para entrar na nossa rede global.",
         "full_name": "Nome Completo",
         "cpf_cnpj": "CPF ou CNPJ",
-        "paypal_email": "E-mail do PayPal",
+        "paypal_email": "E-mail de Recebimento PayPal",
         "city": "Cidade",
         "state": "Estado",
-        "submit": "Concluir Cadastro"
-      }
-    }
-  },
-  "admin": {
-    "partners": {
-      "payout_queue": {
-        "title": "Fila de Aprovação de Saques",
-        "description": "Aprove e execute pagamentos via API do PayPal.",
-        "col_affiliate": "Afiliado",
-        "col_amount": "Valor",
-        "col_paypal": "E-mail PayPal",
-        "col_risk": "Score de Risco",
-        "high_risk": "Revisão Manual Necessária",
-        "btn_approve": "Aprovar e Pagar",
-        "success_payout": "Pagamento executado com sucesso"
-      },
-      "rule_engine": {
-        "title": "Motor de Regras de Comissão",
-        "description": "Configure estratégias globais de comissão (Sem Deploy).",
-        "form_version": "Nome da Versão",
-        "form_percent": "Porcentagem (%)",
-        "form_retention": "Dias de Retenção",
-        "btn_publish": "Publicar Nova Estratégia",
-        "history": "Histórico de Estratégias",
-        "success_publish": "Nova regra publicada com sucesso"
+        "terms_label": "Eu aceito os <a href='/terms-of-service' target='_blank' class='underline'>Termos de Parceria</a> e a <a href='/privacy-policy' target='_blank' class='underline'>Política de Privacidade</a>.",
+        "submit": "Cadastrar e Aceitar Termos"
       }
     }
   }

@@ -13,12 +13,16 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const PartnersDashboard = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // 1. Perfil e KYC
   const { data: profile, isLoading: isLoadingProfile } = useQuery({
@@ -30,11 +34,13 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 2. Criar Perfil (Cadastrar-se com dados fiscais)
+  // 2. Criar Perfil (Blindado Juridicamente)
   const createProfileMutation = useMutation({
     mutationFn: async (formData: any) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      if (!user) throw new Error("Unauthenticated");
+      
+      // Captura IP (Placeholder - Supabase Functions capturam via Header se necessário)
+      const userIp = "capture_at_server"; 
 
       const { error } = await supabase.schema('affiliate').from("profiles").insert({
         user_id: user.id,
@@ -43,17 +49,20 @@ const PartnersDashboard = () => {
         paypal_email: formData.paypal_email,
         address_city: formData.city,
         address_state: formData.state,
+        terms_accepted_at: new Date().toISOString(),
+        terms_ip: userIp,
+        terms_version: "1.0",
         kyc_status: "PENDING",
         active: true
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Cadastro realizado com sucesso! Aguarde a aprovação.");
+      toast.success("Cadastro realizado! Aguarde a aprovação.");
       setIsRegModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["partner-profile"] });
     },
-    onError: (err: any) => toast.error(`Erro ao se cadastrar: ${err.message}`),
+    onError: (err: any) => toast.error(`Erro: ${err.message}`),
   });
 
   // 3. Regra Atual
@@ -92,6 +101,10 @@ const PartnersDashboard = () => {
 
   const handleRegistration = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!acceptedTerms) {
+      toast.error("Você precisa aceitar os termos para continuar.");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
     createProfileMutation.mutate(data);
@@ -105,7 +118,7 @@ const PartnersDashboard = () => {
 
   if (isLoadingProfile) return <DashboardLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div></DashboardLayout>;
 
-  // TELA DE CADASTRO
+  // TELA DE CONVITE
   if (!profile) {
     return (
       <DashboardLayout>
@@ -128,7 +141,7 @@ const PartnersDashboard = () => {
             <DialogTrigger asChild>
               <Button size="lg" className="px-12 h-14 text-lg"><UserPlus className="mr-2 h-5 w-5" />{t("partners.registration.cta")}</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[450px]">
               <form onSubmit={handleRegistration}>
                 <DialogHeader>
                   <DialogTitle>{t("partners.registration.form.title")}</DialogTitle>
@@ -137,15 +150,15 @@ const PartnersDashboard = () => {
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="full_name">{t("partners.registration.form.full_name")}</Label>
-                    <Input id="full_name" name="full_name" required />
+                    <Input id="full_name" name="full_name" defaultValue={user?.user_metadata?.full_name || ""} required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="cpf_cnpj">{t("partners.registration.form.cpf_cnpj")}</Label>
-                    <Input id="cpf_cnpj" name="cpf_cnpj" required />
+                    <Input id="cpf_cnpj" name="cpf_cnpj" required placeholder="000.000.000-00" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="paypal_email">{t("partners.registration.form.paypal_email")}</Label>
-                    <Input id="paypal_email" name="paypal_email" type="email" required />
+                    <Input id="paypal_email" name="paypal_email" type="email" defaultValue={user?.email || ""} required />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -157,9 +170,13 @@ const PartnersDashboard = () => {
                       <Input id="state" name="state" required />
                     </div>
                   </div>
+                  <div className="flex items-start space-x-3 pt-2">
+                    <Checkbox id="terms" checked={acceptedTerms} onCheckedChange={(checked: boolean) => setAcceptedTerms(checked)} />
+                    <Label htmlFor="terms" className="text-xs leading-relaxed cursor-pointer" dangerouslySetInnerHTML={{ __html: t("partners.registration.form.terms_label") }} />
+                  </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" className="w-full" disabled={createProfileMutation.isPending}>
+                  <Button type="submit" className="w-full" disabled={createProfileMutation.isPending || !acceptedTerms}>
                     {createProfileMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t("partners.registration.form.submit")}
                   </Button>
@@ -177,10 +194,12 @@ const PartnersDashboard = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div><h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1><p className="text-muted-foreground">ID: {profile.id}</p></div>
+          <div><h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1><p className="text-muted-foreground text-xs font-mono">ID: {profile.id}</p></div>
           <div className="flex gap-2 w-full md:w-auto">
             <Button variant="outline" className="flex-1 md:flex-none" onClick={copyReferralLink}><Copy className="mr-2 h-4 w-4" /> Link</Button>
-            <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>{t("partners.wallet.withdraw")}</Button>
+            <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>
+              {t("partners.wallet.withdraw")}
+            </Button>
           </div>
         </div>
 

@@ -32,39 +32,15 @@
       "pending_title": "Account Under Review",
       "pending_desc": "Your registration is being reviewed. You will be able to generate commissions as soon as the administrator approves your profile in the management panel.",
       "form": {
-        "title": "Fiscal Information",
-        "description": "Provide your details to receive payments.",
+        "title": "Partner Registration",
+        "description": "Provide your details to join our global network.",
         "full_name": "Full Name",
-        "cpf_cnpj": "CPF or CNPJ",
-        "paypal_email": "PayPal Email",
+        "cpf_cnpj": "CPF or CNPJ (Tax ID)",
+        "paypal_email": "PayPal Payout Email",
         "city": "City",
         "state": "State",
-        "submit": "Complete Registration"
-      }
-    }
-  },
-  "admin": {
-    "partners": {
-      "payout_queue": {
-        "title": "Payout Approval Queue",
-        "description": "Approve and execute payments via PayPal API.",
-        "col_affiliate": "Affiliate",
-        "col_amount": "Amount",
-        "col_paypal": "PayPal Email",
-        "col_risk": "Risk Score",
-        "high_risk": "Manual Review Required",
-        "btn_approve": "Approve & Pay",
-        "success_payout": "Payout executed successfully"
-      },
-      "rule_engine": {
-        "title": "Commission Rule Engine",
-        "description": "Configure global commission strategies (No-Deploy).",
-        "form_version": "Version Name",
-        "form_percent": "Percentage (%)",
-        "form_retention": "Retention Days",
-        "btn_publish": "Publish New Strategy",
-        "history": "Strategy History",
-        "success_publish": "New rule published successfully"
+        "terms_label": "I agree to the <a href='/terms-of-service' target='_blank' class='underline'>Partnership Terms</a> and <a href='/privacy-policy' target='_blank' class='underline'>Privacy Policy</a>.",
+        "submit": "Submit and Accept Terms"
       }
     }
   }
