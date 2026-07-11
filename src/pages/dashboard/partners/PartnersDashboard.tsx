@@ -19,7 +19,7 @@ const PartnersDashboard = () => {
   const { data: profile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ["partner-profile"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("affiliate.profiles").select("*").maybeSingle();
+      const { data, error } = await supabase.schema('affiliate').from("profiles").select("*").maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -31,7 +31,7 @@ const PartnersDashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      const { error } = await supabase.from("affiliate.profiles").insert({
+      const { error } = await supabase.schema('affiliate').from("profiles").insert({
         user_id: user.id,
         kyc_status: "PENDING",
         active: true
@@ -49,7 +49,7 @@ const PartnersDashboard = () => {
   const { data: rule } = useQuery({
     queryKey: ["current-rule"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("affiliate.commission_rules").select("*").eq("is_current", true).single();
+      const { data, error } = await supabase.schema('affiliate').from("commission_rules").select("*").eq("is_current", true).single();
       if (error) throw error;
       return data;
     },
@@ -60,7 +60,7 @@ const PartnersDashboard = () => {
     queryKey: ["partner-financials"],
     enabled: !!profile,
     queryFn: async () => {
-      const { data, error } = await supabase.from("finance.ledger_entries").select("amount, entry_type, reference_type");
+      const { data, error } = await supabase.schema('finance').from("ledger_entries").select("amount, entry_type, reference_type");
       if (error) throw error;
       const available = data.reduce((acc, entry) => entry.entry_type === "CREDIT" ? acc + Number(entry.amount) : acc - Number(entry.amount), 0);
       const paid = data.filter(e => e.entry_type === "DEBIT" && e.reference_type === "PAYOUT").reduce((acc, e) => acc + Number(e.amount), 0);
@@ -73,7 +73,7 @@ const PartnersDashboard = () => {
     queryKey: ["partner-commissions"],
     enabled: !!profile,
     queryFn: async () => {
-      const { data, error } = await supabase.from("affiliate.commissions").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.schema('affiliate').from("commissions").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -87,7 +87,6 @@ const PartnersDashboard = () => {
 
   if (isLoadingProfile) return <DashboardLayout><div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div></DashboardLayout>;
 
-  // TELA DE CADASTRO (Se não for parceiro ainda)
   if (!profile) {
     return (
       <DashboardLayout>
@@ -126,7 +125,6 @@ const PartnersDashboard = () => {
     );
   }
 
-  // TELA DO DASHBOARD REAL (Se já for parceiro)
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -137,7 +135,7 @@ const PartnersDashboard = () => {
           </div>
           <div className="flex gap-2 w-full md:w-auto">
             <Button variant="outline" className="flex-1 md:flex-none" onClick={copyReferralLink}>
-              <Copy className="mr-2 h-4 w-4" /> {t("partners.transparency.title")} Link
+              <Copy className="mr-2 h-4 w-4" /> Link
             </Button>
             <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>
               {t("partners.wallet.withdraw")}

@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, DollarSign } from "lucide-react";
+import { Loader2, DollarSign } from "lucide-react";
 
 const PayoutQueue = () => {
   const { t } = useTranslation();
@@ -15,7 +15,8 @@ const PayoutQueue = () => {
     queryKey: ["admin-payouts"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("finance.payout_requests")
+        .schema('finance')
+        .from("payout_requests")
         .select(`
           *,
           affiliate:affiliate_id (
@@ -33,15 +34,14 @@ const PayoutQueue = () => {
 
   const payoutMutation = useMutation({
     mutationFn: async ({ payoutId, amount, partnerData }: any) => {
-      // 1. Executa o Payout (Via Edge Function)
       const { data, error } = await supabase.functions.invoke("payout-executor", {
         body: { payoutId },
       });
       if (error) throw error;
 
-      // 2. Registra o Snapshot Fiscal e Auditoria
       await supabase
-        .from("affiliate.audit_logs")
+        .schema('affiliate')
+        .from("audit_logs")
         .insert({
           action: 'PAYOUT_APPROVAL',
           reason: 'Aprovação manual administrativa',
@@ -55,26 +55,26 @@ const PayoutQueue = () => {
       return data;
     },
     onSuccess: () => {
-      toast.success("Pagamento aprovado e disparado via PayPal!");
+      toast.success("Pagamento aprovado!");
       queryClient.invalidateQueries({ queryKey: ["admin-payouts"] });
     },
-    onError: (err: any) => toast.error(`Erro no Pagamento: ${err.message}`),
+    onError: (err: any) => toast.error(`Erro: ${err.message}`),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-xl font-semibold">Fila de Aprovação de Saques</h2>
-        <p className="text-sm text-muted-foreground">O dinheiro já está no Fundo PayPal. Clique para enviar ao afiliado.</p>
+        <p className="text-sm text-muted-foreground">Clique para enviar o pagamento ao afiliado.</p>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Afiliado (Dados Fiscais)</TableHead>
+            <TableHead>Afiliado</TableHead>
             <TableHead>Valor</TableHead>
             <TableHead>E-mail PayPal</TableHead>
-            <TableHead>Score de Risco</TableHead>
+            <TableHead>Risco</TableHead>
             <TableHead className="text-right">Ação</TableHead>
           </TableRow>
         </TableHeader>
@@ -84,14 +84,14 @@ const PayoutQueue = () => {
               <TableCell>
                 <div className="flex flex-col">
                   <span className="font-medium">{payout.affiliate?.full_name || "N/A"}</span>
-                  <span className="text-xs text-muted-foreground">{payout.affiliate?.cpf_cnpj || "CPF não informado"}</span>
+                  <span className="text-xs text-muted-foreground">{payout.affiliate?.cpf_cnpj}</span>
                 </div>
               </TableCell>
               <TableCell className="font-bold text-green-600">${Number(payout.amount).toFixed(2)}</TableCell>
               <TableCell>{payout.paypal_email_snapshot}</TableCell>
               <TableCell>
                 <Badge variant={payout.risk_score > 60 ? "destructive" : "outline"}>
-                  {payout.risk_score} {payout.risk_score > 60 ? "- ALTO RISCO" : ""}
+                  {payout.risk_score}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
@@ -105,7 +105,7 @@ const PayoutQueue = () => {
                   })}
                 >
                   {payoutMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <DollarSign className="h-4 w-4 mr-1" />}
-                  Aprovar e Pagar
+                  Pagar
                 </Button>
               </TableCell>
             </TableRow>
@@ -113,7 +113,7 @@ const PayoutQueue = () => {
           {(!payouts || payouts.length === 0) && !isLoading && (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                Nenhuma solicitação de saque pendente.
+                Vazio.
               </TableCell>
             </TableRow>
           )}

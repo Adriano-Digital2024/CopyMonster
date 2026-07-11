@@ -19,7 +19,8 @@ const RuleEngine = () => {
     queryKey: ["admin-commission-rules"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("affiliate.commission_rules")
+        .schema('affiliate')
+        .from("commission_rules")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -31,12 +32,13 @@ const RuleEngine = () => {
     mutationFn: async (values: any) => {
       // Step A: Set current to false
       await supabase
-        .from("affiliate.commission_rules")
+        .schema('affiliate')
+        .from("commission_rules")
         .update({ is_current: false })
         .eq("is_current", true);
       
       // Step B: Insert new rule
-      const { data: newRule, error: ruleError } = await supabase.from("affiliate.commission_rules").insert({
+      const { data: newRule, error: ruleError } = await supabase.schema('affiliate').from("commission_rules").insert({
         version_name: values.version_name,
         percentage: Number(values.percentage),
         retention_days: Number(values.retention_days),
@@ -45,8 +47,8 @@ const RuleEngine = () => {
       
       if (ruleError) throw ruleError;
 
-      // Step C: Auditoria (Regra de Ouro)
-      await supabase.from("affiliate.audit_logs").insert({
+      // Step C: Auditoria
+      await supabase.schema('affiliate').from("audit_logs").insert({
         action: 'RULE_CHANGE',
         reason: `Nova estratégia publicada: ${values.version_name}`,
         metadata: { 
@@ -57,12 +59,12 @@ const RuleEngine = () => {
       });
     },
     onSuccess: () => {
-      toast.success(t("admin.partners.rule_engine.success_publish"));
+      toast.success("Regra publicada!");
       queryClient.invalidateQueries({ queryKey: ["admin-commission-rules"] });
       reset();
     },
     onError: (err: any) => {
-      toast.error(`Error: ${err.message}`);
+      toast.error(`Erro: ${err.message}`);
     }
   });
 
@@ -70,28 +72,28 @@ const RuleEngine = () => {
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>{t("admin.partners.rule_engine.title")}</CardTitle>
-          <p className="text-sm text-muted-foreground">{t("admin.partners.rule_engine.description")}</p>
+          <CardTitle>Motor de Regras</CardTitle>
+          <p className="text-sm text-muted-foreground">Configure as comissões sem precisar de deploy.</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit((v) => publishMutation.mutate(v))} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t("admin.partners.rule_engine.form_version")}</label>
-              <Input {...register("version_name", { required: true })} placeholder="e.g. v2 - 2026 Strategy" />
+              <label className="text-sm font-medium">Nome da Versão</label>
+              <Input {...register("version_name", { required: true })} placeholder="v2 - 2026 Strategy" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t("admin.partners.rule_engine.form_percent")}</label>
+                <label className="text-sm font-medium">Porcentagem (%)</label>
                 <Input type="number" {...register("percentage", { required: true })} placeholder="30" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t("admin.partners.rule_engine.form_retention")}</label>
+                <label className="text-sm font-medium">Retenção (Dias)</label>
                 <Input type="number" {...register("retention_days", { required: true })} placeholder="45" />
               </div>
             </div>
             <Button className="w-full" type="submit" disabled={publishMutation.isPending}>
               {publishMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("admin.partners.rule_engine.btn_publish")}
+              Publicar Nova Estratégia
             </Button>
           </form>
         </CardContent>
@@ -99,15 +101,15 @@ const RuleEngine = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("admin.partners.rule_engine.history")}</CardTitle>
+          <CardTitle>Histórico</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Version</TableHead>
+                <TableHead>Versão</TableHead>
                 <TableHead>%</TableHead>
-                <TableHead>Days</TableHead>
+                <TableHead>Dias</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -119,9 +121,9 @@ const RuleEngine = () => {
                   <TableCell>{rule.retention_days}</TableCell>
                   <TableCell>
                     {rule.is_current ? (
-                      <Badge className="bg-primary">Active</Badge>
+                      <Badge className="bg-primary">Ativo</Badge>
                     ) : (
-                      <Badge variant="secondary">Legacy</Badge>
+                      <Badge variant="secondary">Antigo</Badge>
                     )}
                   </TableCell>
                 </TableRow>

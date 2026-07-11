@@ -16,7 +16,8 @@ const KycApproval = () => {
     queryKey: ["admin-pending-kyc"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("affiliate.profiles")
+        .schema('affiliate')
+        .from("profiles")
         .select("*")
         .eq("kyc_status", "PENDING")
         .eq("active", true);
@@ -28,22 +29,21 @@ const KycApproval = () => {
   // 2. Mutação para Aprovar/Rejeitar
   const kycMutation = useMutation({
     mutationFn: async ({ id, status, reason }: { id: string; status: 'APPROVED' | 'REJECTED'; reason: string }) => {
-      // A. Atualiza o Perfil
       const { error: profileError } = await supabase
-        .from("affiliate.profiles")
+        .schema('affiliate')
+        .from("profiles")
         .update({ kyc_status: status })
         .eq("id", id);
       if (profileError) throw profileError;
 
-      // B. Registra no Log de Auditoria (Regra de Ouro)
-      const { error: auditError } = await supabase
-        .from("affiliate.audit_logs")
+      await supabase
+        .schema('affiliate')
+        .from("audit_logs")
         .insert({
           action: status === 'APPROVED' ? 'KYC_APPROVAL' : 'KYC_REJECTION',
           reason: reason,
           metadata: { profile_id: id }
         });
-      if (auditError) throw auditError;
     },
     onSuccess: (_, variables) => {
       toast.success(`Parceiro ${variables.status === 'APPROVED' ? 'aprovado' : 'rejeitado'} com sucesso!`);
