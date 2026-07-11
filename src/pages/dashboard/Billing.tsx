@@ -66,8 +66,6 @@ export default function Billing() {
         throw new Error(t('dashboard.billing.errors.planNotFound'));
       }
 
-      console.log('Initiating checkout for plan:', plan.id, 'priceId:', plan.priceId);
-      
       // Track Meta Pixel InitiateCheckout event
       trackInitiateCheckout({ content_ids: [plan.id], num_items: 1 });
 
@@ -77,8 +75,6 @@ export default function Billing() {
           planId: plan.id,
         }
       });
-
-      console.log('Edge function response:', { data, functionError });
 
       if (functionError) {
         console.error('Function error:', functionError);
@@ -99,8 +95,12 @@ export default function Billing() {
         throw new Error(t('dashboard.billing.errors.noCheckoutUrl'));
       }
 
-      console.log('Redirecting browser to Stripe checkout URL:', data.url);
-      window.location.href = data.url as string;
+      const checkoutUrl = data.url as string;
+      const checkoutParsed = (() => { try { return new URL(checkoutUrl); } catch { return null; } })();
+      if (!checkoutParsed || checkoutParsed.hostname !== 'checkout.stripe.com' || checkoutParsed.protocol !== 'https:') {
+        throw new Error('URL de checkout inválida');
+      }
+      window.location.href = checkoutUrl;
     } catch (error) {
       console.error('Erro no checkout:', error);
       const errorMessage = error instanceof Error ? error.message : t('dashboard.billing.errors.checkoutErrorDesc');

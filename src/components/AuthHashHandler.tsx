@@ -31,10 +31,12 @@ export function AuthHashHandler() {
     // Error case (expired/used link)
     if (error) {
       const isExpired = errorCode === 'otp_expired';
+      const rawDesc = decodeURIComponent(errorDescription || 'Erro de autenticação');
+      const sanitizedDesc = rawDesc.replace(/<[^>]*>/g, '');
       toast.error(
         isExpired
           ? 'Este link de verificação expirou ou já foi usado. Faça login ou solicite um novo link.'
-          : decodeURIComponent(errorDescription || 'Erro de autenticação'),
+          : sanitizedDesc,
         { duration: 8000 }
       );
       // Clean hash and route to auth page

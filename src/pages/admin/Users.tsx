@@ -94,7 +94,7 @@ const Users = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers((data as any[]) || []);
+      setUsers((data || []) as { id: string; first_name: string | null; email: string | null; subscription_status: string; credits: number; created_at: string; internal_role: string | null }[]);
     } catch (error: any) {
       toast({
         title: t('admin.users.errors.loadError', 'Error loading users'),
@@ -263,7 +263,7 @@ const Users = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ internal_role: newRole } as any)
+        .update({ internal_role: newRole })
         .eq('id', userId);
 
       if (error) throw error;

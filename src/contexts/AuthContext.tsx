@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import type { SubscriptionStatus } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface UserProfile {
@@ -9,7 +10,7 @@ interface UserProfile {
   first_name: string;
   phone: string | null;
   credits: number;
-  subscription_status: 'free' | 'starter' | 'pro' | 'legend';
+  subscription_status: SubscriptionStatus;
   xp: number;
   level: number;
   trial_expires_at: string | null;
@@ -31,7 +32,7 @@ interface AuthContextType {
   logout: () => void;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
-  updateUser: (data: Partial<User>) => void;
+  updateUser: (data: Partial<Pick<UserProfile, 'first_name' | 'phone'>>) => void;
 }
 
 interface SignupData {
@@ -100,16 +101,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
               if (rolesError) throw rolesError;
 
+              const profileData = profile as UserProfile;
               setUser({
-                id: profile.id,
-                email: profile.email,
-                first_name: profile.first_name,
-                phone: profile.phone,
-                credits: profile.credits,
-                subscription_status: profile.subscription_status as 'free' | 'starter' | 'pro' | 'legend',
-                xp: profile.xp,
-                level: profile.level,
-                trial_expires_at: profile.trial_expires_at,
+                ...profileData,
                 isAdmin: roles && roles.length > 0,
               });
               
@@ -167,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
-  const updateUser = (data: Partial<User>) => {
+  const updateUser = (data: Partial<Pick<UserProfile, 'first_name' | 'phone'>>) => {
     if (user) {
       setUser({ ...user, ...data });
     }

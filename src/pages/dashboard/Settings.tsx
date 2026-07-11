@@ -98,6 +98,7 @@ export default function Settings() {
 
     // Listen for OAuth callback messages (popup mode)
     const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
       if (event.data?.type === 'meta-oauth-success') {
         toast({
           title: t('dashboard.settings.integrations.success.connected'),
@@ -131,7 +132,13 @@ export default function Settings() {
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
       const data = await res.json();
-      if (data.url) {
+      const isValidUrl = (url: string): boolean => {
+        try {
+          const parsed = new URL(url);
+          return parsed.protocol === 'https:' && (parsed.hostname === 'www.facebook.com' || parsed.hostname === 'facebook.com');
+        } catch { return false; }
+      };
+      if (data.url && typeof data.url === 'string' && isValidUrl(data.url)) {
         const popup = window.open(data.url, 'meta-oauth', 'width=600,height=700');
         if (!popup || popup.closed) {
           // Popup blocked - redirect full page instead
