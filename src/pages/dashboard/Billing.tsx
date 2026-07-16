@@ -165,20 +165,22 @@ export default function Billing() {
         )}
 
         {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4">
-          <span className={`text-sm ${!isAnnual ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-            {t('pricing.monthly')}
-          </span>
-          <Switch
-            checked={isAnnual}
-            onCheckedChange={setIsAnnual}
-          />
-          <span className={`text-sm ${isAnnual ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-            {t('pricing.annual')}
-            <Badge variant="default" className="ml-2 text-xs bg-green-600">
-              🔥 {t('pricing.savePercent', { percent: '17' })}
-            </Badge>
-          </span>
+        <div className="flex items-center justify-center">
+          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-xl border border-border/50 dark:border-amber-500/30 dark:shadow-[0_0_12px_rgba(251,191,36,0.15)] transition-shadow duration-300">
+            <span className={`text-sm ${!isAnnual ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+              {t('pricing.monthly')}
+            </span>
+            <Switch
+              checked={isAnnual}
+              onCheckedChange={setIsAnnual}
+            />
+            <span className={`text-sm ${isAnnual ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+              {t('pricing.annual')}
+              <Badge variant="default" className="ml-2 text-xs bg-green-600">
+                🔥 {t('pricing.savePercent', { percent: '17' })}
+              </Badge>
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
