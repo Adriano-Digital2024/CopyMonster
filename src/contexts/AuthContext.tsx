@@ -10,7 +10,10 @@ interface UserProfile {
   first_name: string;
   phone: string | null;
   credits: number;
-  subscription_status: SubscriptionStatus;
+  subscription_status: 'free' | 'starter' | 'pro' | 'legend';
+  billing_interval: 'month' | 'year';
+  stripe_subscription_id: string | null;
+  current_period_end: string | null;
   xp: number;
   level: number;
   trial_expires_at: string | null;

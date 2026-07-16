@@ -147,9 +147,9 @@ export default function Billing() {
                 </span>
               </div>
             </div>
-            {user?.subscription_status !== 'free' && (
+            {user?.subscription_status !== 'free' && user?.current_period_end && (
               <div className="text-sm text-muted-foreground">
-                {t('dashboard.billing.renewsOn')}: 01/11/2025
+                {t('dashboard.billing.renewsOn')}: {new Date(user.current_period_end).toLocaleDateString()}
               </div>
             )}
           </div>
