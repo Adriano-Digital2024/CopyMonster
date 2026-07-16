@@ -44,6 +44,7 @@ interface SignupData {
   email: string;
   password: string;
   phone: string;
+  termsAcceptedAt: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -136,15 +137,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (data: SignupData) => {
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { first_name: data.firstName, phone: data.phone },
+        data: { first_name: data.firstName, phone: data.phone, terms_accepted_at: data.termsAcceptedAt },
       },
     });
     if (error) throw error;
+
+    if (authData?.user) {
+      await supabase
+        .from('profiles')
+        .update({ terms_accepted_at: data.termsAcceptedAt })
+        .eq('id', authData.user.id);
+    }
   };
 
   const logout = async () => {

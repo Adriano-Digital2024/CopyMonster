@@ -39,7 +39,7 @@
         "paypal_email": "PayPal Payout Email",
         "city": "City",
         "state": "State",
-        "terms_label": "I agree to the <a href='/terms-of-service' target='_blank' class='underline'>Partnership Terms</a> and <a href='/privacy-policy' target='_blank' class='underline'>Privacy Policy</a>.",
+        "terms_label": "I agree to the <a href='https://copymonster.me/terms/' target='_blank' class='underline'>Partnership Terms</a> and <a href='https://copymonster.me/privacy/' target='_blank' class='underline'>Privacy Policy</a>.",
         "submit": "Submit and Accept Terms"
       }
     },

@@ -39,7 +39,7 @@
         "paypal_email": "E-mail de Cobro PayPal",
         "city": "Ciudad",
         "state": "Estado",
-        "terms_label": "Acepto los <a href='/terms-of-service' target='_blank' class='underline'>Términos de Asociación</a> y la <a href='/privacy-policy' target='_blank' class='underline'>Política de Privacidade</a>.",
+        "terms_label": "Acepto los <a href='https://copymonster.me/terms/' target='_blank' class='underline'>Términos de Asociación</a> y la <a href='https://copymonster.me/privacy/' target='_blank' class='underline'>Política de Privacidad</a>.",
         "submit": "Registrar y Aceptar Términos"
       }
     },

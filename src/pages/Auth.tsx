@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, MailCheck, Github } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.png';
 import logoLight from '@/assets/logo-light.png';
@@ -70,6 +71,7 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const { trackCompleteRegistration } = useMetaPixel();
   useEffect(() => {
     // Se o carregamento terminou e o usuário está autenticado, redireciona.
@@ -102,6 +104,10 @@ const Auth = () => {
   };
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      toast.error(t('auth.termsError', 'Você precisa aceitar os termos para criar uma conta.'));
+      return;
+    }
     setIsSubmitting(true);
     try {
       const validatedData = signupSchema.parse({
@@ -114,7 +120,8 @@ const Auth = () => {
         firstName: validatedData.firstName,
         email: validatedData.email,
         password: validatedData.password,
-        phone: validatedData.phone || ''
+        phone: validatedData.phone || '',
+        termsAcceptedAt: new Date().toISOString(),
       });
       
       // Track Meta Pixel CompleteRegistration on successful signup
@@ -227,6 +234,11 @@ const Auth = () => {
                 <div className="space-y-2">
                   <Label htmlFor="signup-phone">{t('auth.phone')}</Label>
                   <PhoneInput id="signup-phone" international defaultCountry="US" value={signupPhone} onChange={value => setSignupPhone(value || '')} className="phone-input" required />
+                </div>
+
+                <div className="flex items-start gap-2 pt-1">
+                  <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(checked) => setTermsAccepted(checked as boolean)} className="mt-0.5" />
+                  <Label htmlFor="terms" className="text-xs leading-relaxed cursor-pointer text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('auth.termsLabel') }} />
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
