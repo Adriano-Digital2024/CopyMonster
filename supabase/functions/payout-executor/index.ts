@@ -5,8 +5,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 async function getPayPalAccessToken(): Promise<string> {
   const clientId = Deno.env.get('PAYPAL_CLIENT_ID');
-  const secret = Deno.env.get('PAYPAL_SECRET');
-  if (!clientId || !secret) throw new Error('PAYPAL_CLIENT_ID or PAYPAL_SECRET not configured');
+  const secret = Deno.env.get('PAYPAL_CLIENT_SECRET') || Deno.env.get('PAYPAL_SECRET');
+  if (!clientId || !secret) throw new Error('PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET not configured');
 
   const baseUrl = Deno.env.get('PAYPAL_MODE') === 'live'
     ? 'https://api-m.paypal.com'
@@ -183,7 +183,7 @@ serve(async (req) => {
 
   // ── 8. Execute PayPal payout ────────────────────────────────────────────
   const useMock = Deno.env.get('PAYPAL_MOCK') !== 'false';
-  const hasPayPalConfig = Deno.env.get('PAYPAL_CLIENT_ID') && Deno.env.get('PAYPAL_SECRET');
+  const hasPayPalConfig = Deno.env.get('PAYPAL_CLIENT_ID') && (Deno.env.get('PAYPAL_CLIENT_SECRET') || Deno.env.get('PAYPAL_SECRET'));
 
   let batchId: string;
 
