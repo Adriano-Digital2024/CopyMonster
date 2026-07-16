@@ -1,3 +1,4 @@
+// Mautic Sync — ETAPA 5: Shared-secret auth + sanitized errors + reduced PII logs
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
 import { decryptToken, encryptToken } from "../_shared/mautic-crypto.ts";
@@ -6,6 +7,30 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// ── Auth: timing-safe comparison (same pattern as meta-token-refresh) ─────
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+
+function isAuthorized(token: string): { internal: boolean; admin: boolean } {
+  const internalSecret = Deno.env.get('INTERNAL_WEBHOOK_SECRET') ?? '';
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  return {
+    internal: internalSecret.length > 0 && timingSafeEqual(token, internalSecret),
+    admin: serviceRoleKey.length > 0 && timingSafeEqual(token, serviceRoleKey),
+  };
+}
+
+function jsonResponse(body: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  });
+}
 
 const planMap: Record<string, string> = {
   free: 'Free',
@@ -39,8 +64,6 @@ async function logSync(
 }
 
 async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: string): Promise<MauticTokenData | null> {
-  console.log('[mautic-sync] Retrieving Mautic tokens from database');
-
   const { data: tokenRow, error: tokenError } = await adminSupabase
     .from('mautic_tokens')
     .select('encrypted_access_token, encrypted_refresh_token, expires_at')
@@ -48,11 +71,9 @@ async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: s
     .single();
 
   if (tokenError || !tokenRow) {
-    console.error('[mautic-sync] Failed to retrieve Mautic tokens:', tokenError?.message || 'No tokens found');
+    console.error('[mautic-sync] Failed to retrieve Mautic tokens');
     return null;
   }
-
-  console.log('[mautic-sync] Token row found, expires_at:', tokenRow.expires_at);
 
   const accessToken = await decryptToken(tokenRow.encrypted_access_token, encryptionKey);
   const refreshToken = await decryptToken(tokenRow.encrypted_refresh_token, encryptionKey);
@@ -61,8 +82,6 @@ async function getDecryptedToken(adminSupabase: SupabaseClient, encryptionKey: s
     console.error('[mautic-sync] Failed to decrypt tokens');
     return null;
   }
-
-  console.log('[mautic-sync] Tokens decrypted successfully');
 
   return {
     accessToken,
@@ -79,8 +98,6 @@ async function refreshAccessToken(
   refreshToken: string,
   encryptionKey: string
 ): Promise<string | null> {
-  console.log('[mautic-sync] Refreshing Mautic access token');
-
   const response = await fetch(`${mauticBaseUrl}/oauth/v2/token`, {
     method: 'POST',
     headers: {
@@ -98,7 +115,7 @@ async function refreshAccessToken(
   const data = await response.json();
 
   if (!response.ok || data.error) {
-    console.error('[mautic-sync] Token refresh failed:', JSON.stringify(data));
+    console.error('[mautic-sync] Token refresh failed');
     return null;
   }
 
@@ -113,7 +130,7 @@ async function refreshAccessToken(
     encryptedAccess = await encryptToken(newAccessToken, encryptionKey);
     encryptedRefresh = await encryptToken(newRefreshToken, encryptionKey);
   } catch (encryptError) {
-    console.error('[mautic-sync] Failed to encrypt refreshed tokens:', (encryptError as Error).message);
+    console.error('[mautic-sync] Failed to encrypt refreshed tokens');
     return null;
   }
 
@@ -128,17 +145,15 @@ async function refreshAccessToken(
     .eq('id', 'primary');
 
   if (updateError) {
-    console.error('[mautic-sync] Failed to store refreshed tokens:', updateError.message);
+    console.error('[mautic-sync] Failed to store refreshed tokens');
     return null;
   }
 
-  console.log('[mautic-sync] Access token refreshed successfully');
   return newAccessToken;
 }
 
 async function getMauticContactByEmail(mauticBaseUrl: string, accessToken: string, email: string): Promise<{ id: number } | null> {
   const searchUrl = `${mauticBaseUrl}/api/contacts?search=${encodeURIComponent(`email:${email}`)}`;
-  console.log(`[mautic-sync] Searching contact by email: ${searchUrl}`);
 
   const response = await fetch(searchUrl, {
     method: 'GET',
@@ -149,30 +164,23 @@ async function getMauticContactByEmail(mauticBaseUrl: string, accessToken: strin
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[mautic-sync] Failed to search contact by email: ${response.status}`, errorText);
+    console.error(`[mautic-sync] Failed to search contact by email: ${response.status}`);
     return null;
   }
 
   const data = await response.json();
-  console.log('[mautic-sync] Search response:', JSON.stringify(data).substring(0, 500));
-
   const contacts = data.contacts || {};
   const contactIds = Object.keys(contacts);
 
   if (contactIds.length === 0) {
-    console.log('[mautic-sync] No existing contact found');
     return null;
   }
 
   const contact = contacts[contactIds[0]];
-  console.log(`[mautic-sync] Existing contact found: ${contact.id}`);
   return { id: contact.id };
 }
 
 async function createMauticContact(mauticBaseUrl: string, accessToken: string, payload: Record<string, unknown>): Promise<boolean> {
-  console.log('[mautic-sync] Creating Mautic contact with payload:', JSON.stringify(payload));
-
   const response = await fetch(`${mauticBaseUrl}/api/contacts/new`, {
     method: 'POST',
     headers: {
@@ -183,21 +191,10 @@ async function createMauticContact(mauticBaseUrl: string, accessToken: string, p
     body: JSON.stringify(payload),
   });
 
-  const responseText = await response.text();
-  console.log(`[mautic-sync] Create contact response (${response.status}):`, responseText.substring(0, 1000));
-
-  if (!response.ok) {
-    console.error(`[mautic-sync] Failed to create Mautic contact: ${response.status}`, responseText);
-    return false;
-  }
-
-  console.log('[mautic-sync] Mautic contact created successfully');
-  return true;
+  return response.ok;
 }
 
 async function updateMauticContact(mauticBaseUrl: string, accessToken: string, contactId: number, payload: Record<string, unknown>): Promise<boolean> {
-  console.log(`[mautic-sync] Updating Mautic contact ${contactId} with payload:`, JSON.stringify(payload));
-
   const response = await fetch(`${mauticBaseUrl}/api/contacts/${contactId}/edit`, {
     method: 'PATCH',
     headers: {
@@ -208,16 +205,7 @@ async function updateMauticContact(mauticBaseUrl: string, accessToken: string, c
     body: JSON.stringify(payload),
   });
 
-  const responseText = await response.text();
-  console.log(`[mautic-sync] Update contact response (${response.status}):`, responseText.substring(0, 1000));
-
-  if (!response.ok) {
-    console.error(`[mautic-sync] Failed to update Mautic contact: ${response.status}`, responseText);
-    return false;
-  }
-
-  console.log('[mautic-sync] Mautic contact updated successfully');
-  return true;
+  return response.ok;
 }
 
 serve(async (req) => {
@@ -225,6 +213,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Authentication ───────────────────────────────────────────────────────
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return jsonResponse({ error: 'Authorization required' }, 401);
+  }
+  const token = authHeader.slice(7);
+  const { internal, admin } = isAuthorized(token);
+
+  if (!internal && !admin) {
+    return jsonResponse({ error: 'Unauthorized' }, 401);
+  }
+
+  // ── Environment ─────────────────────────────────────────────────────────
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const mauticBaseUrl = Deno.env.get('MAUTIC_BASE_URL')!;
@@ -234,10 +235,7 @@ serve(async (req) => {
 
   if (!supabaseUrl || !supabaseServiceKey || !mauticBaseUrl || !mauticClientId || !mauticClientSecret || !encryptionKey) {
     console.error('[mautic-sync] Missing required environment variables');
-    return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'Server configuration error' }, 500);
   }
 
   const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -260,13 +258,12 @@ serve(async (req) => {
     return accessToken;
   };
 
-  let body: any;
+  // ── Parse body ──────────────────────────────────────────────────────────
+  let body: { type?: string; record?: { email?: string; first_name?: string; phone?: string; subscription_status?: string } };
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
 
   const { type, record } = body ?? {};
@@ -278,40 +275,33 @@ serve(async (req) => {
       const accessToken = await ensureAccessToken();
       if (!accessToken) {
         await logSync(adminSupabase, { event_type: 'ping', status: 'error', error: 'Mautic not connected or refresh failed' });
-        return new Response(JSON.stringify({ ok: false, error: 'Mautic not connected or refresh failed' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ ok: false, error: 'Mautic not connected or refresh failed' }, 401);
       }
       const res = await fetch(`${mauticBaseUrl}/api/contacts?limit=1`, {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
       });
-      const text = await res.text();
       await logSync(adminSupabase, {
         event_type: 'ping',
         status: res.ok ? 'success' : 'error',
         http_status: res.status,
-        error: res.ok ? null : text.substring(0, 500),
       });
-      return new Response(JSON.stringify({ ok: res.ok, status: res.status, mauticBaseUrl }), {
-        status: res.ok ? 200 : 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ ok: res.ok, status: res.status }, res.ok ? 200 : 502);
     }
 
-    // ---- Backfill ----
+    // ---- Backfill (admin only) ----
     if (type === 'backfill') {
+      if (!admin) {
+        return jsonResponse({ error: 'Admin access required for backfill' }, 403);
+      }
       const accessToken = await ensureAccessToken();
       if (!accessToken) {
-        return new Response(JSON.stringify({ error: 'Mautic not connected' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ error: 'Mautic not connected' }, 401);
       }
       const { data: profiles, error } = await adminSupabase
         .from('profiles')
         .select('email, first_name, phone, subscription_status');
       if (error || !profiles) {
-        return new Response(JSON.stringify({ error: 'Failed to load profiles' }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ error: 'Failed to load profiles' }, 500);
       }
       let ok = 0, fail = 0;
       for (const p of profiles) {
@@ -329,32 +319,24 @@ serve(async (req) => {
         });
         success ? ok++ : fail++;
       }
-      return new Response(JSON.stringify({ ok: true, processed: profiles.length, success: ok, failed: fail }), {
-        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ ok: true, processed: profiles.length, success: ok, failed: fail }, 200);
     }
 
     // ---- Normal events ----
     if (!record?.email) {
-      return new Response(JSON.stringify({ error: 'Missing email' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'Missing email' }, 400);
     }
     if (type !== 'new_user' && type !== 'plan_update') {
-      return new Response(JSON.stringify({ error: 'Unknown event type' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'Unknown event type' }, 400);
     }
 
     let accessToken = await ensureAccessToken();
     if (!accessToken) {
       await logSync(adminSupabase, { email: record.email, event_type: type, status: 'error', error: 'Mautic not connected / refresh failed' });
-      return new Response(JSON.stringify({ error: 'Mautic not connected' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'Mautic not connected' }, 401);
     }
 
-    const plan = planMap[record.subscription_status] || 'Free';
+    const plan = planMap[record.subscription_status ?? ''] || 'Free';
     const contactPayload = {
       firstname: record.first_name || '',
       email: record.email,
@@ -366,7 +348,6 @@ serve(async (req) => {
     const runWithRetry = async (op: (token: string) => Promise<Response>): Promise<Response> => {
       let res = await op(accessToken!);
       if (res.status === 401) {
-        console.log('[mautic-sync] 401 received, forcing token refresh and retrying');
         const refreshed = await ensureAccessToken(true);
         if (refreshed) {
           accessToken = refreshed;
@@ -439,27 +420,20 @@ serve(async (req) => {
     });
 
     if (!success) {
-      return new Response(JSON.stringify({ error: 'Mautic API error', http_status: httpStatus, detail: lastError }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'Mautic API error', http_status: httpStatus }, 502);
     }
 
-    return new Response(JSON.stringify({ success: true, type, email: record.email, plan, contact_id: contactId, provider: 'mautic' }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ success: true, type, plan, contact_id: contactId, provider: 'mautic' }, 200);
   } catch (error) {
-    const msg = (error as Error).message;
-    console.error('[mautic-sync] Unexpected error:', msg);
+    console.error('[mautic-sync] Unexpected error:', (error as Error).message);
     try {
       await logSync(adminSupabase, {
         email: record?.email ?? null,
         event_type: type ?? 'unknown',
         status: 'error',
-        error: msg.substring(0, 500),
+        error: (error as Error).message.substring(0, 500),
       });
     } catch { /* ignore */ }
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'Internal server error' }, 500);
   }
 });

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Send, Github } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ export default function ChatLanding() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [inputValue, setInputValue] = useState('');
   const [placeholder, setPlaceholder] = useState('');
 
@@ -35,6 +36,14 @@ export default function ChatLanding() {
     t('chatLanding.tags.launchScripts'),
     t('chatLanding.tags.emailSequences'),
   ];
+
+  // Capture affiliate ref from URL
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      localStorage.setItem('affiliate_ref', ref);
+    }
+  }, [searchParams]);
 
   // Typing animation
   useEffect(() => {

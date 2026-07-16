@@ -79,10 +79,13 @@ export default function Billing() {
       // Track Meta Pixel InitiateCheckout event
       trackInitiateCheckout({ content_ids: [plan.id], num_items: 1 });
 
+      const affiliateRef = localStorage.getItem('affiliate_ref');
+
       const { data, error: functionError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           priceId: selectedPriceId,
           planId: plan.id,
+          ...(affiliateRef ? { affiliateId: affiliateRef } : {}),
         }
       });
 

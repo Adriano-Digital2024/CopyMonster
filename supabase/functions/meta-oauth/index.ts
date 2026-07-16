@@ -1,3 +1,6 @@
+// Meta OAuth — ETAPA 4: Secure state token (CSRF protection)
+// Fixes: state is now a cryptographically random, single-use, TTL-limited token
+// stored in oauth_states table, NOT the user_id.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
 
@@ -15,7 +18,7 @@ function buildCallbackHtml(siteUrl: string, result: 'success' | 'error'): Respon
 <body style="background:#1a1a2e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
 <div style="text-align:center"><p>${displayMsg}</p></div>
 <script>
-try{if(window.opener)window.opener.postMessage({type:'${messageType}'},'*');}catch(e){}
+try{if(window.opener)window.opener.postMessage({type:'${messageType}'},'${siteUrl}');}catch(e){}
 setTimeout(function(){window.close();},500);
 setTimeout(function(){window.location.href='${redirectUrl}';},2000);
 </script></body></html>`;
@@ -44,37 +47,50 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
 
-    // ACTION: Generate OAuth URL (called by frontend)
+    // ── ACTION: authorize — Generate OAuth URL with secure state ──────────
     if (action === 'authorize') {
       const authHeader = req.headers.get('Authorization');
       if (!authHeader?.startsWith('Bearer ')) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      // Verify user JWT
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } }
       });
       const token = authHeader.replace('Bearer ', '');
-      const { data: userData, error: userError } = await supabase.auth.getUser(token);
+      const { data: userData, error: userError } = await userClient.auth.getUser(token);
       if (userError || !userData?.user) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
+      // Generate cryptographically random state and store it
+      const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: stateToken, error: stateError } = await adminClient.rpc('create_oauth_state', {
+        p_user_id: userData.user.id,
+        p_provider: 'meta',
+        p_ttl_seconds: 600, // 10 minutes
+      });
+
+      if (stateError || !stateToken) {
+        console.error('[meta-oauth] Failed to create OAuth state:', stateError);
+        return new Response(JSON.stringify({ error: 'Failed to initiate OAuth' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+
       const redirectUri = `${supabaseUrl}/functions/v1/meta-oauth?action=callback`;
-      const state = userData.user.id; // user_id as state for callback
       const scopes = 'ads_management,ads_read,business_management,pages_show_list,pages_read_engagement,public_profile';
 
-      const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&response_type=code&config_id=${businessConfigId}`;
+      const oauthUrl = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${stateToken}&response_type=code&config_id=${businessConfigId}`;
 
       return new Response(JSON.stringify({ url: oauthUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // ACTION: OAuth Callback (called by Meta redirect)
+    // ── ACTION: callback — Validate state, exchange code for token ────────
     if (action === 'callback') {
       const code = url.searchParams.get('code');
-      const state = url.searchParams.get('state'); // user_id
+      const state = url.searchParams.get('state');
       const errorParam = url.searchParams.get('error');
 
       if (errorParam || !code || !state) {
@@ -82,7 +98,18 @@ serve(async (req) => {
         return buildCallbackHtml(siteUrl, 'error');
       }
 
-      const userId = state;
+      // Consume (validate + delete) the state token — single-use
+      const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: userId, error: consumeError } = await adminClient.rpc('consume_oauth_state', {
+        p_state: state,
+        p_provider: 'meta',
+      });
+
+      if (consumeError || !userId) {
+        console.error('[meta-oauth] Invalid or expired OAuth state — possible CSRF attack');
+        return buildCallbackHtml(siteUrl, 'error');
+      }
+
       const redirectUri = `${supabaseUrl}/functions/v1/meta-oauth?action=callback`;
 
       // Exchange code for token
@@ -93,8 +120,7 @@ serve(async (req) => {
 
       if (tokenData.error) {
         console.error(`[meta-oauth] Token exchange failed for user ${userId}`);
-        const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
-        await adminSupabase.from('integration_logs').insert({
+        await adminClient.from('integration_logs').insert({
           user_id: userId,
           provider: 'meta',
           event_type: 'api_error',
@@ -125,10 +151,8 @@ serve(async (req) => {
       const pagesData = await pagesResponse.json();
       const igAccountId = pagesData.data?.[0]?.instagram_business_account?.id || null;
 
-      // Encrypt and store token using service role (bypasses RLS for upsert)
-      const adminSupabase = createClient(supabaseUrl, supabaseServiceKey);
-
-      const { error: upsertError } = await adminSupabase.rpc('upsert_user_integration' as any, {
+      // Encrypt and store token using service role
+      const { error: upsertError } = await adminClient.rpc('upsert_user_integration' as any, {
         p_user_id: userId,
         p_provider: 'meta',
         p_access_token: accessToken,
@@ -142,7 +166,7 @@ serve(async (req) => {
 
       if (upsertError) {
         console.error(`[meta-oauth] Failed to store integration for user ${userId}`);
-        await adminSupabase.from('integration_logs').insert({
+        await adminClient.from('integration_logs').insert({
           user_id: userId,
           provider: 'meta',
           event_type: 'api_error',
@@ -152,7 +176,7 @@ serve(async (req) => {
       }
 
       // Log successful connection
-      await adminSupabase.from('integration_logs').insert({
+      await adminClient.from('integration_logs').insert({
         user_id: userId,
         provider: 'meta',
         event_type: 'connected',
@@ -170,7 +194,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error(`[meta-oauth] Unexpected error:`, (error as Error).message);
+    console.error('[meta-oauth] Unexpected error:', (error as Error).message);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

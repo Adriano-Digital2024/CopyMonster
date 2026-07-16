@@ -1,46 +1,64 @@
 project_id = "bcatupltfvgwelhzeznk"
 
+# ============================================================================
+# ETAPA 7: verify_jwt configuration
+# true  = Supabase gateway validates JWT before invoking the function
+# false = Function must implement its own auth (webhook signature, shared secret)
+# ============================================================================
+
+# Functions with JWT auth (called by frontend) — verify_jwt = true
 [functions.chat-stream]
-verify_jwt = false
+verify_jwt = true
 
 [functions.create-checkout-session]
-verify_jwt = false
-
-[functions.stripe-webhook]
-verify_jwt = false
+verify_jwt = true
 
 [functions.agent-test]
-verify_jwt = false
+verify_jwt = true
 
 [functions.admin-users]
-verify_jwt = false
-
-[functions.meta-oauth]
-verify_jwt = false
+verify_jwt = true
 
 [functions.meta-disconnect]
-verify_jwt = false
+verify_jwt = true
 
 [functions.meta-sync]
-verify_jwt = false
+verify_jwt = true
 
 [functions.dna-intelligence]
-verify_jwt = false
+verify_jwt = true
 
-[functions.sender-sync]
+[functions.payout-executor]
+verify_jwt = true
+
+# OAuth callbacks (browser redirect, no JWT) — verify_jwt = false
+[functions.meta-oauth]
 verify_jwt = false
 
 [functions.mautic-callback]
 verify_jwt = false
 
+# Webhooks with signature verification — verify_jwt = false
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.meta-webhook]
+verify_jwt = false
+
+[functions.stripe-to-affiliate]
+verify_jwt = false
+
+# Internal sync functions (called by DB triggers via pg_net) — verify_jwt = false
+# Auth via INTERNAL_WEBHOOK_SECRET (timingSafeEqual)
 [functions.mautic-sync]
 verify_jwt = false
 
 [functions.agentes-sync]
 verify_jwt = false
 
-[functions.meta-token-refresh]
+[functions.sender-sync]
 verify_jwt = false
 
-[functions.meta-webhook]
+# Cron job (called by scheduler with service_role key) — verify_jwt = false
+[functions.meta-token-refresh]
 verify_jwt = false
