@@ -42,6 +42,7 @@ const RuleEngine = () => {
         version_name: values.version_name,
         percentage: Number(values.percentage),
         retention_days: Number(values.retention_days),
+        min_payout_amount: Number(values.min_payout_amount),
         is_current: true
       }).select().single();
       
@@ -54,7 +55,8 @@ const RuleEngine = () => {
         metadata: { 
           version: values.version_name, 
           percentage: values.percentage, 
-          retention: values.retention_days 
+          retention: values.retention_days,
+          min_payout: values.min_payout_amount
         }
       });
     },
@@ -81,7 +83,7 @@ const RuleEngine = () => {
               <label className="text-sm font-medium">Nome da Versão</label>
               <Input {...register("version_name", { required: true })} placeholder="v2 - 2026 Strategy" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Porcentagem (%)</label>
                 <Input type="number" {...register("percentage", { required: true })} placeholder="30" />
@@ -89,6 +91,10 @@ const RuleEngine = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Retenção (Dias)</label>
                 <Input type="number" {...register("retention_days", { required: true })} placeholder="45" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Mínimo ($)</label>
+                <Input type="number" {...register("min_payout_amount", { required: true })} placeholder="100" />
               </div>
             </div>
             <Button className="w-full" type="submit" disabled={publishMutation.isPending}>
@@ -110,16 +116,18 @@ const RuleEngine = () => {
                 <TableHead>Versão</TableHead>
                 <TableHead>%</TableHead>
                 <TableHead>Dias</TableHead>
+                <TableHead>Mín. $</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rules?.map((rule) => (
-                <TableRow key={rule.id}>
-                  <TableCell className="font-medium">{rule.version_name}</TableCell>
-                  <TableCell>{Number(rule.percentage).toFixed(0)}%</TableCell>
-                  <TableCell>{rule.retention_days}</TableCell>
-                  <TableCell>
+                  <TableRow key={rule.id}>
+                    <TableCell className="font-medium">{rule.version_name}</TableCell>
+                    <TableCell>{Number(rule.percentage).toFixed(0)}%</TableCell>
+                    <TableCell>{rule.retention_days}</TableCell>
+                    <TableCell>${Number(rule.min_payout_amount || 100).toFixed(0)}</TableCell>
+                    <TableCell>
                     {rule.is_current ? (
                       <Badge className="bg-primary">Ativo</Badge>
                     ) : (
