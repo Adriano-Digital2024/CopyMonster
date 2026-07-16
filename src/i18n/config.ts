@@ -88,10 +88,15 @@ const resources = {
         title: 'Plans & Pricing',
         subtitle: 'Choose the ideal plan to launch your business.',
         trialBadge: 'Start your 7-day free trial',
+        monthly: 'Monthly',
+        annual: 'Annual',
+        savePercent: 'Save {{percent}}%',
         starter: {
           name: 'Starter Monster',
           price: '$47',
           period: '/month',
+          priceAnnual: '$470',
+          periodAnnual: '/year',
           subtitle: 'Ideal for creators building and validating their first product.',
           badge: '',
           features: [
@@ -110,6 +115,8 @@ const resources = {
           name: 'Pro Monster',
           price: '$97',
           period: '/month',
+          priceAnnual: '$970',
+          periodAnnual: '/year',
           subtitle: 'For businesses scaling multiple products with data-driven optimization.',
           badge: 'Most Popular',
           features: [
@@ -131,6 +138,8 @@ const resources = {
           name: 'Legend Monster',
           price: '$197',
           period: '/month',
+          priceAnnual: '$1,970',
+          periodAnnual: '/year',
           subtitle: 'For brands and agencies operating at scale.',
           badge: '',
           features: [

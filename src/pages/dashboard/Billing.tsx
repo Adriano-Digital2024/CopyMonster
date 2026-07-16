@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -20,12 +21,19 @@ const priceIds = {
   legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG',
 };
 
+const annualPriceIds = {
+  starter: 'price_1TtcwERiKNxooUH0qUcxjaai',
+  pro: 'price_1TtcxmRiKNxooUH0YT51blK6',
+  legend: 'price_1TtczXRiKNxooUH0wjLWYEc6',
+};
+
 export default function Billing() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const [discountCode, setDiscountCode] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(false);
   const { trackInitiateCheckout } = useMetaPixel();
 
   const plans = [
@@ -66,12 +74,14 @@ export default function Billing() {
         throw new Error(t('dashboard.billing.errors.planNotFound'));
       }
 
+      const selectedPriceId = isAnnual ? annualPriceIds[planId as keyof typeof annualPriceIds] : plan.priceId;
+
       // Track Meta Pixel InitiateCheckout event
       trackInitiateCheckout({ content_ids: [plan.id], num_items: 1 });
 
       const { data, error: functionError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
-          priceId: plan.priceId,
+          priceId: selectedPriceId,
           planId: plan.id,
         }
       });
@@ -145,11 +155,30 @@ export default function Billing() {
           </div>
         </Card>
 
-        <div className="text-center">
-          <Badge variant="secondary" className="text-sm py-1 px-3">
-            <Star className="w-3 h-3 mr-1 inline" />
-            {t('pricing.trialBadge')}
-          </Badge>
+        {user?.subscription_status === 'free' && user?.trial_expires_at && new Date(user.trial_expires_at) > new Date() && (
+          <div className="text-center">
+            <Badge variant="secondary" className="text-sm py-1 px-3">
+              <Star className="w-3 h-3 mr-1 inline" />
+              {t('pricing.trialBadge')}
+            </Badge>
+          </div>
+        )}
+
+        {/* Billing Toggle */}
+        <div className="flex items-center justify-center gap-4">
+          <span className={`text-sm ${!isAnnual ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+            {t('pricing.monthly')}
+          </span>
+          <Switch
+            checked={isAnnual}
+            onCheckedChange={setIsAnnual}
+          />
+          <span className={`text-sm ${isAnnual ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+            {t('pricing.annual')}
+            <Badge variant="default" className="ml-2 text-xs bg-green-600">
+              🔥 {t('pricing.savePercent', { percent: '17' })}
+            </Badge>
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -173,9 +202,11 @@ export default function Billing() {
                   <h3 className="text-2xl font-bold">{t(`pricing.${plan.id}.name`)}</h3>
                   <div className="mt-2 flex items-baseline">
                     <span className="text-4xl font-bold">
-                      {t(`pricing.${plan.id}.price`)}
+                      {isAnnual ? t(`pricing.${plan.id}.priceAnnual`) : t(`pricing.${plan.id}.price`)}
                     </span>
-                    <span className="text-muted-foreground ml-2">{t(`pricing.${plan.id}.period`)}</span>
+                    <span className="text-muted-foreground ml-2">
+                      {isAnnual ? t(`pricing.${plan.id}.periodAnnual`) : t(`pricing.${plan.id}.period`)}
+                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
                     {t(`pricing.${plan.id}.subtitle`)}
