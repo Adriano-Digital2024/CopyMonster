@@ -39,6 +39,7 @@
       "profile": {
         "title": "Información del Perfil",
         "name": "Nombre",
+        "lastName": "Apellido",
         "email": "Correo Electrónico",
         "phone": "Teléfono",
         "bio": "Biografía",

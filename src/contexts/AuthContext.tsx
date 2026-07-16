@@ -8,6 +8,7 @@ interface UserProfile {
   id: string;
   email: string;
   first_name: string;
+  last_name: string;
   phone: string | null;
   credits: number;
   subscription_status: 'free' | 'starter' | 'pro' | 'legend';
@@ -35,7 +36,7 @@ interface AuthContextType {
   logout: () => void;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
-  updateUser: (data: Partial<Pick<UserProfile, 'first_name' | 'phone'>>) => void;
+  updateUser: (data: Partial<Pick<UserProfile, 'first_name' | 'last_name' | 'phone'>>) => void;
 }
 
 interface SignupData {
@@ -164,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
-  const updateUser = (data: Partial<Pick<UserProfile, 'first_name' | 'phone'>>) => {
+  const updateUser = (data: Partial<Pick<UserProfile, 'first_name' | 'last_name' | 'phone'>>) => {
     if (user) {
       setUser({ ...user, ...data });
     }

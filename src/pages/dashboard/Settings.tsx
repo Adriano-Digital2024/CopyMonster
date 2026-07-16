@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizePhone } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/ThemeProvider';
@@ -35,12 +36,13 @@ async function getFreshToken() {
 }
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   
   const [firstName, setFirstName] = useState(user?.first_name || '');
+  const [lastName, setLastName] = useState(user?.last_name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [bio, setBio] = useState('');
@@ -279,7 +281,17 @@ export default function Settings() {
     }
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
+    const normalizedPhone = phone ? normalizePhone(phone) : '';
+    const { error } = await supabase
+      .from('profiles')
+      .update({ first_name: firstName, last_name: lastName, phone: normalizedPhone })
+      .eq('id', user?.id);
+    if (error) {
+      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    updateUser({ first_name: firstName, last_name: lastName, phone: normalizedPhone });
     toast({
       title: t('dashboard.settings.toast.profileSuccess'),
       description: t('dashboard.settings.toast.profileSuccessDesc')
@@ -385,6 +397,10 @@ export default function Settings() {
                   <div className="grid gap-2">
                     <Label htmlFor="firstName">{t('dashboard.settings.profile.name')}</Label>
                     <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="lastName">{t('dashboard.settings.profile.lastName')}</Label>
+                    <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="email">{t('dashboard.settings.profile.email')}</Label>
