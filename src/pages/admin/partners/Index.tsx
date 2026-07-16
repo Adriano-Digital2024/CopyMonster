@@ -2,8 +2,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PayoutQueue from "./PayoutQueue";
 import RuleEngine from "./RuleEngine";
 import KycApproval from "./KycApproval";
+import AffiliatesList from "./AffiliatesList";
 import { useTranslation } from "react-i18next";
-import { ShieldCheck, Banknote, Settings2, UserCheck } from "lucide-react";
+import { ShieldCheck, Banknote, Settings2, UserCheck, Users } from "lucide-react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 
 const AdminPartners = () => {
@@ -22,6 +23,10 @@ const AdminPartners = () => {
 
         <Tabs defaultValue="kyc" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="affiliates" className="gap-2">
+              <Users className="h-4 w-4" />
+              Afiliados
+            </TabsTrigger>
             <TabsTrigger value="kyc" className="gap-2">
               <UserCheck className="h-4 w-4" />
               Aprovação KYC
@@ -36,6 +41,10 @@ const AdminPartners = () => {
             </TabsTrigger>
           </TabsList>
           
+          <TabsContent value="affiliates" className="space-y-4">
+            <AffiliatesList />
+          </TabsContent>
+
           <TabsContent value="kyc" className="space-y-4">
             <KycApproval />
           </TabsContent>
