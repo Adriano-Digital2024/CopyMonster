@@ -62,3 +62,6 @@ verify_jwt = false
 # Cron job (called by scheduler with service_role key) — verify_jwt = false
 [functions.meta-token-refresh]
 verify_jwt = false
+
+[functions.affiliate-eligibility-check]
+verify_jwt = false

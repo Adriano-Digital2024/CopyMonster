@@ -3,6 +3,57 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+async function getPayPalAccessToken(): Promise<string> {
+  const clientId = Deno.env.get('PAYPAL_CLIENT_ID');
+  const secret = Deno.env.get('PAYPAL_SECRET');
+  if (!clientId || !secret) throw new Error('PAYPAL_CLIENT_ID or PAYPAL_SECRET not configured');
+
+  const baseUrl = Deno.env.get('PAYPAL_MODE') === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
+
+  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: { 'Authorization': `Basic ${btoa(`${clientId}:${secret}`)}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials',
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(`PayPal auth failed: ${data.error_description || data.error}`);
+  return data.access_token;
+}
+
+async function sendPayPalPayout(amount: number, email: string, note: string): Promise<string> {
+  const token = await getPayPalAccessToken();
+  const baseUrl = Deno.env.get('PAYPAL_MODE') === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
+
+  const senderBatchId = crypto.randomUUID();
+
+  const res = await fetch(`${baseUrl}/v1/payments/payouts`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sender_batch_header: {
+        sender_batch_id: senderBatchId,
+        email_subject: 'CopyMonster Affiliate Payout',
+        email_message: note,
+      },
+      items: [{
+        recipient_type: 'EMAIL',
+        amount: { value: amount.toFixed(2), currency: 'USD' },
+        receiver: email,
+        note,
+      }],
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(`PayPal payout failed: ${data.message || JSON.stringify(data)}`);
+  return data.batch_header?.payout_batch_id || senderBatchId;
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -131,24 +182,32 @@ serve(async (req) => {
   const payout = lockResult[0];
 
   // ── 8. Execute PayPal payout ────────────────────────────────────────────
-  const isMockMode = Deno.env.get('PAYPAL_MOCK') !== 'false';
+  const useMock = Deno.env.get('PAYPAL_MOCK') !== 'false';
+  const hasPayPalConfig = Deno.env.get('PAYPAL_CLIENT_ID') && Deno.env.get('PAYPAL_SECRET');
 
   let batchId: string;
 
-  if (isMockMode) {
-    console.log(`[payout-executor] MOCK MODE: Simulating PayPal payout to ${payout.paypal_email_snapshot} for $${payout.amount} (affiliate: ${payout.affiliate_id})`);
+  if (useMock || !hasPayPalConfig) {
+    console.log(`[payout-executor] ${hasPayPalConfig ? 'MOCK MODE' : 'NO PAYPAL CONFIG'}: Simulating payout to ${payout.paypal_email_snapshot} for $${payout.amount}`);
     batchId = `MOCK_${Date.now()}_${payout.id.slice(0, 8)}`;
   } else {
-    // Real PayPal integration is not yet implemented.
-    // Roll back to FAILED so the payout can be retried later.
-    console.error('[payout-executor] Real PayPal integration not implemented. Set PAYPAL_MOCK=true (default) to use mock mode, or implement the PayPal API call here.');
+    try {
+      batchId = await sendPayPalPayout(
+        payout.amount,
+        payout.paypal_email_snapshot,
+        `Affiliate payout from CopyMonster — ${payout.id.slice(0, 8)}`
+      );
+      console.log(`[payout-executor] PayPal payout sent: batch ${batchId}`);
+    } catch (paypalErr) {
+      console.error('[payout-executor] PayPal API error:', paypalErr.message);
 
-    await adminClient
-      .from('finance.payout_requests')
-      .update({ status: 'FAILED', updated_at: new Date().toISOString() })
-      .eq('id', payoutId);
+      await adminClient
+        .from('finance.payout_requests')
+        .update({ status: 'FAILED', updated_at: new Date().toISOString() })
+        .eq('id', payoutId);
 
-    return jsonResponse({ error: 'PayPal integration not configured. Set PAYPAL_MOCK=true (default) or implement real PayPal API call.' }, 500);
+      return jsonResponse({ error: `PayPal payout failed: ${paypalErr.message}` }, 500);
+    }
   }
 
   // ── 9. Finalize payout: set status to EXECUTED ───────────────────────────

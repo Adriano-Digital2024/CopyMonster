@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Wallet, Timer, CheckCircle, ShieldAlert, Loader2, UserPlus, Copy } from "lucide-react";
+import { Wallet, Timer, CheckCircle, ShieldAlert, Loader2, UserPlus, Copy, Bell } from "lucide-react";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { toast } from "sonner";
@@ -99,6 +99,17 @@ const PartnersDashboard = () => {
     },
   });
 
+  // 6. Notificações
+  const { data: notifications } = useQuery({
+    queryKey: ["partner-notifications"],
+    enabled: !!profile,
+    queryFn: async () => {
+      const { data, error } = await supabase.schema('affiliate').from("notifications").select("*").eq("read", false).order("created_at", { ascending: false }).limit(5);
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleRegistration = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!acceptedTerms) {
@@ -109,6 +120,20 @@ const PartnersDashboard = () => {
     const data = Object.fromEntries(formData.entries());
     createProfileMutation.mutate(data);
   };
+
+  const requestPayoutMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('request-affiliate-payout');
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Saque de $${data.amount.toFixed(2)} solicitado! Aguarde a aprovação.`);
+      queryClient.invalidateQueries({ queryKey: ["partner-financials"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
 
   const copyReferralLink = () => {
     const link = `${window.location.origin}/chat?ref=${profile?.id}`;
@@ -197,7 +222,11 @@ const PartnersDashboard = () => {
           <div><h1 className="text-3xl font-bold">{t("dashboard.partners.title")}</h1><p className="text-muted-foreground text-xs font-mono">ID: {profile.id}</p></div>
           <div className="flex gap-2 w-full md:w-auto">
             <Button variant="outline" className="flex-1 md:flex-none" onClick={copyReferralLink}><Copy className="mr-2 h-4 w-4" /> Link</Button>
-            <Button disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED"}>
+            <Button
+              disabled={(financialData?.available || 0) < (rule?.min_payout_amount || 100) || profile.kyc_status !== "APPROVED" || requestPayoutMutation.isPending}
+              onClick={() => requestPayoutMutation.mutate()}
+            >
+              {requestPayoutMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {t("partners.wallet.withdraw")}
             </Button>
           </div>
@@ -209,6 +238,18 @@ const PartnersDashboard = () => {
             <AlertTitle>{t("partners.registration.pending_title")}</AlertTitle>
             <AlertDescription>{t("partners.registration.pending_desc")}</AlertDescription>
           </Alert>
+        )}
+
+        {notifications && notifications.length > 0 && (
+          <div className="space-y-2">
+            {notifications.map((n) => (
+              <Alert key={n.id} className="bg-primary/5 border-primary/20">
+                <Bell className="h-4 w-4 text-primary" />
+                <AlertTitle>{n.title}</AlertTitle>
+                <AlertDescription>{n.message}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
         )}
 
         <div className="grid gap-4 md:grid-cols-3">
