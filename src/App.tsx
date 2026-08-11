@@ -40,6 +40,7 @@ import AdminAgentConfig from "./pages/admin/AgentConfig";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminKnowledgeBase from "./pages/admin/KnowledgeBase";
 import AdminModels from "./pages/admin/Models";
+import AdminProviders from "./pages/admin/Providers";
 import AdminSubscriptions from "./pages/admin/Subscriptions";
 import AdminMappings from "./pages/admin/PositioningMappings";
 import AdminCampaigns from "./pages/admin/AdminCampaigns";
@@ -127,6 +128,7 @@ const App = () => (
                   <Route path="/admin/settings" element={<AdminSettings />} />
                   <Route path="/admin/knowledge-base" element={<AdminKnowledgeBase />} />
                   <Route path="/admin/models" element={<AdminModels />} />
+                  <Route path="/admin/providers" element={<AdminProviders />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

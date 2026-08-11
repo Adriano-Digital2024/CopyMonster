@@ -1,10 +1,10 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Users,
+  BarChart3,
   Percent,
   Bot,
   Settings,
@@ -17,7 +17,8 @@ import {
   CreditCard,
   Target,
   Megaphone,
-  FileText
+  FileText,
+  Cpu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -86,6 +87,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         { icon: Bot, label: t('admin.menu.agents'), path: '/admin/agents' },
         { icon: BookOpen, label: t('admin.knowledgeBase.title'), path: '/admin/knowledge-base' },
         { icon: Brain, label: t('admin.models.title'), path: '/admin/models' },
+        { icon: Cpu, label: 'Provedores de IA', path: '/admin/providers' },
       ],
     },
     {
