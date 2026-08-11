@@ -521,7 +521,30 @@ serve(async (req) => {
       }
     }
 
-    // Resolve provider (Mistral / Ollama / OpenRouter) from model id
+    // Resolve model: explicit override > agent.model_id > global llm_config.
+    // llm_config is the admin-managed default (ETAPA 9). It allows changing
+    // the provider for ALL agents without code edits + defines a fallback
+    // used automatically on primary 429/5xx.
+    if (!selectedModel) {
+      const { data: llmCfg } = await supabase
+        .from('llm_config')
+        .select('default_model')
+        .eq('is_active', true)
+        .maybeSingle();
+      if (llmCfg?.default_model) {
+        selectedModel = llmCfg.default_model;
+        console.log(`[chat-stream] Using global default model from llm_config: ${selectedModel}`);
+      }
+    }
+
+    // Fetch the full active llm_config once for fallback lookup.
+    const { data: llmConfig } = await supabase
+      .from('llm_config')
+      .select('provider, default_model, fallback_provider, fallback_model')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    // Resolve provider (Mistral / Ollama / OpenRouter / DeepSeek) from model id
     const route = resolveProvider(selectedModel);
     if (isProviderError(route)) {
       // Refund credit on config error
@@ -533,7 +556,7 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: route.status }
       );
     }
-    const { apiUrl, modelName, headers, provider } = route;
+    const { apiUrl, modelName, headers, provider, supportsPenalties } = route;
     console.log(`[chat-stream] Using model: ${modelName} via ${provider}`);
 
     // Handle auto-start
@@ -548,31 +571,49 @@ serve(async (req) => {
       ...processedMessages,
     ];
 
-    const requestBody: Record<string, any> = {
-      model: modelName,
-      messages: fullMessages,
-      stream: true,
-      max_tokens: maxTokens,
-      temperature: temperature,
-      top_p: topP,
+    const buildRequestBody = (useModelName: string, useSupportsPenalties: boolean) => {
+      const body: Record<string, any> = {
+        model: useModelName,
+        messages: fullMessages,
+        stream: true,
+        max_tokens: maxTokens,
+        temperature: temperature,
+        top_p: topP,
+      };
+      if (useSupportsPenalties) {
+        if (frequencyPenalty !== undefined && frequencyPenalty !== 0) {
+          body.frequency_penalty = frequencyPenalty;
+        }
+        if (presencePenalty !== undefined && presencePenalty !== 0) {
+          body.presence_penalty = presencePenalty;
+        }
+      }
+      return body;
     };
 
-    // Forward optional penalty params only when the provider supports them
-    // (e.g. OpenRouter/OpenAI/DeepSeek accept them; Mistral/Ollama ignore or reject).
-    if (supportsPenalties) {
-      if (frequencyPenalty !== undefined && frequencyPenalty !== 0) {
-        requestBody.frequency_penalty = frequencyPenalty;
-      }
-      if (presencePenalty !== undefined && presencePenalty !== 0) {
-        requestBody.presence_penalty = presencePenalty;
-      }
-    }
-
-    const res = await fetch(apiUrl, {
+    let res = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(buildRequestBody(modelName, supportsPenalties)),
     });
+
+    // Fallback: if primary returned 429/5xx and admin configured a fallback,
+    // transparently retry with the fallback model so the user gets an answer.
+    if (!res.ok && (res.status === 429 || res.status >= 500) && llmConfig?.fallback_model) {
+      const fbRoute = resolveProvider(llmConfig.fallback_model);
+      if (!isProviderError(fbRoute)) {
+        console.warn(`[chat-stream] Primary ${provider}/${modelName} failed (${res.status}). Falling back to ${fbRoute.provider}/${fbRoute.modelName}`);
+        try { await res.body?.cancel(); } catch { /* ignore */ }
+        res = await fetch(fbRoute.apiUrl, {
+          method: 'POST',
+          headers: fbRoute.headers,
+          body: JSON.stringify(buildRequestBody(fbRoute.modelName, fbRoute.supportsPenalties)),
+        });
+        if (res.ok) {
+          console.log(`[chat-stream] Fallback to ${fbRoute.provider}/${fbRoute.modelName} succeeded`);
+        }
+      }
+    }
 
     if (!res.ok) {
       const errorBody = await res.text();
