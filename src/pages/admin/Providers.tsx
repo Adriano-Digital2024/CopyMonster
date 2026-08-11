@@ -260,16 +260,16 @@ const AdminProviders = () => {
                   <div className="space-y-2">
                     <Label>Provedor de fallback (opcional)</Label>
                     <Select
-                      value={form.fallback_provider}
+                      value={form.fallback_provider || '__none__'}
                       onValueChange={(v) => {
-                        const provider = v as Provider | '';
+                        const provider = v === '__none__' ? '' : (v as Provider | '');
                         const first = provider ? PROVIDER_MODELS[provider]?.[0]?.value || '' : '';
                         setForm((f) => ({ ...f, fallback_provider: provider, fallback_model: first }));
                       }}
                     >
                       <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Nenhum</SelectItem>
+                        <SelectItem value="__none__">Nenhum</SelectItem>
                         {(Object.keys(PROVIDER_LABELS) as Provider[]).map((p) => (
                           <SelectItem key={p} value={p}>{PROVIDER_LABELS[p]}</SelectItem>
                         ))}
@@ -279,12 +279,13 @@ const AdminProviders = () => {
                   <div className="space-y-2">
                     <Label>Modelo de fallback</Label>
                     <Select
-                      value={form.fallback_model}
-                      onValueChange={(v) => setForm((f) => ({ ...f, fallback_model: v }))}
+                      value={form.fallback_model || '__none__'}
+                      onValueChange={(v) => setForm((f) => ({ ...f, fallback_model: v === '__none__' ? '' : v }))}
                       disabled={!form.fallback_provider}
                     >
                       <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="__none__">—</SelectItem>
                         {(PROVIDER_MODELS[form.fallback_provider as Provider] || []).map((m) => (
                           <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                         ))}
