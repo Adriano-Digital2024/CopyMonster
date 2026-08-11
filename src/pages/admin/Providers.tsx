@@ -65,8 +65,12 @@ const AdminProviders = () => {
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   const [form, setForm] = useState({
-    provider: 'mistral' as Provider,
-    default_model: 'mistralai/mistral-large-latest',
+    // Default to DeepSeek: it is the only LLM secret configured in
+    // production Supabase Edge Function Secrets. An admin who opens the
+    // page with no active row otherwise sees Mistral, which would fail
+    // "Testar conexão" with "Mistral API not configured".
+    provider: 'deepseek' as Provider,
+    default_model: 'deepseek/deepseek-chat',
     fallback_provider: '' as Provider | '',
     fallback_model: '',
     notes: '',

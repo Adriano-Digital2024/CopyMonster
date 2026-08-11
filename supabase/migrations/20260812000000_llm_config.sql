@@ -32,8 +32,11 @@ CREATE POLICY "Only admins can write llm_config"
   USING (public.has_role(auth.uid(), 'admin'))
   WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
--- Seed the current production default so the system keeps working
--- after deploy even if the admin never opens the new panel.
+-- Seed the production default so the system keeps working after deploy
+-- even if the admin never opens the new panel. DeepSeek is the only LLM
+-- secret configured in Supabase Edge Function Secrets (see ETAPA 9.1), so
+-- seeding Mistral here would silently break agents without an explicit
+-- model_id with "Mistral API not configured. Please contact support."
 INSERT INTO public.llm_config (provider, default_model, is_active, notes)
-VALUES ('mistral', 'mistralai/mistral-large-latest', true, 'Initial seed from previous hardcoded default')
+VALUES ('deepseek', 'deepseek/deepseek-chat', true, 'Initial seed - DeepSeek is the only configured provider secret')
 ON CONFLICT DO NOTHING;
