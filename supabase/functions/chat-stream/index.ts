@@ -369,6 +369,8 @@ serve(async (req) => {
     let temperature = 0.7;
     let maxTokens = 4096;
     let topP = 0.9;
+    let frequencyPenalty: number | undefined = undefined;
+    let presencePenalty: number | undefined = undefined;
 
     if (agent_slug) {
       const { data: agent, error: agentError } = await supabase
@@ -386,6 +388,8 @@ serve(async (req) => {
         temperature = agent.temperature ?? 0.7;
         maxTokens = agent.max_tokens ?? 4096;
         topP = agent.top_p ?? 0.9;
+        frequencyPenalty = agent.frequency_penalty ?? undefined;
+        presencePenalty = agent.presence_penalty ?? undefined;
 
         // LANGUAGE PRIORITY: 
         // 1. Agent's configured language (most reliable, prevents language switching)
@@ -552,6 +556,17 @@ serve(async (req) => {
       temperature: temperature,
       top_p: topP,
     };
+
+    // Forward optional penalty params only when the provider supports them
+    // (e.g. OpenRouter/OpenAI/DeepSeek accept them; Mistral/Ollama ignore or reject).
+    if (supportsPenalties) {
+      if (frequencyPenalty !== undefined && frequencyPenalty !== 0) {
+        requestBody.frequency_penalty = frequencyPenalty;
+      }
+      if (presencePenalty !== undefined && presencePenalty !== 0) {
+        requestBody.presence_penalty = presencePenalty;
+      }
+    }
 
     const res = await fetch(apiUrl, {
       method: 'POST',
