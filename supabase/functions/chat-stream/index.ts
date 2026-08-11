@@ -365,7 +365,15 @@ serve(async (req) => {
     // If agent_slug is provided, fetch agent config from database
     let agentConfig: any = null;
     let finalSystemPrompt = system_prompt;
-    let selectedModel = model || 'google/gemini-2.5-flash';
+    // Model resolution priority:
+    //   1. Explicit `model` request arg (highest)
+    //   2. Agent's configured model_id
+    //   3. Global llm_config.default_model (admin-managed, ETAPA 9)
+    //   4. Hard-coded fallback (last resort)
+    // NOTE: do NOT default to a hardcoded model here, otherwise the
+    // `if (!selectedModel)` branch that reads llm_config below is never
+    // reached and the admin /providers panel has no effect.
+    let selectedModel: string | undefined = model || undefined;
     let temperature = 0.7;
     let maxTokens = 4096;
     let topP = 0.9;
@@ -535,6 +543,13 @@ serve(async (req) => {
         selectedModel = llmCfg.default_model;
         console.log(`[chat-stream] Using global default model from llm_config: ${selectedModel}`);
       }
+    }
+
+    // Last-resort hard fallback so the router still receives a valid model id
+    // even if no agent model_id and no llm_config row is set.
+    if (!selectedModel) {
+      selectedModel = 'google/gemini-2.5-flash';
+      console.warn(`[chat-stream] No model resolved; falling back to ${selectedModel}`);
     }
 
     // Fetch the full active llm_config once for fallback lookup.
