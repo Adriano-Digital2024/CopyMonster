@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl } from '@/integrations/supabase/urls';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -338,9 +339,8 @@ export function ChatInterface({
     setMessages([assistantMessage]);
 
     try {
-      const supabaseUrl = 'https://bcatupltfvgwelhzeznk.supabase.co';
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/chat-stream`,
+        edgeFunctionUrl('chat-stream'),
         {
           method: 'POST',
           headers: {
@@ -483,9 +483,8 @@ export function ChatInterface({
         .filter(({ role, content }) => role !== 'assistant' || content.trim() !== '')
         .map(({ role, content }) => ({ role, content }));
 
-      const supabaseUrl = 'https://bcatupltfvgwelhzeznk.supabase.co';
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/chat-stream`,
+        edgeFunctionUrl('chat-stream'),
         {
           method: 'POST',
           headers: {

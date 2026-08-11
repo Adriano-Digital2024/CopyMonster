@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabaseDashboardUrl } from '@/integrations/supabase/urls';
 
 const AdminSettings = () => {
   const { t } = useTranslation();
@@ -106,7 +107,7 @@ const AdminSettings = () => {
                     </div>
                     <Button 
                       variant="outline" 
-                      onClick={() => window.open('https://supabase.com/dashboard/project/bcatupltfvgwelhzeznk/settings/vault/secrets', '_blank')}
+                      onClick={() => window.open(supabaseDashboardUrl('settings/vault/secrets'), '_blank')}
                     >
                       Configurar no Supabase
                     </Button>
@@ -120,7 +121,7 @@ const AdminSettings = () => {
                     </div>
                     <Button 
                       variant="outline"
-                      onClick={() => window.open('https://supabase.com/dashboard/project/bcatupltfvgwelhzeznk/settings/vault/secrets', '_blank')}
+                      onClick={() => window.open(supabaseDashboardUrl('settings/vault/secrets'), '_blank')}
                     >
                       Configurar no Supabase
                     </Button>

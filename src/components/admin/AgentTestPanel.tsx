@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Play, Loader2, Trash2, Clock, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl } from '@/integrations/supabase/urls';
 
 interface AgentTestPanelProps {
   agentConfig: {
@@ -103,7 +104,7 @@ export function AgentTestPanel({ agentConfig }: AgentTestPanelProps) {
       const masterPrompt = buildMasterPrompt();
 
       const response = await fetch(
-        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/agent-test`,
+        edgeFunctionUrl('agent-test'),
         {
           method: 'POST',
           headers: {

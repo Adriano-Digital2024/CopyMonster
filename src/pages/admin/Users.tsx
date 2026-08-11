@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { edgeFunctionUrl } from '@/integrations/supabase/urls';
 import {
   Table,
   TableBody,
@@ -178,7 +179,7 @@ const Users = () => {
     setSaving(true);
     try {
       const response = await fetch(
-        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/admin-users?action=create`,
+        edgeFunctionUrl('admin-users') + '?action=create',
         {
           method: 'POST',
           headers: {
@@ -223,7 +224,7 @@ const Users = () => {
     setSaving(true);
     try {
       const response = await fetch(
-        `https://bcatupltfvgwelhzeznk.supabase.co/functions/v1/admin-users?action=delete`,
+        edgeFunctionUrl('admin-users') + '?action=delete',
         {
           method: 'POST',
           headers: {
