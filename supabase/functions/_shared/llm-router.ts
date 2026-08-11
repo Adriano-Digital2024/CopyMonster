@@ -2,7 +2,7 @@
 // Routes an OpenAI-compatible chat model id to Mistral, Ollama, or OpenRouter.
 // All three providers speak OpenAI's /v1/chat/completions shape (incl. stream: true).
 
-export type ProviderName = "mistral" | "ollama" | "openrouter";
+export type ProviderName = "mistral" | "ollama" | "openrouter" | "deepseek";
 
 export interface ResolvedProvider {
   provider: ProviderName;
@@ -58,6 +58,26 @@ export function resolveProvider(
         "Content-Type": "application/json",
       },
       supportsPenalties: false,
+    };
+  }
+
+  // DeepSeek (OpenAI-compatible, https://api.deepseek.com)
+  // Models: deepseek-chat (general, cheap, fast) and deepseek-reasoner (reasoning chain).
+  if (modelId.startsWith("deepseek/")) {
+    const apiKey = Deno.env.get("DEEPSEEK_API_KEY");
+    if (!apiKey) {
+      return { error: "DeepSeek API not configured. Set DEEPSEEK_API_KEY in Supabase Edge Function Secrets.", status: 500 };
+    }
+    return {
+      provider: "deepseek",
+      apiUrl: "https://api.deepseek.com/chat/completions",
+      modelName: modelId.replace(/^deepseek\//, ""),
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      // deepseek-chat supports penalties; deepseek-reasoner accepts but ignores them.
+      supportsPenalties: true,
     };
   }
 

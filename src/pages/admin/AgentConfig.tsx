@@ -76,6 +76,8 @@ const MODEL_OPTIONS = [
   { value: 'openai/gpt-4o', label: 'GPT-4o', provider: 'OpenRouter' },
   { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini', provider: 'OpenRouter' },
   { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4', provider: 'OpenRouter' },
+  { value: 'deepseek/deepseek-chat', label: 'DeepSeek Chat (rápido, econômico)', provider: 'DeepSeek' },
+  { value: 'deepseek/deepseek-reasoner', label: 'DeepSeek Reasoner (reasoning)', provider: 'DeepSeek' },
 ];
 
 const AgentConfig = () => {
