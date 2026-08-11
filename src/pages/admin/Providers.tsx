@@ -17,6 +17,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { edgeFunctionUrl } from '@/integrations/supabase/urls';
+import type { Database } from '@/integrations/supabase/types';
 import { Save, Loader2, CheckCircle2, AlertCircle, Cpu } from 'lucide-react';
 
 // Must stay in sync with supabase/migrations/20260812000000_llm_config.sql
@@ -52,17 +53,8 @@ const PROVIDER_LABELS: Record<Provider, string> = {
   ollama: 'Ollama (self-hosted)',
 };
 
-interface LlmConfig {
-  id: string;
-  provider: Provider;
-  default_model: string;
-  fallback_provider: Provider | null;
-  fallback_model: string | null;
-  is_active: boolean;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Row type from the generated Supabase schema (llm_config table).
+type LlmConfig = Database['public']['Tables']['llm_config']['Row'];
 
 const AdminProviders = () => {
   const { toast } = useToast();
@@ -92,7 +84,7 @@ const AdminProviders = () => {
       const active = (data as LlmConfig[])?.find((c) => c.is_active);
       if (active) {
         setForm({
-          provider: active.provider,
+          provider: active.provider as Provider,
           default_model: active.default_model,
           fallback_provider: (active.fallback_provider as Provider | '') || '',
           fallback_model: active.fallback_model || '',

@@ -1326,6 +1326,45 @@ export type Database = {
         }
         Relationships: []
       }
+      llm_config: {
+        Row: {
+          id: string
+          provider: string
+          default_model: string
+          fallback_provider: string | null
+          fallback_model: string | null
+          is_active: boolean
+          notes: string | null
+          created_at: string
+          created_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          provider: string
+          default_model: string
+          fallback_provider?: string | null
+          fallback_model?: string | null
+          is_active?: boolean
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          provider?: string
+          default_model?: string
+          fallback_provider?: string | null
+          fallback_model?: string | null
+          is_active?: boolean
+          notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
