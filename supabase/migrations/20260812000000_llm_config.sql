@@ -23,10 +23,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS llm_config_active_unique
 
 ALTER TABLE public.llm_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Only admins can read llm_config" ON public.llm_config;
 CREATE POLICY "Only admins can read llm_config"
   ON public.llm_config FOR SELECT TO authenticated
   USING (public.has_role(auth.uid(), 'admin'));
 
+DROP POLICY IF EXISTS "Only admins can write llm_config" ON public.llm_config;
 CREATE POLICY "Only admins can write llm_config"
   ON public.llm_config FOR ALL TO authenticated
   USING (public.has_role(auth.uid(), 'admin'))
