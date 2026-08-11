@@ -63,8 +63,8 @@ const TONE_OPTIONS = [
 
 const LANGUAGE_OPTIONS = [
   { value: 'pt-BR', label: 'Português (Brasil)' },
-  { value: 'en-US', label: 'English (US)' },
-  { value: 'es-ES', label: 'Español' },
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Español' },
 ];
 
 const MODEL_OPTIONS = [
