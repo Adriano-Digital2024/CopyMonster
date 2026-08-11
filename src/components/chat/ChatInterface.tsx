@@ -271,6 +271,24 @@ export function ChatInterface({
       });
       return true;
     }
+
+    if (response.status === 400 && errorData.code === 'TOO_MANY_MESSAGES') {
+      toast({
+        title: t('chat.tooManyMessagesTitle'),
+        description: t('chat.tooManyMessagesDesc'),
+        variant: 'destructive'
+      });
+      return true;
+    }
+
+    if (response.status === 400 && errorData.code === 'CONTENT_TOO_LONG') {
+      toast({
+        title: t('chat.contentTooLongTitle'),
+        description: t('chat.contentTooLongDesc'),
+        variant: 'destructive'
+      });
+      return true;
+    }
     
     if (response.status === 429) {
       toast({

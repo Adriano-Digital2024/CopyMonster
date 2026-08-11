@@ -63,6 +63,10 @@
     "saveMapping": "Save mapping",
     "rateLimitTitle": "Too many requests",
     "rateLimitDesc": "Please wait a few seconds before trying again",
+    "tooManyMessagesTitle": "History too long",
+    "tooManyMessagesDesc": "Limit of 50 messages reached. Clear the conversation to continue.",
+    "contentTooLongTitle": "Message too long",
+    "contentTooLongDesc": "Limit of 10,000 characters per message. Shorten and try again.",
     "welcome": {
       "vsl_monster": {
         "title": "Let's Create Your High-Converting VSL",
