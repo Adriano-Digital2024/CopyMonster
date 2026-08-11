@@ -267,6 +267,43 @@ serve(async (req) => {
     // 5. PARSE REQUEST BODY
     const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
 
+    // 5b. INPUT VALIDATION - Prevent abuse and control costs.
+    // IMPORTANT: Run BEFORE any credit debit so users never lose credits
+    // for rejected requests (fixes silent "AI not responding" + lost credit bug).
+    const MAX_MESSAGES = 50;
+    const MAX_CONTENT_LENGTH = 10000; // 10k chars per message
+
+    if (!messages || !Array.isArray(messages)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid messages format', code: 'INVALID_MESSAGES' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    if (messages.length > MAX_MESSAGES) {
+      console.warn(`[chat-stream] Message limit exceeded: ${messages.length} messages from user ${userId}`);
+      return new Response(
+        JSON.stringify({
+          error: `Too many messages. Maximum ${MAX_MESSAGES} allowed.`,
+          code: 'TOO_MANY_MESSAGES',
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    for (const msg of messages) {
+      if (msg.content && typeof msg.content === 'string' && msg.content.length > MAX_CONTENT_LENGTH) {
+        console.warn(`[chat-stream] Content too long: ${msg.content.length} chars from user ${userId}`);
+        return new Response(
+          JSON.stringify({
+            error: `Message content too long. Maximum ${MAX_CONTENT_LENGTH} characters per message.`,
+            code: 'CONTENT_TOO_LONG',
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+    }
+
     // 6. DNA VALIDATION - Block copy generation without DNA (except for the DNA agent itself)
     if (agent_slug && agent_slug !== 'brand-positioning-monster') {
       // Check if user has at least one completed DNA
@@ -309,34 +346,8 @@ serve(async (req) => {
     }
 
     // INPUT VALIDATION - Prevent abuse and control costs
-    const MAX_MESSAGES = 50;
-    const MAX_CONTENT_LENGTH = 10000; // 10k chars per message
+    // (moved above credit debit - see ETAPA 1)
 
-    if (!messages || !Array.isArray(messages)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid messages format' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    if (messages.length > MAX_MESSAGES) {
-      console.warn(`[chat-stream] Message limit exceeded: ${messages.length} messages from user ${userId}`);
-      return new Response(
-        JSON.stringify({ error: `Too many messages. Maximum ${MAX_MESSAGES} allowed.` }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-    for (const msg of messages) {
-      if (msg.content && typeof msg.content === 'string' && msg.content.length > MAX_CONTENT_LENGTH) {
-        console.warn(`[chat-stream] Content too long: ${msg.content.length} chars from user ${userId}`);
-        return new Response(
-          JSON.stringify({ error: `Message content too long. Maximum ${MAX_CONTENT_LENGTH} characters per message.` }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
-      }
-    }
-    
     // Language detection strategy:
     // 1. Priority: agent's configured language (most reliable)
     // 2. Fallback: detect from first user message in conversation (session consistency)
@@ -552,12 +563,14 @@ serve(async (req) => {
       const errorBody = await res.text();
       console.error('[chat-stream] API error:', res.status, errorBody);
       
-      // Refund credit on API error
-      await supabase
-        .from('profiles')
-        .update({ credits: newCredits + 1 })
-        .eq('id', userId);
-      console.log(`[chat-stream] Credit refunded due to API error`);
+      // Refund credit on API error (only for non-admins — admins were never debited)
+      if (!isAdmin) {
+        await supabase
+          .from('profiles')
+          .update({ credits: newCredits + 1 })
+          .eq('id', userId);
+        console.log(`[chat-stream] Credit refunded due to API error`);
+      }
       
       if (res.status === 429) {
         return new Response(
