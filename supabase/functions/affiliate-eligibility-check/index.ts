@@ -22,6 +22,15 @@ serve(async (req) => {
   // Promo: HOLDING → PENDING_VALIDATION (depois do prazo; Refunds afetam
   // marca a comissão como REFUNDED via webhook separado, então sumirá do
   // HOLDING naturalmente — este cron só pega as que sobreviveram).
+  //
+  // Race safety: se um charge.refunded webhook disparar entre o momento
+  // em que este update atômico rodar e o commit interno, o status final
+  // dependerá de quem commitar por último. Para não correr risco de uma
+  // comissão reembolsada virar PENDING_VALIDATION (e o admin precisar
+  // rejeitar manualmente), o `approve-commission` e o handler de reembolso
+  // aceitam ambos writers; se um reembolso tardio chegar, o status
+  // REFUNDED sobrescreve PENDING_VALIDATION, e `approve-commission`
+  // recusa operar em algo que não seja PENDING_VALIDATION.
   const { data: updated, error } = await supabase
     .from('affiliate.commissions')
     .update({ status: 'PENDING_VALIDATION', updated_at: new Date().toISOString() })
