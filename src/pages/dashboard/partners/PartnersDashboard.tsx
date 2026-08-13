@@ -75,18 +75,22 @@ const PartnersDashboard = () => {
     },
   });
 
-  // 4. Saldo Real
-  const { data: financialData } = useQuery({
-    queryKey: ["partner-financials"],
-    enabled: !!profile,
-    queryFn: async () => {
-      const { data, error } = await supabase.schema('finance').from("ledger_entries").select("amount, entry_type, reference_type");
-      if (error) throw error;
-      const available = data.reduce((acc, entry) => entry.entry_type === "CREDIT" ? acc + Number(entry.amount) : acc - Number(entry.amount), 0);
-      const paid = data.filter(e => e.entry_type === "DEBIT" && e.reference_type === "PAYOUT").reduce((acc, e) => acc + Number(e.amount), 0);
-      return { available, paid };
-    },
-  });
+  // 4. Saldo Real — escopado no próprio afiliado (privacy: sem o filtro
+    // o ledger vinha de TODOS os afiliados e era exposto a cada user).
+    const { data: financialData } = useQuery({
+      queryKey: ["partner-financials", profile?.id],
+      enabled: !!profile,
+      queryFn: async () => {
+        const { data, error } = await supabase.schema('finance')
+          .from("ledger_entries")
+          .select("amount, entry_type, reference_type")
+          .eq('affiliate_id', profile!.id);
+        if (error) throw error;
+        const available = (data || []).reduce((acc, entry) => entry.entry_type === "CREDIT" ? acc + Number(entry.amount) : acc - Number(entry.amount), 0);
+        const paid = (data || []).filter(e => e.entry_type === "DEBIT" && e.reference_type === "PAYOUT").reduce((acc, e) => acc + Number(e.amount), 0);
+        return { available, paid };
+      },
+    });
 
   // 5. Comissões
   const { data: commissions } = useQuery({
@@ -254,7 +258,10 @@ const PartnersDashboard = () => {
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.holding")}</CardTitle><Timer className="h-4 w-4 text-muted-foreground" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold">${commissions?.filter(c => c.status === 'HOLDING').reduce((acc, c) => acc + Number(c.commission_amount), 0).toFixed(2)}</div></CardContent>
+            // In Holding = comissões em HOLDING (período de retenção) + PENDING_VALIDATION
+            // (retenção cumprida, aguardando validação do admin financeiro).
+            // Ambas ainda não estão no saldo disponível do afiliado.
+            <CardContent><div className="text-2xl font-bold">${commissions?.filter(c => c.status === 'HOLDING' || c.status === 'PENDING_VALIDATION').reduce((acc, c) => acc + Number(c.commission_amount), 0).toFixed(2)}</div></CardContent>
           </Card>
           <Card className="border-primary/50"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">{t("dashboard.partners.stats.available")}</CardTitle><Wallet className="h-4 w-4 text-primary" /></CardHeader>
             <CardContent><div className="text-2xl font-bold text-primary">${(financialData?.available || 0).toFixed(2)}</div></CardContent>
@@ -277,7 +284,7 @@ const PartnersDashboard = () => {
                     <TableRow key={commission.id}>
                       <TableCell>{format(parseISO(commission.created_at), "dd/MM/yyyy")}</TableCell>
                       <TableCell className="font-medium">${Number(commission.commission_amount).toFixed(2)}</TableCell>
-                      <TableCell>{commission.status === "HOLDING" ? (<div className="flex flex-col gap-1"><span className="text-xs text-muted-foreground">{t("dashboard.partners.transparency.days_left", { days: daysLeft })}</span><Progress value={progress} className="h-1 w-24" /></div>) : (<span className="text-primary font-semibold">{t("dashboard.partners.transparency.ready")}</span>)}</TableCell>
+                      <TableCell>{commission.status === "HOLDING" ? (<div className="flex flex-col gap-1"><span className="text-xs text-muted-foreground">{t("dashboard.partners.transparency.days_left", { days: daysLeft })}</span><Progress value={progress} className="h-1 w-24" /></div>) : commission.status === "PENDING_VALIDATION" ? (<span className="text-amber-600 font-semibold">{t("dashboard.partners.transparency.validating", { defaultValue: "Em validação" })}</span>) : commission.status === "CANCELLED" ? (<span className="text-destructive font-semibold">{t("dashboard.partners.transparency.cancelled", { defaultValue: "Cancelada" })}</span>) : commission.status === "REFUNDED" ? (<span className="text-destructive font-semibold">{t("dashboard.partners.transparency.refunded", { defaultValue: "Reembolsada" })}</span>) : (<span className="text-primary font-semibold">{t("dashboard.partners.transparency.ready")}</span>)}</TableCell>
                       <TableCell className="text-right">{format(parseISO(commission.eligible_at), "dd/MM/yyyy")}</TableCell>
                     </TableRow>
                   );

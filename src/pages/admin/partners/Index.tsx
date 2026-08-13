@@ -3,8 +3,9 @@ import PayoutQueue from "./PayoutQueue";
 import RuleEngine from "./RuleEngine";
 import KycApproval from "./KycApproval";
 import AffiliatesList from "./AffiliatesList";
+import ValidationQueue from "./ValidationQueue";
 import { useTranslation } from "react-i18next";
-import { ShieldCheck, Banknote, Settings2, UserCheck, Users } from "lucide-react";
+import { ShieldCheck, Banknote, Settings2, UserCheck, Users, UploadCloud } from "lucide-react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 
 const AdminPartners = () => {
@@ -21,7 +22,7 @@ const AdminPartners = () => {
           <p className="text-muted-foreground">Monitor financial exposure, approve payouts, and manage commission strategies.</p>
         </div>
 
-        <Tabs defaultValue="kyc" className="space-y-4">
+        <Tabs defaultValue="validation" className="space-y-4">
           <TabsList>
             <TabsTrigger value="affiliates" className="gap-2">
               <Users className="h-4 w-4" />
@@ -30,6 +31,10 @@ const AdminPartners = () => {
             <TabsTrigger value="kyc" className="gap-2">
               <UserCheck className="h-4 w-4" />
               Aprovação KYC
+            </TabsTrigger>
+            <TabsTrigger value="validation" className="gap-2">
+              <UploadCloud className="h-4 w-4" />
+              Validação de Créditos
             </TabsTrigger>
             <TabsTrigger value="payouts" className="gap-2">
               <Banknote className="h-4 w-4" />
@@ -47,6 +52,10 @@ const AdminPartners = () => {
 
           <TabsContent value="kyc" className="space-y-4">
             <KycApproval />
+          </TabsContent>
+
+          <TabsContent value="validation" className="space-y-4">
+            <ValidationQueue />
           </TabsContent>
 
           <TabsContent value="payouts" className="space-y-4">

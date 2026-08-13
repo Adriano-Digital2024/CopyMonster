@@ -1,3 +1,10 @@
+// =============================================================================
+// ETAPA 1: a promoçãoHora não credita saldo direto. Vai para PENDING_VALIDATION,
+// onde o aguarda validação manual do admin financeiro (alinhado à política:
+// reembolso em 7d + retenção de 35d garante margem; só conferir manualmente
+// antes de dinheiro virar saldo).
+// =============================================================================
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
@@ -12,9 +19,12 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   )
 
+  // Promo: HOLDING → PENDING_VALIDATION (depois do prazo; Refunds afetam
+  // marca a comissão como REFUNDED via webhook separado, então sumirá do
+  // HOLDING naturalmente — este cron só pega as que sobreviveram).
   const { data: updated, error } = await supabase
     .from('affiliate.commissions')
-    .update({ status: 'ELIGIBLE', updated_at: new Date().toISOString() })
+    .update({ status: 'PENDING_VALIDATION', updated_at: new Date().toISOString() })
     .eq('status', 'HOLDING')
     .lte('eligible_at', new Date().toISOString())
     .select('id, affiliate_id, commission_amount')
@@ -34,14 +44,14 @@ serve(async (req) => {
       .from('affiliate.notifications')
       .insert({
         affiliate_id: affiliateId,
-        type: 'BALANCE_AVAILABLE',
-        title: 'Saldo disponível',
-        message: `$${total.toFixed(2)} em comissões foram liberadas. Solicite seu saque quando quiser.`,
+        type: 'AWAITING_VALIDATION',
+        title: 'Comissões em validação',
+        message: `$${total.toFixed(2)} em comissões completaram o período de retenção e estão aguardando validação do administrador.`,
         metadata: { released_amount: total, released_count: updated?.filter(c => c.affiliate_id === affiliateId).length },
       })
   }
 
-  console.log(`[affiliate-eligibility-check] ${updated?.length || 0} commissions moved to ELIGIBLE, ${affiliateTotals.size} affiliates notified`)
+  console.log(`[affiliate-eligibility-check] ${updated?.length || 0} commissions moved to PENDING_VALIDATION, ${affiliateTotals.size} affiliates notified`)
 
   return new Response(JSON.stringify({ processed: updated?.length || 0, notified: affiliateTotals.size }), { status: 200 })
 })
