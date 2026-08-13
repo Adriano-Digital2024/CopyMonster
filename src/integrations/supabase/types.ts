@@ -12,6 +12,396 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
+  // ───────────────────────────────────────────────────────────────────────
+  // Schema "affiliate" — programa de afiliados CopyMonster.
+  // Adicionado manualmente (o `supabase gen types` só gera `public` por
+  // default; para evitar destravar a CLI nesta máquina, tipamos aqui as
+  // 6 tabelas do schema affiliate usadas pelo frontend e pelas edge
+  // functions. Colunas espelham supabase/partners_migration.sql + as
+  // migrations 071500000/071500003/0715000000/080813000003/080813000004.
+  // ───────────────────────────────────────────────────────────────────────
+  affiliate: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string
+          user_id: string
+          paypal_email: string | null
+          trust_score: number | null
+          kyc_status: Database["affiliate"]["Enums"]["kyc_status"]
+          kyc_metadata: Json
+          paypal_last_changed_at: string | null
+          active: boolean | null
+          full_name: string | null
+          cpf_cnpj: string | null
+          address_city: string | null
+          address_state: string | null
+          terms_accepted_at: string | null
+          terms_ip: string | null
+          terms_version: string | null
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          paypal_email?: string | null
+          trust_score?: number
+          kyc_status?: Database["affiliate"]["Enums"]["kyc_status"]
+          kyc_metadata?: Json
+          paypal_last_changed_at?: string | null
+          active?: boolean
+          full_name?: string | null
+          cpf_cnpj?: string | null
+          address_city?: string | null
+          address_state?: string | null
+          terms_accepted_at?: string | null
+          terms_ip?: string | null
+          terms_version?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          paypal_email?: string | null
+          trust_score?: number
+          kyc_status?: Database["affiliate"]["Enums"]["kyc_status"]
+          kyc_metadata?: Json
+          paypal_last_changed_at?: string | null
+          active?: boolean
+          full_name?: string | null
+          cpf_cnpj?: string | null
+          address_city?: string | null
+          address_state?: string | null
+          terms_accepted_at?: string | null
+          terms_ip?: string | null
+          terms_version?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      commission_rules: {
+        Row: {
+          id: string
+          version_name: string
+          percentage: number
+          retention_days: number | null
+          min_payout_amount: number | null
+          is_current: boolean | null
+          active: boolean | null
+          created_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          version_name: string
+          percentage: number
+          retention_days?: number
+          min_payout_amount?: number
+          is_current?: boolean
+          active?: boolean
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          version_name?: string
+          percentage?: number
+          retention_days?: number
+          min_payout_amount?: number
+          is_current?: boolean
+          active?: boolean
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: []
+      }
+      commissions: {
+        Row: {
+          id: string
+          affiliate_id: string
+          stripe_event_id: string
+          stripe_invoice_id: string | null
+          amount_gross: number
+          commission_amount: number
+          status: Database["affiliate"]["Enums"]["commission_status"]
+          eligible_at: string
+          risk_score: number | null
+          active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          affiliate_id: string
+          stripe_event_id: string
+          stripe_invoice_id?: string | null
+          amount_gross: number
+          commission_amount: number
+          status?: Database["affiliate"]["Enums"]["commission_status"]
+          eligible_at: string
+          risk_score?: number
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          affiliate_id?: string
+          stripe_event_id?: string
+          stripe_invoice_id?: string | null
+          amount_gross?: number
+          commission_amount?: number
+          status?: Database["affiliate"]["Enums"]["commission_status"]
+          eligible_at?: string
+          risk_score?: number
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          action: string
+          reason: string | null
+          metadata: Json
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          action: string
+          reason?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          action?: string
+          reason?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          id: string
+          affiliate_id: string
+          type: string
+          title: string
+          message: string
+          metadata: Json
+          read: boolean | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          affiliate_id: string
+          type: string
+          title: string
+          message: string
+          metadata?: Json
+          read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          affiliate_id?: string
+          type?: string
+          title?: string
+          message?: string
+          metadata?: Json
+          read?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracking_clicks: {
+        Row: {
+          id: string
+          affiliate_id: string
+          ip_address: string | null
+          user_agent: string | null
+          is_vpn: boolean | null
+          active: boolean | null
+          created_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          affiliate_id: string
+          ip_address?: string | null
+          user_agent?: string | null
+          is_vpn?: boolean
+          active?: boolean
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          affiliate_id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          is_vpn?: boolean
+          active?: boolean
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_clicks_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: { [key: string]: never }
+    Functions: {
+      has_role: {
+        Args: { _user_id: string; _role: string }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      commission_status: "HOLDING" | "ELIGIBLE" | "PENDING_VALIDATION" | "CANCELLED" | "REFUNDED"
+      kyc_status: "PENDING" | "APPROVED" | "REJECTED"
+    }
+    CompositeTypes: { [key: string]: never }
+  }
+  // ───────────────────────────────────────────────────────────────────────
+  // Schema "finance" — ledger e payout requests do programa de afiliados.
+  // ───────────────────────────────────────────────────────────────────────
+  finance: {
+    Tables: {
+      ledger_entries: {
+        Row: {
+          id: string
+          affiliate_id: string
+          amount: number
+          entry_type: Database["finance"]["Enums"]["ledger_entry_type"]
+          reference_type: string
+          reference_id: string
+          description: string | null
+          active: boolean | null
+          created_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          affiliate_id: string
+          amount: number
+          entry_type: Database["finance"]["Enums"]["ledger_entry_type"]
+          reference_type: string
+          reference_id: string
+          description?: string | null
+          active?: boolean
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          affiliate_id?: string
+          amount?: number
+          entry_type?: Database["finance"]["Enums"]["ledger_entry_type"]
+          reference_type?: string
+          reference_id?: string
+          description?: string | null
+          active?: boolean
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            referencedRelation: "affiliate.profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_requests: {
+        Row: {
+          id: string
+          affiliate_id: string
+          amount: number
+          paypal_email_snapshot: string
+          status: string
+          risk_score: number | null
+          paypal_payout_batch_id: string | null
+          active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          affiliate_id: string
+          amount: number
+          paypal_email_snapshot: string
+          status?: string
+          risk_score?: number
+          paypal_payout_batch_id?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          affiliate_id?: string
+          amount?: number
+          paypal_email_snapshot?: string
+          status?: string
+          risk_score?: number
+          paypal_payout_batch_id?: string | null
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_requests_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            referencedRelation: "affiliate.profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: { [key: string]: never }
+    Functions: { [key: string]: never }
+    Enums: {
+      ledger_entry_type: "CREDIT" | "DEBIT"
+    }
+    CompositeTypes: { [key: string]: never }
+  }
   public: {
     Tables: {
       ads_data: {

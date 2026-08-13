@@ -61,8 +61,8 @@ const AffiliatesList = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(a.created_at).toLocaleDateString()}
-                  </TableCell>
+                      {a.created_at ? new Date(a.created_at).toLocaleDateString() : '-'}
+                    </TableCell>
                 </TableRow>
               ))}
               {(!affiliates || affiliates.length === 0) && (

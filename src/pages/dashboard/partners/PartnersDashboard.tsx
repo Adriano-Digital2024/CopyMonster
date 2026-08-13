@@ -179,7 +179,7 @@ const PartnersDashboard = () => {
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="full_name">{t("partners.registration.form.full_name")}</Label>
-                    <Input id="full_name" name="full_name" defaultValue={user?.user_metadata?.full_name || ""} required />
+                    <Input id="full_name" name="full_name" defaultValue={user?.first_name || ""} required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="cpf_cnpj">{t("partners.registration.form.cpf_cnpj")}</Label>
@@ -282,7 +282,7 @@ const PartnersDashboard = () => {
                   const progress = ((45 - daysLeft) / 45) * 100;
                   return (
                     <TableRow key={commission.id}>
-                      <TableCell>{format(parseISO(commission.created_at), "dd/MM/yyyy")}</TableCell>
+                      <TableCell>{format(parseISO(commission.created_at ?? new Date().toISOString()), "dd/MM/yyyy")}</TableCell>
                       <TableCell className="font-medium">${Number(commission.commission_amount).toFixed(2)}</TableCell>
                       <TableCell>{commission.status === "HOLDING" ? (<div className="flex flex-col gap-1"><span className="text-xs text-muted-foreground">{t("dashboard.partners.transparency.days_left", { days: daysLeft })}</span><Progress value={progress} className="h-1 w-24" /></div>) : commission.status === "PENDING_VALIDATION" ? (<span className="text-amber-600 font-semibold">{t("dashboard.partners.transparency.validating", { defaultValue: "Em validação" })}</span>) : commission.status === "CANCELLED" ? (<span className="text-destructive font-semibold">{t("dashboard.partners.transparency.cancelled", { defaultValue: "Cancelada" })}</span>) : commission.status === "REFUNDED" ? (<span className="text-destructive font-semibold">{t("dashboard.partners.transparency.refunded", { defaultValue: "Reembolsada" })}</span>) : (<span className="text-primary font-semibold">{t("dashboard.partners.transparency.ready")}</span>)}</TableCell>
                       <TableCell className="text-right">{format(parseISO(commission.eligible_at), "dd/MM/yyyy")}</TableCell>

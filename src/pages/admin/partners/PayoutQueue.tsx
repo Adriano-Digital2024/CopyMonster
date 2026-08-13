@@ -7,6 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, DollarSign } from "lucide-react";
 
+type PayoutWithAffiliate = {
+  id: string;
+  affiliate_id: string;
+  amount: number;
+  paypal_email_snapshot: string;
+  status: string;
+  risk_score: number | null;
+  affiliate: {
+    full_name: string | null;
+    cpf_cnpj: string | null;
+    paypal_email: string | null;
+  } | null;
+};
+
 const PayoutQueue = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -28,7 +42,7 @@ const PayoutQueue = () => {
         .eq("status", "REQUESTED")
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data;
+      return (data || []) as unknown as PayoutWithAffiliate[];
     },
   });
 
@@ -90,8 +104,8 @@ const PayoutQueue = () => {
               <TableCell className="font-bold text-green-600">${Number(payout.amount).toFixed(2)}</TableCell>
               <TableCell>{payout.paypal_email_snapshot}</TableCell>
               <TableCell>
-                <Badge variant={payout.risk_score > 60 ? "destructive" : "outline"}>
-                  {payout.risk_score}
+                <Badge variant={(payout.risk_score ?? 0) > 60 ? "destructive" : "outline"}>
+                  {payout.risk_score ?? '-'}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
