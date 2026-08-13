@@ -65,15 +65,17 @@ WITH snapshot AS (
 
   UNION ALL
 
-  SELECT
-    '6_eligible_sample'::text,
-    COALESCE(stripe_event_id, '(sem ELIGIBLE)'::text),
-    COALESCE(commission_amount::text, ''::text),
-    COALESCE(status::text, ''::text),
-    COALESCE(extract(epoch from created_at):: bigint::text, ''::text)
-  FROM affiliate.commissions
-  WHERE status = 'ELIGIBLE'
-  ORDER BY created_at DESC
-  LIMIT 10
+  SELECT * FROM (
+    SELECT
+      '6_eligible_sample'::text                  AS chk,
+      COALESCE(stripe_event_id, '(sem ELIGIBLE)'::text) AS k1,
+      COALESCE(commission_amount::text, ''::text) AS k2,
+      COALESCE(status::text, ''::text)           AS total,
+      COALESCE(extract(epoch from created_at)::bigint::text, ''::text) AS valor
+    FROM affiliate.commissions
+    WHERE status = 'ELIGIBLE'
+    ORDER BY created_at DESC
+    LIMIT 10
+  ) sample_eligible
 )
 SELECT * FROM snapshot;
