@@ -39,6 +39,8 @@ CREATE POLICY "Only admins can write llm_config"
 -- secret configured in Supabase Edge Function Secrets (see ETAPA 9.1), so
 -- seeding Mistral here would silently break agents without an explicit
 -- model_id with "Mistral API not configured. Please contact support."
+-- NOTE: deepseek-v4-flash is the V4 name (GA 2026-08-13). The retired
+-- `deepseek-chat`/`deepseek-reasoner` names are rejected by the API.
 INSERT INTO public.llm_config (provider, default_model, is_active, notes)
-VALUES ('deepseek', 'deepseek/deepseek-chat', true, 'Initial seed - DeepSeek is the only configured provider secret')
+VALUES ('deepseek', 'deepseek/deepseek-v4-flash', true, 'Initial seed - DeepSeek V4 Flash is the only configured provider secret')
 ON CONFLICT DO NOTHING;

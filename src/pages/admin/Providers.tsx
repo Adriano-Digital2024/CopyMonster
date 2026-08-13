@@ -37,8 +37,8 @@ const PROVIDER_MODELS: Record<Provider, { value: string; label: string }[]> = {
     { value: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
   ],
   deepseek: [
-    { value: 'deepseek/deepseek-chat', label: 'DeepSeek Chat (rápido, econômico)' },
-    { value: 'deepseek/deepseek-reasoner', label: 'DeepSeek Reasoner (reasoning)' },
+    { value: 'deepseek/deepseek-v4-flash', label: 'DeepSeek V4 Flash (rápido, econômico)' },
+    { value: 'deepseek/deepseek-v4-pro', label: 'DeepSeek V4 Pro (reasoning)' },
   ],
   ollama: [
     { value: 'ollama/llama3.1', label: 'Llama 3.1 (Ollama local)' },
@@ -70,7 +70,7 @@ const AdminProviders = () => {
     // page with no active row otherwise sees Mistral, which would fail
     // "Testar conexão" with "Mistral API not configured".
     provider: 'deepseek' as Provider,
-    default_model: 'deepseek/deepseek-chat',
+    default_model: 'deepseek/deepseek-v4-flash',
     fallback_provider: '' as Provider | '',
     fallback_model: '',
     notes: '',

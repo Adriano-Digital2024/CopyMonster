@@ -62,7 +62,9 @@ export function resolveProvider(
   }
 
   // DeepSeek (OpenAI-compatible, https://api.deepseek.com)
-  // Models: deepseek-chat (general, cheap, fast) and deepseek-reasoner (reasoning chain).
+  // Models (V4 GA, 2026-08): deepseek-v4-flash (general, cheap, fast) and
+  // deepseek-v4-pro (reasoning chain). The legacy deepseek-chat / deepseek-reasoner
+  // names were retired with the V4 lineup and now return 400/404 from the API.
   if (modelId.startsWith("deepseek/")) {
     const apiKey = Deno.env.get("DEEPSEEK_API_KEY");
     if (!apiKey) {
@@ -76,7 +78,7 @@ export function resolveProvider(
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      // deepseek-chat supports penalties; deepseek-reasoner accepts but ignores them.
+      // deepseek-v4-flash supports penalties; deepseek-v4-pro accepts but ignores them.
       supportsPenalties: true,
     };
   }
