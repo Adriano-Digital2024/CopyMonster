@@ -79,7 +79,13 @@ export default function Billing() {
       // Track Meta Pixel InitiateCheckout event
       trackInitiateCheckout({ content_ids: [plan.id], num_items: 1 });
 
-      const affiliateRef = localStorage.getItem('affiliate_ref');
+      // Leitura defensiva: prefere 'affiliate_ref' (padrão atual, escrito por
+      // ChatLanding.tsx e Index.tsx) mas faz fallback para a chave legacy
+      // 'copymonster_affiliate_id' caso um lead tenha sido capturado antes
+      // da unificação das chaves. Nunca perde uma referência por causa do
+      // rename de chave.
+      const affiliateRef = localStorage.getItem('affiliate_ref')
+        ?? localStorage.getItem('copymonster_affiliate_id');
 
       const { data, error: functionError } = await supabase.functions.invoke('create-checkout-session', {
         body: {
