@@ -42,7 +42,7 @@ const PartnersDashboard = () => {
       // Captura IP (Placeholder - Supabase Functions capturam via Header se necessário)
       const userIp = "capture_at_server"; 
 
-      const { error } = await supabase.schema('affiliate').from("profiles").insert({
+      const { error } = await supabase.schema('affiliate').from("profiles").upsert({
         user_id: user.id,
         full_name: formData.full_name,
         cpf_cnpj: formData.cpf_cnpj,
@@ -54,7 +54,7 @@ const PartnersDashboard = () => {
         terms_version: "1.0",
         kyc_status: "PENDING",
         active: true
-      });
+      }, { onConflict: 'user_id' });
       if (error) throw error;
     },
     onSuccess: () => {
