@@ -10,397 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
-  }
-  // ───────────────────────────────────────────────────────────────────────
-  // Schema "affiliate" — programa de afiliados CopyMonster.
-  // Adicionado manualmente (o `supabase gen types` só gera `public` por
-  // default; para evitar destravar a CLI nesta máquina, tipamos aqui as
-  // 6 tabelas do schema affiliate usadas pelo frontend e pelas edge
-  // functions. Colunas espelham supabase/partners_migration.sql + as
-  // migrations 071500000/071500003/0715000000/080813000003/080813000004.
-  // ───────────────────────────────────────────────────────────────────────
-  affiliate: {
-    Tables: {
-      profiles: {
-        Row: {
-          id: string
-          user_id: string
-          paypal_email: string | null
-          trust_score: number | null
-          kyc_status: Database["affiliate"]["Enums"]["kyc_status"]
-          kyc_metadata: Json
-          paypal_last_changed_at: string | null
-          active: boolean | null
-          full_name: string | null
-          cpf_cnpj: string | null
-          address_city: string | null
-          address_state: string | null
-          terms_accepted_at: string | null
-          terms_ip: string | null
-          terms_version: string | null
-          created_at: string | null
-          updated_at: string | null
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          paypal_email?: string | null
-          trust_score?: number
-          kyc_status?: Database["affiliate"]["Enums"]["kyc_status"]
-          kyc_metadata?: Json
-          paypal_last_changed_at?: string | null
-          active?: boolean
-          full_name?: string | null
-          cpf_cnpj?: string | null
-          address_city?: string | null
-          address_state?: string | null
-          terms_accepted_at?: string | null
-          terms_ip?: string | null
-          terms_version?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          paypal_email?: string | null
-          trust_score?: number
-          kyc_status?: Database["affiliate"]["Enums"]["kyc_status"]
-          kyc_metadata?: Json
-          paypal_last_changed_at?: string | null
-          active?: boolean
-          full_name?: string | null
-          cpf_cnpj?: string | null
-          address_city?: string | null
-          address_state?: string | null
-          terms_accepted_at?: string | null
-          terms_ip?: string | null
-          terms_version?: string | null
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      commission_rules: {
-        Row: {
-          id: string
-          version_name: string
-          percentage: number
-          retention_days: number | null
-          min_payout_amount: number | null
-          is_current: boolean | null
-          active: boolean | null
-          created_at: string | null
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          version_name: string
-          percentage: number
-          retention_days?: number
-          min_payout_amount?: number
-          is_current?: boolean
-          active?: boolean
-          created_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          version_name?: string
-          percentage?: number
-          retention_days?: number
-          min_payout_amount?: number
-          is_current?: boolean
-          active?: boolean
-          created_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: []
-      }
-      commissions: {
-        Row: {
-          id: string
-          affiliate_id: string
-          stripe_event_id: string
-          stripe_invoice_id: string | null
-          amount_gross: number
-          commission_amount: number
-          status: Database["affiliate"]["Enums"]["commission_status"]
-          eligible_at: string
-          risk_score: number | null
-          active: boolean | null
-          created_at: string | null
-          updated_at: string | null
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          affiliate_id: string
-          stripe_event_id: string
-          stripe_invoice_id?: string | null
-          amount_gross: number
-          commission_amount: number
-          status?: Database["affiliate"]["Enums"]["commission_status"]
-          eligible_at: string
-          risk_score?: number
-          active?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          affiliate_id?: string
-          stripe_event_id?: string
-          stripe_invoice_id?: string | null
-          amount_gross?: number
-          commission_amount?: number
-          status?: Database["affiliate"]["Enums"]["commission_status"]
-          eligible_at?: string
-          risk_score?: number
-          active?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "commissions_affiliate_id_fkey"
-            columns: ["affiliate_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_logs: {
-        Row: {
-          id: string
-          action: string
-          reason: string | null
-          metadata: Json
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          action: string
-          reason?: string | null
-          metadata?: Json
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          action?: string
-          reason?: string | null
-          metadata?: Json
-          created_at?: string
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          id: string
-          affiliate_id: string
-          type: string
-          title: string
-          message: string
-          metadata: Json
-          read: boolean | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          affiliate_id: string
-          type: string
-          title: string
-          message: string
-          metadata?: Json
-          read?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          affiliate_id?: string
-          type?: string
-          title?: string
-          message?: string
-          metadata?: Json
-          read?: boolean
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_affiliate_id_fkey"
-            columns: ["affiliate_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tracking_clicks: {
-        Row: {
-          id: string
-          affiliate_id: string
-          ip_address: string | null
-          user_agent: string | null
-          is_vpn: boolean | null
-          active: boolean | null
-          created_at: string | null
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          affiliate_id: string
-          ip_address?: string | null
-          user_agent?: string | null
-          is_vpn?: boolean
-          active?: boolean
-          created_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          affiliate_id?: string
-          ip_address?: string | null
-          user_agent?: string | null
-          is_vpn?: boolean
-          active?: boolean
-          created_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tracking_clicks_affiliate_id_fkey"
-            columns: ["affiliate_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: { [key: string]: never }
-    Functions: {
-      has_role: {
-        Args: { _user_id: string; _role: string }
-        Returns: boolean
-      }
-    }
-    Enums: {
-      commission_status: "HOLDING" | "ELIGIBLE" | "PENDING_VALIDATION" | "CANCELLED" | "REFUNDED"
-      kyc_status: "PENDING" | "APPROVED" | "REJECTED"
-    }
-    CompositeTypes: { [key: string]: never }
-  }
-  // ───────────────────────────────────────────────────────────────────────
-  // Schema "finance" — ledger e payout requests do programa de afiliados.
-  // ───────────────────────────────────────────────────────────────────────
-  finance: {
-    Tables: {
-      ledger_entries: {
-        Row: {
-          id: string
-          affiliate_id: string
-          amount: number
-          entry_type: Database["finance"]["Enums"]["ledger_entry_type"]
-          reference_type: string
-          reference_id: string
-          description: string | null
-          active: boolean | null
-          created_at: string | null
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          affiliate_id: string
-          amount: number
-          entry_type: Database["finance"]["Enums"]["ledger_entry_type"]
-          reference_type: string
-          reference_id: string
-          description?: string | null
-          active?: boolean
-          created_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          affiliate_id?: string
-          amount?: number
-          entry_type?: Database["finance"]["Enums"]["ledger_entry_type"]
-          reference_type?: string
-          reference_id?: string
-          description?: string | null
-          active?: boolean
-          created_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ledger_entries_affiliate_id_fkey"
-            columns: ["affiliate_id"]
-            referencedRelation: "affiliate.profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payout_requests: {
-        Row: {
-          id: string
-          affiliate_id: string
-          amount: number
-          paypal_email_snapshot: string
-          status: string
-          risk_score: number | null
-          paypal_payout_batch_id: string | null
-          active: boolean | null
-          created_at: string | null
-          updated_at: string | null
-          deleted_at: string | null
-        }
-        Insert: {
-          id?: string
-          affiliate_id: string
-          amount: number
-          paypal_email_snapshot: string
-          status?: string
-          risk_score?: number
-          paypal_payout_batch_id?: string | null
-          active?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Update: {
-          id?: string
-          affiliate_id?: string
-          amount?: number
-          paypal_email_snapshot?: string
-          status?: string
-          risk_score?: number
-          paypal_payout_batch_id?: string | null
-          active?: boolean
-          created_at?: string
-          updated_at?: string
-          deleted_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payout_requests_affiliate_id_fkey"
-            columns: ["affiliate_id"]
-            referencedRelation: "affiliate.profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: { [key: string]: never }
-    Functions: { [key: string]: never }
-    Enums: {
-      ledger_entry_type: "CREDIT" | "DEBIT"
-    }
-    CompositeTypes: { [key: string]: never }
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -719,6 +329,83 @@ export type Database = {
         }
         Relationships: []
       }
+      allowed_prices: {
+        Row: {
+          active: boolean
+          billing_interval: string
+          created_at: string
+          credits: number
+          plan_id: string
+          price_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          billing_interval?: string
+          created_at?: string
+          credits: number
+          plan_id: string
+          price_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          billing_interval?: string
+          created_at?: string
+          credits?: number
+          plan_id?: string
+          price_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: number
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           created_at: string
@@ -751,6 +438,24 @@ export type Database = {
           status?: string
           target_audience?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      checkout_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
           user_id?: string
         }
         Relationships: []
@@ -1252,6 +957,45 @@ export type Database = {
         }
         Relationships: []
       }
+      llm_config: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          default_model: string
+          fallback_model: string | null
+          fallback_provider: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          default_model: string
+          fallback_model?: string | null
+          fallback_provider?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          default_model?: string
+          fallback_model?: string | null
+          fallback_provider?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mautic_sync_log: {
         Row: {
           created_at: string
@@ -1346,6 +1090,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oauth_states: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          provider: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          provider: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          provider?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       positioning_diagnoses: {
         Row: {
@@ -1457,52 +1225,67 @@ export type Database = {
       }
       profiles: {
         Row: {
+          billing_interval: string
           created_at: string
           credits: number
+          current_period_end: string | null
           email: string
           first_name: string
           has_completed_onboarding: boolean
           id: string
           internal_role: string | null
+          last_name: string
           level: number
           phone: string | null
           preferred_language: string | null
           stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_status: string
+          terms_accepted_at: string | null
           trial_expires_at: string | null
           updated_at: string
           xp: number
         }
         Insert: {
+          billing_interval?: string
           created_at?: string
           credits?: number
+          current_period_end?: string | null
           email: string
           first_name: string
           has_completed_onboarding?: boolean
           id: string
           internal_role?: string | null
+          last_name?: string
           level?: number
           phone?: string | null
           preferred_language?: string | null
           stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?: string
+          terms_accepted_at?: string | null
           trial_expires_at?: string | null
           updated_at?: string
           xp?: number
         }
         Update: {
+          billing_interval?: string
           created_at?: string
           credits?: number
+          current_period_end?: string | null
           email?: string
           first_name?: string
           has_completed_onboarding?: boolean
           id?: string
           internal_role?: string | null
+          last_name?: string
           level?: number
           phone?: string | null
           preferred_language?: string | null
           stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?: string
+          terms_accepted_at?: string | null
           trial_expires_at?: string | null
           updated_at?: string
           xp?: number
@@ -1716,50 +1499,27 @@ export type Database = {
         }
         Relationships: []
       }
-      llm_config: {
-        Row: {
-          id: string
-          provider: string
-          default_model: string
-          fallback_provider: string | null
-          fallback_model: string | null
-          is_active: boolean
-          notes: string | null
-          created_at: string
-          created_by: string | null
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          provider: string
-          default_model: string
-          fallback_provider?: string | null
-          fallback_model?: string | null
-          is_active?: boolean
-          notes?: string | null
-          created_at?: string
-          created_by?: string | null
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          provider?: string
-          default_model?: string
-          fallback_provider?: string | null
-          fallback_model?: string | null
-          is_active?: boolean
-          notes?: string | null
-          created_at?: string
-          created_by?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      check_checkout_rate_limit: {
+        Args: { p_max_per_hour?: number; p_user_id: string }
+        Returns: boolean
+      }
+      consume_credit: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: number
+      }
+      consume_oauth_state: {
+        Args: { p_provider: string; p_state: string }
+        Returns: string
+      }
+      create_oauth_state: {
+        Args: { p_provider: string; p_ttl_seconds?: number; p_user_id: string }
+        Returns: string
+      }
       get_decrypted_token: {
         Args: {
           p_encryption_key: string
@@ -1768,16 +1528,47 @@ export type Database = {
         }
         Returns: string
       }
-      has_role: {
+      get_internal_webhook_secret: { Args: never; Returns: string }
+      grant_credits: {
+        Args: { p_amount: number; p_reason?: string; p_user_id: string }
+        Returns: number
+      }
+      has_role:
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+        | { Args: { p_role: string; p_user_id: string }; Returns: boolean }
+      process_stripe_webhook_event: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
+          p_attempt_count?: number
+          p_credits_to_set?: number
+          p_event_id: string
+          p_event_type: string
+          p_plan_id?: string
+          p_stripe_customer_id?: string
+          p_user_id?: string
         }
-        Returns: boolean
+        Returns: Json
       }
       promote_user_to_admin: {
         Args: { user_email: string }
         Returns: undefined
+      }
+      set_internal_webhook_secret: {
+        Args: { secret: string }
+        Returns: undefined
+      }
+      set_subscription: {
+        Args: {
+          p_credits_to_grant?: number
+          p_status: string
+          p_user_id: string
+        }
+        Returns: string
       }
       upsert_user_integration: {
         Args: {
@@ -1793,6 +1584,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      validate_price_id: { Args: { p_price_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "user" | "pro" | "legend" | "admin"
