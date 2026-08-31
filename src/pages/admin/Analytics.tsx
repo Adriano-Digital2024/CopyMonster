@@ -132,7 +132,7 @@ const Analytics = () => {
   };
 
   const generateUserGrowth = (profiles: any[]) => {
-    const last30Days = [];
+    const last30Days: { date: string; users: number }[] = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);

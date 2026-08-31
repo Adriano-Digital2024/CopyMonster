@@ -56,7 +56,7 @@ export function AgentTestPanel({ agentConfig }: AgentTestPanelProps) {
   }, [streamingOutput, testResults]);
 
   const buildMasterPrompt = () => {
-    const parts = [];
+    const parts: string[] = [];
 
     parts.push(`# IDENTIDADE\nVocê é o ${agentConfig.name} do CopyMonster.`);
 

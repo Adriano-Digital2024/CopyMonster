@@ -17,6 +17,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const PartnersDashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -28,7 +31,7 @@ const PartnersDashboard = () => {
   const { data: profile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ["partner-profile"],
     queryFn: async () => {
-      const { data, error } = await supabase.schema('affiliate').from("profiles").select("*").maybeSingle();
+      const { data, error } = await sb.schema('affiliate').from("profiles").select("*").maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -42,7 +45,7 @@ const PartnersDashboard = () => {
       // Captura IP (Placeholder - Supabase Functions capturam via Header se necessário)
       const userIp = "capture_at_server"; 
 
-      const { error } = await supabase.schema('affiliate').from("profiles").upsert({
+      const { error } = await sb.schema('affiliate').from("profiles").upsert({
         user_id: user.id,
         full_name: formData.full_name,
         cpf_cnpj: formData.cpf_cnpj,
@@ -69,7 +72,7 @@ const PartnersDashboard = () => {
   const { data: rule } = useQuery({
     queryKey: ["current-rule"],
     queryFn: async () => {
-      const { data, error } = await supabase.schema('affiliate').from("commission_rules").select("*").eq("is_current", true).single();
+      const { data, error } = await sb.schema('affiliate').from("commission_rules").select("*").eq("is_current", true).single();
       if (error) throw error;
       return data;
     },
@@ -81,7 +84,7 @@ const PartnersDashboard = () => {
       queryKey: ["partner-financials", profile?.id],
       enabled: !!profile,
       queryFn: async () => {
-        const { data, error } = await supabase.schema('finance')
+        const { data, error } = await sb.schema('finance')
           .from("ledger_entries")
           .select("amount, entry_type, reference_type")
           .eq('affiliate_id', profile!.id);
@@ -97,7 +100,7 @@ const PartnersDashboard = () => {
     queryKey: ["partner-commissions"],
     enabled: !!profile,
     queryFn: async () => {
-      const { data, error } = await supabase.schema('affiliate').from("commissions").select("*").order("created_at", { ascending: false });
+      const { data, error } = await sb.schema('affiliate').from("commissions").select("*").order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -108,7 +111,7 @@ const PartnersDashboard = () => {
     queryKey: ["partner-notifications"],
     enabled: !!profile,
     queryFn: async () => {
-      const { data, error } = await supabase.schema('affiliate').from("notifications").select("*").eq("read", false).order("created_at", { ascending: false }).limit(5);
+      const { data, error } = await sb.schema('affiliate').from("notifications").select("*").eq("read", false).order("created_at", { ascending: false }).limit(5);
       if (error) throw error;
       return data;
     },
@@ -127,7 +130,7 @@ const PartnersDashboard = () => {
 
   const requestPayoutMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('request-affiliate-payout');
+      const { data, error } = await sb.functions.invoke('request-affiliate-payout');
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       return data;

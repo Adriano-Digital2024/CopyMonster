@@ -10,6 +10,9 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const RuleEngine = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -18,7 +21,7 @@ const RuleEngine = () => {
   const { data: rules } = useQuery({
     queryKey: ["admin-commission-rules"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('affiliate')
         .from("commission_rules")
         .select("*")
@@ -31,14 +34,14 @@ const RuleEngine = () => {
   const publishMutation = useMutation({
     mutationFn: async (values: any) => {
       // Step A: Set current to false
-      await supabase
+      await sb
         .schema('affiliate')
         .from("commission_rules")
         .update({ is_current: false })
         .eq("is_current", true);
       
       // Step B: Insert new rule
-      const { data: newRule, error: ruleError } = await supabase.schema('affiliate').from("commission_rules").insert({
+      const { data: newRule, error: ruleError } = await sb.schema('affiliate').from("commission_rules").insert({
         version_name: values.version_name,
         percentage: Number(values.percentage),
         retention_days: Number(values.retention_days),
@@ -49,7 +52,7 @@ const RuleEngine = () => {
       if (ruleError) throw ruleError;
 
       // Step C: Auditoria
-      await supabase.schema('affiliate').from("audit_logs").insert({
+      await sb.schema('affiliate').from("audit_logs").insert({
         action: 'RULE_CHANGE',
         reason: `Nova estratégia publicada: ${values.version_name}`,
         metadata: { 

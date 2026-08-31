@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   APPROVED: 'default',
   PENDING: 'secondary',
@@ -15,7 +18,7 @@ const AffiliatesList = () => {
   const { data: affiliates, isLoading } = useQuery({
     queryKey: ["admin-affiliates"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('affiliate')
         .from("profiles")
         .select("*")

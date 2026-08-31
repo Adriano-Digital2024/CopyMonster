@@ -95,7 +95,7 @@ const Users = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers((data || []) as { id: string; first_name: string | null; email: string | null; subscription_status: string; credits: number; created_at: string; internal_role: string | null }[]);
+      setUsers((data || []) as unknown as UserProfile[]);
     } catch (error: any) {
       toast({
         title: t('admin.users.errors.loadError', 'Error loading users'),

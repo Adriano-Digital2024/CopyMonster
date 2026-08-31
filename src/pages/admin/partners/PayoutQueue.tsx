@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, DollarSign } from "lucide-react";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 type PayoutWithAffiliate = {
   id: string;
   affiliate_id: string;
@@ -28,7 +31,7 @@ const PayoutQueue = () => {
   const { data: payouts, isLoading } = useQuery({
     queryKey: ["admin-payouts"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('finance')
         .from("payout_requests")
         .select(`
@@ -48,12 +51,12 @@ const PayoutQueue = () => {
 
   const payoutMutation = useMutation({
     mutationFn: async ({ payoutId, amount, partnerData }: any) => {
-      const { data, error } = await supabase.functions.invoke("payout-executor", {
+      const { data, error } = await sb.functions.invoke("payout-executor", {
         body: { payoutId },
       });
       if (error) throw error;
 
-      await supabase
+      await sb
         .schema('affiliate')
         .from("audit_logs")
         .insert({

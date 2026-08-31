@@ -41,7 +41,7 @@ export default function Campaigns() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCampaigns(data || []);
+      setCampaigns((data || []) as unknown as Campaign[]);
     } catch (error) {
       console.error('Error loading campaigns:', error);
     } finally {

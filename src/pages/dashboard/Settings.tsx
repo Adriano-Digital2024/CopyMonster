@@ -286,7 +286,7 @@ export default function Settings() {
     const { error } = await supabase
       .from('profiles')
       .update({ first_name: firstName, last_name: lastName, phone: normalizedPhone })
-      .eq('id', user?.id);
+      .eq('id', user?.id ?? '');
     if (error) {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
       return;

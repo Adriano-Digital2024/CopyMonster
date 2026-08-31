@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const KycApproval = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -15,7 +18,7 @@ const KycApproval = () => {
   const { data: pendingPartners, isLoading } = useQuery({
     queryKey: ["admin-pending-kyc"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('affiliate')
         .from("profiles")
         .select("*")
@@ -29,14 +32,14 @@ const KycApproval = () => {
   // 2. Mutação para Aprovar/Rejeitar
   const kycMutation = useMutation({
     mutationFn: async ({ id, status, reason }: { id: string; status: 'APPROVED' | 'REJECTED'; reason: string }) => {
-      const { error: profileError } = await supabase
+      const { error: profileError } = await sb
         .schema('affiliate')
         .from("profiles")
         .update({ kyc_status: status })
         .eq("id", id);
       if (profileError) throw profileError;
 
-      await supabase
+      await sb
         .schema('affiliate')
         .from("audit_logs")
         .insert({
