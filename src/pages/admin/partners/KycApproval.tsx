@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const KycApproval = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();

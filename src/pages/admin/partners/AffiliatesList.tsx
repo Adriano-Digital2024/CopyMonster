@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   APPROVED: 'default',
   PENDING: 'secondary',

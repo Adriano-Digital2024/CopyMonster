@@ -7,6 +7,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Check, X, Clock, UploadCloud } from 'lucide-react';
 
+
+// Affiliate/finance schemas are not present in the generated public types.
+const sb = supabase as any;
 const ValidationQueue = () => {
   const { toast } = useToast();
   const [items, setItems] = useState<any[] | null>(null);
@@ -49,7 +52,7 @@ const ValidationQueue = () => {
   const act = async (commissionId: string, action: 'approve' | 'reject', amount: number, affiliateName?: string) => {
     setPending((p) => ({ ...p, [commissionId]: action }));
     try {
-      const { data, error } = await supabase.functions.invoke('approve-commission', {
+      const { data, error } = await sb.functions.invoke('approve-commission', {
         body: { commissionId, action },
       });
       if (error) throw error;
