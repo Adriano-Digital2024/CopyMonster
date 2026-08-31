@@ -18,7 +18,7 @@ const AffiliatesList = () => {
   const { data: affiliates, isLoading } = useQuery({
     queryKey: ["admin-affiliates"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('affiliate')
         .from("profiles")
         .select("*")

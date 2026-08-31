@@ -31,7 +31,7 @@ const PayoutQueue = () => {
   const { data: payouts, isLoading } = useQuery({
     queryKey: ["admin-payouts"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('finance')
         .from("payout_requests")
         .select(`
@@ -56,7 +56,7 @@ const PayoutQueue = () => {
       });
       if (error) throw error;
 
-      await supabase
+      await sb
         .schema('affiliate')
         .from("audit_logs")
         .insert({

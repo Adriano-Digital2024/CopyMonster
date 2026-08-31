@@ -19,7 +19,7 @@ const ValidationQueue = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('affiliate')
         .from('commissions')
         .select(`

@@ -21,7 +21,7 @@ const RuleEngine = () => {
   const { data: rules } = useQuery({
     queryKey: ["admin-commission-rules"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .schema('affiliate')
         .from("commission_rules")
         .select("*")
@@ -34,7 +34,7 @@ const RuleEngine = () => {
   const publishMutation = useMutation({
     mutationFn: async (values: any) => {
       // Step A: Set current to false
-      await supabase
+      await sb
         .schema('affiliate')
         .from("commission_rules")
         .update({ is_current: false })
