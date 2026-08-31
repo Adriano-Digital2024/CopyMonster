@@ -309,7 +309,7 @@ export function ChatInterface({
     if (creditsHeader !== null) {
       const newCredits = parseInt(creditsHeader, 10);
       if (!isNaN(newCredits)) {
-        updateUser({ credits: newCredits });
+        updateUser({ credits: newCredits } as any);
         if (onCreditsUpdate) {
           onCreditsUpdate(newCredits);
         }

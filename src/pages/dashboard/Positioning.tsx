@@ -70,7 +70,7 @@ export default function Positioning() {
         .from('positioning_mappings')
         .select('*')
         .eq('id', mappingId)
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id ?? '')
         .single();
 
       if (error) throw error;
