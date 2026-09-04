@@ -14,13 +14,25 @@ type ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined);
 
+const THEME_DEFAULT_VERSION = 'light-v1';
+
 export function ThemeProvider({
   children,
   defaultTheme = 'dark',
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem('theme') as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const appliedDefaultVersion = localStorage.getItem('theme-default-version');
+
+    // Apply the new light default once for existing visitors whose browser
+    // still contains the former dark-by-default preference.
+    if (appliedDefaultVersion !== THEME_DEFAULT_VERSION) {
+      localStorage.setItem('theme-default-version', THEME_DEFAULT_VERSION);
+      return defaultTheme;
+    }
+
+    return savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
