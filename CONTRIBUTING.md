@@ -26,7 +26,7 @@ this repository must be in **English**.
 
 Be respectful, inclusive, and constructive. Harassment, discrimination, or
 personal attacks of any kind will not be tolerated. Report incidents to
-conduct@copymonster.me.
+conduct@copymonster.co.
 
 ---
 

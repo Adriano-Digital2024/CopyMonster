@@ -123,7 +123,7 @@ export default function CookiePolicy() {
                 If you have questions about our use of cookies, please contact:
               </p>
               <p className="text-muted-foreground mt-2">
-                Email: privacy@copymonster.me<br />
+                Email: privacy@copymonster.co<br />
                 Address: São Paulo, Brazil
               </p>
             </section>

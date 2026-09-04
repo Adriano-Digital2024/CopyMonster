@@ -5,7 +5,7 @@
 If you discover a security vulnerability in CopyMonster, please **do not**
 open a public GitHub issue. Instead, report it privately:
 
-- **Email:** security@copymonster.me
+- **Email:** security@copymonster.co
 - **Response time:** within 72 hours
 - **Disclosure:** coordinated, after a fix is released
 
@@ -35,7 +35,7 @@ In scope:
 Out of scope:
 
 - Third-party providers (Supabase, Meta, Stripe, OpenAI, Anthropic, OpenRouter, Mistral, Ollama)
-- The hosted Cloud edition (report to security@copymonster.me with `[cloud]` prefix)
-- Enterprise modules (private — report to enterprise@copymonster.me)
+- The hosted Cloud edition (report to security@copymonster.co with `[cloud]` prefix)
+- Enterprise modules (private — report to enterprise@copymonster.co)
 
 Thank you for helping keep CopyMonster and its users safe.

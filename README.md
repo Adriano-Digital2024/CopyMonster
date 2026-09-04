@@ -10,10 +10,10 @@
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED.svg" alt="Docker Ready"/>
   <img src="https://img.shields.io/badge/Deploy-Cloudflare%20Pages-F38020.svg" alt="Cloudflare Pages"/>
   <br/><br/>
-  <a href="https://copymonster.me">Website</a> · 
-  <a href="https://copymonster.me/docs">Docs</a> · 
-  <a href="https://app.copymonster.me">Cloud</a> · 
-  <a href="mailto:enterprise@copymonster.me">Enterprise</a></div><br/><br/>
+  <a href="https://copymonster.co">Website</a> · 
+  <a href="https://copymonster.co/docs">Docs</a> · 
+  <a href="https://app.copymonster.co">Cloud</a> · 
+  <a href="mailto:enterprise@copymonster.co">Enterprise</a></div><br/><br/>
   <img src="./public/og-image.jpg" alt="CopyMonster" width="800"/>
   <br/><br/>
 </div>
@@ -214,9 +214,9 @@ integration contract.
 
 ## Community & Support
 
-- Email: hello@copymonster.me
-- Security: security@copymonster.me — see [SECURITY.md](./SECURITY.md)
-- Enterprise: enterprise@copymonster.me
+- Email: hello@copymonster.co
+- Security: security@copymonster.co — see [SECURITY.md](./SECURITY.md)
+- Enterprise: enterprise@copymonster.co
 
 Contributions are welcome — start with [CONTRIBUTING.md](./CONTRIBUTING.md).
 
@@ -231,7 +231,7 @@ Features available in the Enterprise plan:
 - Automatic DNA evolution
 - Priority support
 
-**Contact:** enterprise@copymonster.me
+**Contact:** enterprise@copymonster.co
 
 ---
 

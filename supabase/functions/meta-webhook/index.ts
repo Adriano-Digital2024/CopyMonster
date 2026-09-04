@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       console.log('[meta-webhook] data deletion for unknown meta_user_id', metaUserId)
     }
 
-    const statusUrl = `https://copymonster.me/legal/data-deletion-status?code=${encodeURIComponent(confirmationCode)}`
+    const statusUrl = `https://app.copymonster.co/legal/data-deletion-status?code=${encodeURIComponent(confirmationCode)}`
     return new Response(JSON.stringify({ url: statusUrl, confirmation_code: confirmationCode }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

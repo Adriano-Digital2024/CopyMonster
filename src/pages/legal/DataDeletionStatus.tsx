@@ -30,7 +30,7 @@ export default function DataDeletionStatus() {
           )}
           <p className="text-sm text-muted-foreground mt-6">
             If you have questions about this request, contact us at{' '}
-            <a className="underline" href="mailto:privacy@copymonster.me">privacy@copymonster.me</a>.
+            <a className="underline" href="mailto:privacy@copymonster.co">privacy@copymonster.co</a>.
           </p>
         </Card>
       </main>

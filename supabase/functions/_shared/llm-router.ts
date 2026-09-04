@@ -95,7 +95,7 @@ export function resolveProvider(
     headers: {
       "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": opts.referer ?? "https://copymonster.me",
+      "HTTP-Referer": opts.referer ?? "https://copymonster.co",
       "X-Title": opts.title ?? "CopyMonster",
     },
     supportsPenalties: true,

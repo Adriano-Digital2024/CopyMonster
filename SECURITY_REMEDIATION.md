@@ -152,7 +152,7 @@ supabase secrets set --project-ref bcatupltfvgwelhzeznk \
   STRIPE_SECRET_KEY="sk_live_..." \
   STRIPE_WEBHOOK_SECRET="whsec_..." \
   INTERNAL_WEBHOOK_SECRET="<gerar string aleatória de 32+ caracteres>" \
-  ALLOWED_ORIGIN="https://copymonster.me" \
+  ALLOWED_ORIGIN="https://app.copymonster.co" \
   SUPABASE_ANON_KEY="<project anon key>" \
   SUPABASE_SERVICE_ROLE_KEY="<project service_role key>" \
   PAYPAL_MOCK="true"  # ← false em produção real com PayPal

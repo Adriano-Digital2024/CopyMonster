@@ -30,4 +30,4 @@ unless explicitly included in the MIT core repository.
 The MIT license above applies to the "Core" of CopyMonster.
 Enterprise modules (if shipped in a separate `/enterprise` directory or
 private repository) are licensed under a separate commercial license.
-Contact enterprise@copymonster.me for details.
+Contact enterprise@copymonster.co for details.
