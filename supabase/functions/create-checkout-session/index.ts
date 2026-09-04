@@ -8,7 +8,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://copymonster.me';
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://copymonster.co';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -109,7 +109,7 @@ serve(async (req) => {
       return jsonResponse({ error: 'Payment system not configured' }, 500);
     }
 
-    const siteUrl = Deno.env.get('SITE_URL') || 'https://copymonster.me';
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://copymonster.co';
 
     const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
