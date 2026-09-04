@@ -3947,4 +3947,4 @@ i18n
     },
   });
 
-export default i18n;8n;
+export default i18n;
