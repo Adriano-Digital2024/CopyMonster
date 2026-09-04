@@ -136,8 +136,8 @@ serve(async (req) => {
     const session = await stripeResponse.json();
 
     if (!stripeResponse.ok) {
-      console.error('[create-checkout-session] Stripe API error:', session.error?.type);
-      return jsonResponse({ error: 'Failed to create checkout session' }, 400);
+      console.error('[create-checkout-session] Stripe API error:', JSON.stringify(session.error));
+      return jsonResponse({ error: 'Failed to create checkout session', details: session.error?.message }, 400);
     }
 
     console.log(`[create-checkout-session] Session created: ${session.id} for plan ${serverPlanId}`);
