@@ -726,9 +726,20 @@ export function ChatInterface({
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <div
+        className="flex-1 overflow-y-auto p-4 flex flex-col-reverse gap-4 custom-scrollbar"
+        ref={scrollRef}
+      >
+        {isLoading && messages.length > 0 && messages[messages.length - 1]?.content === '' && (
+          <div className="flex justify-start">
+            <div className="bg-muted rounded-lg p-4 inline-flex items-center">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          </div>
+        )}
+
         {messages.length === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-0 text-center text-muted-foreground">
             {autoStart ? (
               <>
                 <Loader2 className="h-8 w-8 animate-spin mb-4" />
@@ -747,8 +758,13 @@ export function ChatInterface({
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {messages.map((message) => (
+          (isLoading && messages.length > 0 && messages[messages.length - 1]?.content === ''
+            ? messages.slice(0, -1)
+            : messages
+          )
+            .slice()
+            .reverse()
+            .map((message) => (
               <div
                 key={message.id}
                 className={cn(
@@ -772,17 +788,9 @@ export function ChatInterface({
                   </p>
                 </div>
               </div>
-            ))}
-             {isLoading && messages.length > 0 && messages[messages.length - 1]?.content === '' && (
-              <div className="flex justify-start mt-4">
-                <div className="bg-muted rounded-lg p-4 inline-flex items-center">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                </div>
-              </div>
-            )}
-          </div>
+            ))
         )}
-      </ScrollArea>
+      </div>
 
       {/* Save Reminder Banner */}
       {showSaveReminder && !isCopySaved && shouldShowSaveAction && (
