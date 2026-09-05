@@ -4,7 +4,6 @@ import { Send, Download, Trash2, Loader2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
@@ -88,6 +87,7 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Message[]>(() => loadSessionMessages(sessionKey));
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   const [hasAutoStarted, setHasAutoStarted] = useState(() => loadSessionMessages(sessionKey).length > 0);
   const [isCopySaved, setIsCopySaved] = useState(() => loadSessionFlag(sessionKey, 'saved'));
   const [showSaveReminder, setShowSaveReminder] = useState(false);
@@ -220,11 +220,28 @@ export function ChatInterface({
     syncPendingCopys();
   }, [user]);
 
+  // Track whether the user is visually anchored at the bottom of the transcript.
+  // With flex-col-reverse, scrollTop === 0 means "at the bottom".
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      setIsAtBottom(container.scrollTop <= 60);
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Keep the transcript pinned to the bottom while streaming, unless the user
+  // has intentionally scrolled up to read older messages.
+  useEffect(() => {
+    if (isAtBottom && scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
     }
-  }, [messages]);
+  }, [messages, isAtBottom]);
 
   // Notify parent of messages changes
   useEffect(() => {
@@ -709,9 +726,20 @@ export function ChatInterface({
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <div
+        className="flex-1 overflow-y-auto p-4 flex flex-col-reverse gap-4 custom-scrollbar"
+        ref={scrollRef}
+      >
+        {isLoading && messages.length > 0 && messages[messages.length - 1]?.content === '' && (
+          <div className="flex justify-start">
+            <div className="bg-muted rounded-lg p-4 inline-flex items-center">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          </div>
+        )}
+
         {messages.length === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-0 text-center text-muted-foreground">
             {autoStart ? (
               <>
                 <Loader2 className="h-8 w-8 animate-spin mb-4" />
@@ -730,8 +758,13 @@ export function ChatInterface({
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {messages.map((message) => (
+          (isLoading && messages.length > 0 && messages[messages.length - 1]?.content === ''
+            ? messages.slice(0, -1)
+            : messages
+          )
+            .slice()
+            .reverse()
+            .map((message) => (
               <div
                 key={message.id}
                 className={cn(
@@ -755,17 +788,9 @@ export function ChatInterface({
                   </p>
                 </div>
               </div>
-            ))}
-             {isLoading && messages.length > 0 && messages[messages.length - 1]?.content === '' && (
-              <div className="flex justify-start mt-4">
-                <div className="bg-muted rounded-lg p-4 inline-flex items-center">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                </div>
-              </div>
-            )}
-          </div>
+            ))
         )}
-      </ScrollArea>
+      </div>
 
       {/* Save Reminder Banner */}
       {showSaveReminder && !isCopySaved && shouldShowSaveAction && (
