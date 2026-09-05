@@ -1292,9 +1292,9 @@ const resources = {
         },
       },
       chatLanding: {
-        headline: "Create High-Converting Copy in Seconds with AI",
+        headline: "Create Insane Scripts & Copy with Above-Average ROI",
         subheadline: "The AI writing assistant built for experts, mentors, and infoproduct creators who want to grow audience and sales faster.",
-        trustText: "Used by digital creators, experts, and online businesses to generate high-converting content with AI.",
+        trustText: "Authentic Copy that Delights Your Audience and Multiplies Results — Without Losing Your Identity.",
         prompts: {
           salesPage: "Write a high-converting sales page...",
           instagram: "Create an Instagram post that attracts clients...",
@@ -2592,9 +2592,9 @@ const resources = {
         },
       },
       chatLanding: {
-        headline: "Crie Copys de Alta Conversão em Segundos com IA",
+        headline: "Crie Roteiros & Copys Insanas com ROI acima da média",
         subheadline: "O assistente de escrita com IA feito para experts, mentores e criadores de infoprodutos que querem crescer audiência e vendas mais rápido.",
-        trustText: "Usado por criadores digitais, experts e negócios online para gerar conteúdo de alta conversão com IA.",
+        trustText: "Copys autênticas que encantam a audiência e multiplicam resultados, sem perder sua identidade.",
         prompts: {
           salesPage: "Escreva uma página de vendas de alta conversão...",
           instagram: "Crie um post para Instagram que atrai clientes...",
@@ -3894,7 +3894,7 @@ const resources = {
       chatLanding: {
         headline: "Crea Guiones & Copias Insanas con ROI por encima del promedio",
         subheadline: "El asistente de escritura con IA hecho para expertos, mentores y creadores de infoproductos que quieren crecer audiencia y ventas más rápido.",
-        trustText: "Usado por creadores digitales, expertos y negocios online para generar contenido de alta conversión con IA.",
+        trustText: "Copys Auténticas que Encantan a la Audiencia y Multiplican Resultados — Sin Perder tu Identidad.",
         prompts: {
           salesPage: "Escribe una página de ventas de alta conversión...",
           instagram: "Crea un post de Instagram que atrae clientes...",
