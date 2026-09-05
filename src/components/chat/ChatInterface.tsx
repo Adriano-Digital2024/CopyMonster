@@ -87,6 +87,7 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Message[]>(() => loadSessionMessages(sessionKey));
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   const [hasAutoStarted, setHasAutoStarted] = useState(() => loadSessionMessages(sessionKey).length > 0);
   const [isCopySaved, setIsCopySaved] = useState(() => loadSessionFlag(sessionKey, 'saved'));
   const [showSaveReminder, setShowSaveReminder] = useState(false);
