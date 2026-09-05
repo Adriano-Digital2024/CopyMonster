@@ -220,11 +220,28 @@ export function ChatInterface({
     syncPendingCopys();
   }, [user]);
 
+  // Track whether the user is visually anchored at the bottom of the transcript.
+  // With flex-col-reverse, scrollTop === 0 means "at the bottom".
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      setIsAtBottom(container.scrollTop <= 60);
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Keep the transcript pinned to the bottom while streaming, unless the user
+  // has intentionally scrolled up to read older messages.
+  useEffect(() => {
+    if (isAtBottom && scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
     }
-  }, [messages]);
+  }, [messages, isAtBottom]);
 
   // Notify parent of messages changes
   useEffect(() => {
