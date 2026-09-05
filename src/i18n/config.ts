@@ -3892,7 +3892,7 @@ const resources = {
         },
       },
       chatLanding: {
-        headline: "Crea Copys de Alta Conversión en Segundos con IA",
+        headline: "Crea Guiones & Copias Insanas con ROI por encima del promedio",
         subheadline: "El asistente de escritura con IA hecho para expertos, mentores y creadores de infoproductos que quieren crecer audiencia y ventas más rápido.",
         trustText: "Usado por creadores digitales, expertos y negocios online para generar contenido de alta conversión con IA.",
         prompts: {
