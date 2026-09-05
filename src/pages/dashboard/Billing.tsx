@@ -16,9 +16,9 @@ import { useMetaPixel } from '@/hooks/useMetaPixel';
 
 // Single USD Price IDs for all languages
 const priceIds = {
-  starter: 'price_1SDH0CRiKNxooUH0m2yK3ttC',
-  pro: 'price_1SDH2kRiKNxooUH0kbJsDy7T',
-  legend: 'price_1SDHAJRiKNxooUH0nUcBIFaG',
+  starter: 'price_1SqRcbRiKNxooUH09cijDYsq',
+  pro: 'price_1SqRe4RiKNxooUH0tYyprM4P',
+  legend: 'price_1SqRgVRiKNxooUH0knqhTTF9',
 };
 
 const annualPriceIds = {
