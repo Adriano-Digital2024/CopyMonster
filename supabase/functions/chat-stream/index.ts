@@ -677,7 +677,7 @@ serve(async (req) => {
           model_used: modelName,
           input_tokens: 0, // Could estimate from message length
           output_tokens: 0, // Could estimate from response length
-          credits_consumed: isAdmin ? 0 : 1, // Admins don't consume credits
+          credits_consumed: creditDebited ? 1 : 0, // Admins and continuations don't consume credits
         });
       } catch (e) {
         console.error('[chat-stream] Failed to log usage:', e);
