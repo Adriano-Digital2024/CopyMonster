@@ -197,6 +197,11 @@ serve(async (req) => {
       );
     }
 
+    // 3b. PARSE REQUEST BODY (before credit logic so continuations are free)
+    const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id, is_continuation } =
+      await req.json();
+    const isContinuation = is_continuation === true;
+
     // 4. GET USER PROFILE AND VALIDATE CREDITS/TRIAL (skip validation for admins)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -214,7 +219,8 @@ serve(async (req) => {
 
     let newCredits = profile.credits;
 
-    // ADMINS: Skip all credit/trial checks and credit deduction
+    // ADMINS / CONTINUATIONS: Skip credit deduction
+    const creditDebited = !isAdmin && !isContinuation;
     if (!isAdmin) {
       // Check if user can use the service
       const now = new Date();
@@ -248,31 +254,33 @@ serve(async (req) => {
         );
       }
 
-      // 5. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING (only for non-admins)
-      const { data: updatedProfile, error: debitError } = await supabase
-        .from('profiles')
-        .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
-        .eq('id', userId)
-        .eq('credits', profile.credits) // Optimistic locking
-        .select('credits')
-        .single();
+      if (creditDebited) {
+        // 5. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING (only for non-admins)
+        const { data: updatedProfile, error: debitError } = await supabase
+          .from('profiles')
+          .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .eq('credits', profile.credits) // Optimistic locking
+          .select('credits')
+          .single();
 
-      if (debitError || !updatedProfile) {
-        console.error('[chat-stream] Credit debit failed:', debitError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
-        );
+        if (debitError || !updatedProfile) {
+          console.error('[chat-stream] Credit debit failed:', debitError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+          );
+        }
+
+        newCredits = updatedProfile.credits;
+        console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
+      } else {
+        console.log(`[chat-stream] Continuation request - no credit deduction`);
       }
-
-      newCredits = updatedProfile.credits;
-      console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
     } else {
       console.log(`[chat-stream] Admin user - no credit deduction`);
     }
 
-    // 5. PARSE REQUEST BODY
-    const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
 
     // 5b. INPUT VALIDATION - Prevent abuse and control costs.
     // IMPORTANT: Run BEFORE any credit debit so users never lose credits
@@ -330,8 +338,8 @@ serve(async (req) => {
       if (!hasCompletedDna) {
         console.warn(`[chat-stream] DNA_REQUIRED: User ${userId} has no completed DNA`);
         // Refund credit
-        if (!isAdmin) {
-          await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+        if (creditDebited) {
+          await supabase.from("profiles").update({ credits: newCredits + 1 }).eq("id", userId);
         }
         return new Response(
           JSON.stringify({ error: 'Business DNA required. Create your brand positioning first.', code: 'DNA_REQUIRED' }),
@@ -342,8 +350,8 @@ serve(async (req) => {
       if (!positioning_mapping_id) {
         console.warn(`[chat-stream] DNA_SELECTION_REQUIRED: User ${userId} did not select a DNA project`);
         // Refund credit
-        if (!isAdmin) {
-          await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+        if (creditDebited) {
+          await supabase.from("profiles").update({ credits: newCredits + 1 }).eq("id", userId);
         }
         return new Response(
           JSON.stringify({ error: 'Please select a DNA project to use.', code: 'DNA_SELECTION_REQUIRED' }),
@@ -570,8 +578,8 @@ serve(async (req) => {
     const route = resolveProvider(selectedModel);
     if (isProviderError(route)) {
       // Refund credit on config error
-      if (!isAdmin) {
-        await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+      if (creditDebited) {
+        await supabase.from("profiles").update({ credits: newCredits + 1 }).eq("id", userId);
       }
       return new Response(
         JSON.stringify({ error: route.error }),
@@ -642,7 +650,7 @@ serve(async (req) => {
       console.error('[chat-stream] API error:', res.status, errorBody);
       
       // Refund credit on API error (only for non-admins — admins were never debited)
-      if (!isAdmin) {
+      if (creditDebited) {
         await supabase
           .from('profiles')
           .update({ credits: newCredits + 1 })
@@ -669,7 +677,7 @@ serve(async (req) => {
           model_used: modelName,
           input_tokens: 0, // Could estimate from message length
           output_tokens: 0, // Could estimate from response length
-          credits_consumed: isAdmin ? 0 : 1, // Admins don't consume credits
+          credits_consumed: creditDebited ? 1 : 0, // Admins and continuations don't consume credits
         });
       } catch (e) {
         console.error('[chat-stream] Failed to log usage:', e);
