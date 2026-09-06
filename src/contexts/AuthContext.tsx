@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const loadedUserIdRef = React.useRef<string | null>(null);
 
   // Computed properties for trial status
   const isTrialExpired = React.useMemo(() => {
@@ -85,8 +86,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (event, session) => {
         // Update session state synchronously
         setSession(session);
-        
+
         if (session?.user) {
+          // Token refresh events fire whenever the tab regains focus. Reloading the
+          // profile there re-renders the whole app and wipes in-progress UI state
+          // (e.g. text typed in the chat), so skip it when the user is unchanged.
+          if (
+            (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION') &&
+            loadedUserIdRef.current === session.user.id
+          ) {
+            setIsLoading(false);
+            return;
+          }
+
           // Defer Supabase queries to avoid deadlock
           setTimeout(async () => {
             try {
@@ -107,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               if (rolesError) throw rolesError;
 
               const profileData = profile as UserProfile;
+              loadedUserIdRef.current = session.user.id;
               setUser({
                 ...profileData,
                 isAdmin: roles && roles.length > 0,
@@ -115,18 +128,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setIsLoading(false);
             } catch (error) {
               console.error('Error loading user profile:', error);
-              toast.error("Houve um problema ao carregar seu perfil. Por favor, faça login novamente.");
-              await supabase.auth.signOut();
-              setUser(null);
+              // Only force a sign out if we never managed to load this profile.
+              if (loadedUserIdRef.current !== session.user.id) {
+                toast.error("Houve um problema ao carregar seu perfil. Por favor, faça login novamente.");
+                await supabase.auth.signOut();
+                setUser(null);
+              }
               setIsLoading(false);
             }
           }, 0);
         } else {
+          loadedUserIdRef.current = null;
           setUser(null);
           setIsLoading(false);
         }
       }
     );
+
 
     return () => subscription.unsubscribe();
   }, []);

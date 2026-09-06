@@ -85,7 +85,10 @@ export function ChatInterface({
   const sessionKey = getSessionKey(agentSlug);
 
   const [messages, setMessages] = useState<Message[]>(() => loadSessionMessages(sessionKey));
-  const [input, setInput] = useState('');
+  const draftKey = sessionKey ? `${sessionKey}_draft` : 'chat_session_draft';
+  const [input, setInput] = useState(() => {
+    try { return sessionStorage.getItem(draftKey) || ''; } catch { return ''; }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [hasAutoStarted, setHasAutoStarted] = useState(() => loadSessionMessages(sessionKey).length > 0);
@@ -99,6 +102,14 @@ export function ChatInterface({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // --- Persist the typed draft so it survives re-renders/remounts ---
+  useEffect(() => {
+    try {
+      if (input) sessionStorage.setItem(draftKey, input);
+      else sessionStorage.removeItem(draftKey);
+    } catch { /* ignore */ }
+  }, [input, draftKey]);
 
   // --- Persist messages to sessionStorage ---
   useEffect(() => {
