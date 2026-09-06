@@ -650,7 +650,7 @@ serve(async (req) => {
       console.error('[chat-stream] API error:', res.status, errorBody);
       
       // Refund credit on API error (only for non-admins — admins were never debited)
-      if (!isAdmin) {
+      if (creditDebited) {
         await supabase
           .from('profiles')
           .update({ credits: newCredits + 1 })
