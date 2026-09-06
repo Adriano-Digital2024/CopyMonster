@@ -197,6 +197,11 @@ serve(async (req) => {
       );
     }
 
+    // 3b. PARSE REQUEST BODY (before credit logic so continuations are free)
+    const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id, is_continuation } =
+      await req.json();
+    const isContinuation = is_continuation === true;
+
     // 4. GET USER PROFILE AND VALIDATE CREDITS/TRIAL (skip validation for admins)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
