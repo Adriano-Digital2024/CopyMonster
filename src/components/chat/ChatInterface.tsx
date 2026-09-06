@@ -550,42 +550,88 @@ export function ChatInterface({
       let fullContent = '';
       let textBuffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      let finishReason: string | null = null;
 
-        textBuffer += decoder.decode(value, { stream: true });
+      const consumeStream = async (streamReader: ReadableStreamDefaultReader<Uint8Array>) => {
+        while (true) {
+          const { done, value } = await streamReader.read();
+          if (done) break;
 
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
+          textBuffer += decoder.decode(value, { stream: true });
 
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
 
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') break;
+            if (line.endsWith('\r')) line = line.slice(0, -1);
+            if (line.startsWith(':') || line.trim() === '') continue;
+            if (!line.startsWith('data: ')) continue;
 
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              fullContent += content;
-              setMessages(prev =>
-                prev.map(msg =>
-                  msg.id === assistantMessageId
-                    ? { ...msg, content: fullContent }
-                    : msg
-                )
-              );
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === '[DONE]') break;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const choice = parsed.choices?.[0];
+              if (choice?.finish_reason) finishReason = choice.finish_reason;
+              const content = choice?.delta?.content;
+              if (content) {
+                fullContent += content;
+                setMessages(prev =>
+                  prev.map(msg =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: fullContent }
+                      : msg
+                  )
+                );
+              }
+            } catch (e) {
+              // Ignore parsing errors for incomplete JSON chunks
             }
-          } catch (e) {
-            // Ignore parsing errors for incomplete JSON chunks
           }
         }
+      };
+
+      await consumeStream(reader);
+
+      // Auto-continue when the model was cut off by the output length limit,
+      // so the user always receives the complete deliverable.
+      let continuations = 0;
+      while (finishReason === 'length' && continuations < 4) {
+        continuations++;
+        finishReason = null;
+        textBuffer = '';
+
+        const continuationResponse = await fetch(edgeFunctionUrl('chat-stream'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messagesPayload,
+              { role: 'assistant', content: fullContent },
+              {
+                role: 'user',
+                content:
+                  'Continue exatamente de onde parou, sem repetir nenhum trecho já escrito e sem introdução. Finalize todo o conteúdo solicitado.',
+              },
+            ],
+            system_prompt: systemPrompt,
+            agent_slug: agentSlug,
+            positioning_mapping_id: positioningMappingId,
+            is_continuation: true,
+          }),
+        });
+
+        if (!continuationResponse.ok) break;
+        const continuationReader = continuationResponse.body?.getReader();
+        if (!continuationReader) break;
+        await consumeStream(continuationReader);
       }
+
 
       toast({
         title: t('chat.creditUsedTitle'),
