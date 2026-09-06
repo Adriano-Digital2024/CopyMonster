@@ -338,8 +338,8 @@ serve(async (req) => {
       if (!hasCompletedDna) {
         console.warn(`[chat-stream] DNA_REQUIRED: User ${userId} has no completed DNA`);
         // Refund credit
-        if (!isAdmin) {
-          await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+        if (creditDebited) {
+          await supabase.from("profiles").update({ credits: newCredits + 1 }).eq("id", userId);
         }
         return new Response(
           JSON.stringify({ error: 'Business DNA required. Create your brand positioning first.', code: 'DNA_REQUIRED' }),
@@ -350,8 +350,8 @@ serve(async (req) => {
       if (!positioning_mapping_id) {
         console.warn(`[chat-stream] DNA_SELECTION_REQUIRED: User ${userId} did not select a DNA project`);
         // Refund credit
-        if (!isAdmin) {
-          await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+        if (creditDebited) {
+          await supabase.from("profiles").update({ credits: newCredits + 1 }).eq("id", userId);
         }
         return new Response(
           JSON.stringify({ error: 'Please select a DNA project to use.', code: 'DNA_SELECTION_REQUIRED' }),
@@ -578,8 +578,8 @@ serve(async (req) => {
     const route = resolveProvider(selectedModel);
     if (isProviderError(route)) {
       // Refund credit on config error
-      if (!isAdmin) {
-        await supabase.from('profiles').update({ credits: newCredits + 1 }).eq('id', userId);
+      if (creditDebited) {
+        await supabase.from("profiles").update({ credits: newCredits + 1 }).eq("id", userId);
       }
       return new Response(
         JSON.stringify({ error: route.error }),
