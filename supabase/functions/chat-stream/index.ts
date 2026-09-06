@@ -219,7 +219,8 @@ serve(async (req) => {
 
     let newCredits = profile.credits;
 
-    // ADMINS: Skip all credit/trial checks and credit deduction
+    // ADMINS / CONTINUATIONS: Skip credit deduction
+    const creditDebited = !isAdmin && !isContinuation;
     if (!isAdmin) {
       // Check if user can use the service
       const now = new Date();
@@ -253,31 +254,33 @@ serve(async (req) => {
         );
       }
 
-      // 5. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING (only for non-admins)
-      const { data: updatedProfile, error: debitError } = await supabase
-        .from('profiles')
-        .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
-        .eq('id', userId)
-        .eq('credits', profile.credits) // Optimistic locking
-        .select('credits')
-        .single();
+      if (creditDebited) {
+        // 5. DEBIT CREDIT ATOMICALLY BEFORE PROCESSING (only for non-admins)
+        const { data: updatedProfile, error: debitError } = await supabase
+          .from('profiles')
+          .update({ credits: profile.credits - 1, updated_at: new Date().toISOString() })
+          .eq('id', userId)
+          .eq('credits', profile.credits) // Optimistic locking
+          .select('credits')
+          .single();
 
-      if (debitError || !updatedProfile) {
-        console.error('[chat-stream] Credit debit failed:', debitError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
-        );
+        if (debitError || !updatedProfile) {
+          console.error('[chat-stream] Credit debit failed:', debitError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to process credit. Please try again.' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 }
+          );
+        }
+
+        newCredits = updatedProfile.credits;
+        console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
+      } else {
+        console.log(`[chat-stream] Continuation request - no credit deduction`);
       }
-
-      newCredits = updatedProfile.credits;
-      console.log(`[chat-stream] Credit debited. User ${userId} now has ${newCredits} credits`);
     } else {
       console.log(`[chat-stream] Admin user - no credit deduction`);
     }
 
-    // 5. PARSE REQUEST BODY
-    const { messages, system_prompt, model, agent_slug, auto_start, positioning_mapping_id } = await req.json();
 
     // 5b. INPUT VALIDATION - Prevent abuse and control costs.
     // IMPORTANT: Run BEFORE any credit debit so users never lose credits
